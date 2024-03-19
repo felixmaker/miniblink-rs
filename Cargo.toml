@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "miniblink-sys",
+	"miniblink",	
+]
+resolver = "2"
