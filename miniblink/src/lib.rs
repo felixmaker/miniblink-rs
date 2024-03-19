@@ -1,7 +1,3 @@
-// Copyright 2020-2023 felixmaker
-// SPDX-License-Identifier: Apache-2.0
-// SPDX-License-Identifier: MIT
-
 mod handler;
 mod util;
 
