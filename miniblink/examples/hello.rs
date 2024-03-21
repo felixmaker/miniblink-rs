@@ -1,6 +1,7 @@
 use miniblink::{app, webview::WebViewBuilder};
 
 fn main() {
+    app::init("node.dll");
     app::bind("hello", |x| format!("Hello, {x}"));
 
     let _webview = WebViewBuilder::default()

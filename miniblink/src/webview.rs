@@ -3,7 +3,7 @@ use std::ffi::CString;
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
 use crate::value::JsValue;
-use crate::{handler, API};
+use crate::{handler, call_api};
 
 /// A rectangular region.
 #[derive(Clone, Copy, Debug)]
@@ -245,7 +245,7 @@ impl WebView {
 
     fn create_window(bounds: Rect) -> Self {
         let window = unsafe {
-            API.wkeCreateWebWindow(
+            call_api().wkeCreateWebWindow(
                 miniblink_sys::wkeWindowType::WKE_WINDOW_TYPE_POPUP,
                 std::ptr::null_mut(),
                 bounds.x,
@@ -260,13 +260,13 @@ impl WebView {
 
     pub fn set_user_agent(&self, user_agent: &str) {
         unsafe {
-            API.wkeSetUserAgent(self.webview, CString::safe_new(user_agent).into_raw());
+            call_api().wkeSetUserAgent(self.webview, CString::safe_new(user_agent).into_raw());
         }
     }
 
     pub fn set_visible(&self, visible: bool) {
         unsafe {
-            API.wkeShowWindow(self.webview, visible);
+            call_api().wkeShowWindow(self.webview, visible);
         }
     }
 
@@ -274,18 +274,18 @@ impl WebView {
     /// This will be ignored if `url` is provided.
     pub fn load_html(&self, html: &str) {
         unsafe {
-            API.wkeLoadHTML(self.webview, CString::safe_new(html).into_raw());
+            call_api().wkeLoadHTML(self.webview, CString::safe_new(html).into_raw());
         }
     }
 
     pub fn load_url(&self, url: &str) {
         unsafe {
-            API.wkeLoadURL(self.webview, CString::safe_new(url).into_raw());
+            call_api().wkeLoadURL(self.webview, CString::safe_new(url).into_raw());
         }
     }
 
     pub fn run_js(&self, script: &str) -> JsValue {
-        let js_value = unsafe { API.wkeRunJS(self.webview, CString::safe_new(script).into_raw()) };
+        let js_value = unsafe { call_api().wkeRunJS(self.webview, CString::safe_new(script).into_raw()) };
         JsValue { inner: js_value }
     }
 
@@ -294,7 +294,7 @@ impl WebView {
         callback: *mut Box<dyn FnMut(&mut WebView, NavigationType, String) -> bool>,
     ) {
         unsafe {
-            API.wkeOnNavigation(
+            call_api().wkeOnNavigation(
                 self.webview,
                 Some(handler::navigation_handler),
                 callback as *mut _,
@@ -304,7 +304,7 @@ impl WebView {
 
     fn on_title_changed(&self, callback: *mut Box<dyn FnMut(&mut WebView, String) -> bool>) {
         unsafe {
-            API.wkeOnTitleChanged(
+            call_api().wkeOnTitleChanged(
                 self.webview,
                 Some(handler::wkestring_handler),
                 callback as *mut _,
@@ -314,7 +314,7 @@ impl WebView {
 
     fn on_download(&self, callback: *mut Box<dyn FnMut(&mut WebView, String) -> bool>) {
         unsafe {
-            API.wkeOnDownload(
+            call_api().wkeOnDownload(
                 self.webview,
                 Some(handler::cstr_to_bool_handler),
                 callback as *mut _,
@@ -324,7 +324,7 @@ impl WebView {
 
     fn on_document_ready(&self, callback: *mut Box<dyn FnMut(&mut WebView)>) {
         unsafe {
-            API.wkeOnDocumentReady(
+            call_api().wkeOnDocumentReady(
                 self.webview,
                 Some(handler::void_handler),
                 callback as *mut _,
@@ -334,7 +334,7 @@ impl WebView {
 
     fn on_window_closing(&self, callback: *mut Box<dyn FnMut(&mut WebView) -> bool>) {
         unsafe {
-            API.wkeOnWindowClosing(
+            call_api().wkeOnWindowClosing(
                 self.webview,
                 Some(handler::void_to_bool_handler),
                 callback as *mut _,

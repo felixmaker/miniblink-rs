@@ -1,17 +1,29 @@
-use std::ffi::CString;
+use std::ffi::{CString, OsStr};
+
+use miniblink_sys::Library;
 
 use crate::{
+    call_api,
     util::SafeCString,
     value::{JsExecState, JsValue},
-    API,
+    LIB,
 };
 
+/// Initialize miniblink from `path`. Panic if failed to initialize.
+pub fn init<P: AsRef<OsStr>>(path: P) {
+    let lib =
+        LIB.get_or_init(|| unsafe { Library::new(path).expect("Failed to initialize miniblink") });
+    unsafe { lib.wkeInitialize() };
+}
+
+/// Run the miniblink message loop.
 pub fn run_message_loop() {
     unsafe {
-        API.wkeRunMessageLoop();
+        call_api().wkeRunMessageLoop();
     }
 }
 
+/// Bind the global function to `window` object.
 pub fn bind(name: &str, func: impl Fn(String) -> String + 'static) {
     unsafe extern "C" fn shim(
         es: miniblink_sys::jsExecState,
@@ -32,7 +44,7 @@ pub fn bind(name: &str, func: impl Fn(String) -> String + 'static) {
     let param: *mut Box<dyn Fn(String) -> String> = Box::into_raw(Box::new(Box::new(func)));
 
     unsafe {
-        API.wkeJsBindFunction(
+        call_api().wkeJsBindFunction(
             CString::safe_new(name).into_raw(),
             Some(shim),
             param as _,

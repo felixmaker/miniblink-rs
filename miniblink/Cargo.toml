@@ -12,5 +12,4 @@ exclude = ["./examples"]
 
 [dependencies]
 thiserror = "1"
-lazy_static = "1.4"
 miniblink-sys = { path = "../miniblink-sys", version = "0.1.0" }
