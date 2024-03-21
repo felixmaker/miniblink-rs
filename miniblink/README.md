@@ -4,16 +4,19 @@ Rust safe bindings to miniblink49
 
 It's now under development, not ready for production.
 
-The api in this crate may changed in the future.
+The api in this crate may change in the future.
 
 ```
 use miniblink::{app, webview::WebViewBuilder};
 
 fn main() {
+    app::init("node.dll");
     app::bind("hello", |x| format!("Hello, {x}"));
 
     let _webview = WebViewBuilder::default()
-        .with_html(r#"
+        .with_window_title("Hello, Miniblink")
+        .with_html(
+            r#"
         <html>
         <head>
         <title>Hello, world!</title>        
@@ -31,7 +34,8 @@ fn main() {
         </script>
         </body>
         <html>        
-        "#)
+        "#,
+        )
         .with_visible(true)
         .with_on_window_closing_handler(|_| {
             std::process::exit(0);

@@ -6,13 +6,13 @@ See [hello.rs](./miniblink/examples/hello.rs) for basic usage
 
 # Notes
 
-This project is now under development, which means it's not ready for production.
+This project is now under development, not ready for production.
 
 The api in rust safe wrapper `./miniblink` may changed in the future.
 
-You can just use `./miniblink-sys`, which is generated using `bindgen`.
+The crate `./miniblink-sys` is generated using `bindgen`.
 
-The rust safe wrapper is not aimed to provide a complete API set. If you need a specified API, create an issue or pull a request.
+The rust safe wrapper is not aimed to provide a complete API set. But if you need to wrap a specified API, create an issue or pull a request.
 
 Thank you!
 
