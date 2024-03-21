@@ -1,7 +1,8 @@
 use std::ffi::{CStr, CString};
 
-use crate::{util::SafeCString, call_api};
+use crate::{call_api, util::SafeCString};
 
+/// A type used in miniblink. See jsExecState.
 #[derive(Clone, Copy)]
 pub struct JsExecState {
     pub(crate) inner: *mut std::os::raw::c_void,
@@ -19,6 +20,7 @@ impl JsExecState {
     }
 }
 
+/// A type used in miniblink. See jsValue.
 #[derive(Clone, Copy)]
 pub struct JsValue {
     pub(crate) inner: miniblink_sys::jsValue,

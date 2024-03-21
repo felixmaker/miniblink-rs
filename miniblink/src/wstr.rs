@@ -1,13 +1,16 @@
 use std::ffi::CStr;
 
+use miniblink_sys::wkeString;
+
 use crate::call_api;
 
+/// A wrapper to wkeString. See wkeString.
 pub struct WkeStr {
-    inner: miniblink_sys::wkeString,
+    inner: wkeString,
 }
 
 impl WkeStr {
-    pub fn from_ptr(ptr: miniblink_sys::wkeString) -> Self {
+    pub fn from_ptr(ptr: wkeString) -> Self {
         Self { inner: ptr }
     }
 

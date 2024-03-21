@@ -10,21 +10,21 @@ use crate::{
     LIB,
 };
 
-/// Initialize miniblink from `path`. Panic if failed to initialize.
+/// Initialize miniblink from `path`. Panic if failed to initialize. See wkeInitialize.
 pub fn init<P: AsRef<OsStr>>(path: P) {
     let lib =
         LIB.get_or_init(|| unsafe { Library::new(path).expect("Failed to initialize miniblink") });
     unsafe { lib.wkeInitialize() };
 }
 
-/// Run the miniblink message loop.
+/// Run the miniblink message loop. See wkeRunMessageLoop.
 pub fn run_message_loop() {
     unsafe {
         call_api().wkeRunMessageLoop();
     }
 }
 
-/// Bind function to global `window` object.
+/// Bind function to global `window` object. See wkeJsBindFunction.
 pub fn bind(name: &str, func: impl Fn(String) -> String + 'static) {
     unsafe extern "C" fn shim(
         es: miniblink_sys::jsExecState,
@@ -54,6 +54,8 @@ pub fn bind(name: &str, func: impl Fn(String) -> String + 'static) {
     }
 }
 
+
+/// Set the global proxy. See wkeSetProxy.
 pub fn set_proxy(config: &ProxyConfig) {
     unsafe { call_api().wkeSetProxy(&config.to_wke_proxy()) }
 }

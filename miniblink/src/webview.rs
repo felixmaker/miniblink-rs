@@ -30,47 +30,18 @@ impl Default for Rect {
 }
 
 pub struct WebViewAttributes {
-    /// Whether the WebView window should be visible.
     pub visible: bool,
-
-    /// Whether the WebView should have a custom user-agent.
     pub user_agent: Option<String>,
-
     pub window_title: Option<String>,
-
-    /// The webview bounds. Defaults to `x: 0, y: 0, width: 200, height: 200`.
-    /// This is only effective if the webview was created by [`WebView::new_as_child`] or [`WebViewBuilder::new_as_child`]
-    /// or on Linux, if was created by [`WebViewExtUnix::new_gtk`] or [`WebViewBuilderExtUnix::new_gtk`] with [`gtk::Fixed`].
     pub bounds: Option<Rect>,
-
-    /// Set a proxy configuration for the webview. Supports HTTP CONNECT and SOCKSv4, SOCKSv4A, SOCKSv5, Socks5Hostname proxies
     pub proxy_config: Option<ProxyConfig>,
-
-    /// Whether load the provided URL to [`WebView`].
     pub url: Option<String>,
-
-    /// Whether load the provided html string to [`WebView`].
-    /// This will be ignored if the `url` is provided.
     pub html: Option<String>,
 
-    /// A navigation handler to decide if incoming url is allowed to navigate.
-    ///
-    /// The closure take a `String` parameter as url and returns a `bool` to determine whether the navigation should happen.
-    /// `true` allows to navigate and `false` does not.
     pub on_navigation_handler: Option<Box<dyn FnMut(&mut WebView, NavigationType, String) -> bool>>,
-
-    /// A download started handler to manage incoming downloads.
-    ///
-    /// The closure takes a `String` as the url being downloaded from and  returns a `bool` to allow or deny the download.
     pub on_download_handler: Option<Box<dyn FnMut(&mut WebView, String) -> bool>>,
-
-    /// Set a handler closure to process the change of the webview's document title.
     pub on_title_changed_handler: Option<Box<dyn FnMut(&mut WebView, String) -> bool>>,
-
-    /// Set a handler closure on document ready.
     pub on_document_ready_handler: Option<Box<dyn FnMut(&mut WebView)>>,
-
-    /// Set a handler closure on window closing.
     pub on_window_closing_handler: Option<Box<dyn FnMut(&mut WebView) -> bool>>,
 }
 
@@ -81,12 +52,7 @@ impl Default for WebViewAttributes {
             user_agent: None,
             window_title: None,
             proxy_config: None,
-            bounds: Some(Rect {
-                x: 0,
-                y: 0,
-                width: 200,
-                height: 200,
-            }),
+            bounds: Some(Rect::default()),
             url: None,
             html: None,
             on_navigation_handler: None,
@@ -275,45 +241,49 @@ impl WebView {
         Self { webview: window }
     }
 
-    /// Set the native window title
+    /// Set the title of native window. See wkeSetWindowTitle.
     pub fn set_window_title(&self, title: &str) {
         unsafe {
             call_api().wkeSetWindowTitle(self.webview, CString::safe_new(title).into_raw());
         }
     }
 
+    /// Set the user agent. See wkeSetUserAgent.
     pub fn set_user_agent(&self, user_agent: &str) {
         unsafe {
             call_api().wkeSetUserAgent(self.webview, CString::safe_new(user_agent).into_raw());
         }
     }
 
+    /// Set the visibility. See wkeShowWindow.
     pub fn set_visible(&self, visible: bool) {
         unsafe {
             call_api().wkeShowWindow(self.webview, visible);
         }
     }
 
+    /// Set the proxy of current webview. Use `app::set_proxy`` to set global proxy. See wkeSetViewProxy.
     pub fn set_proxy(&self, proxy: &ProxyConfig) {
         unsafe {
             call_api().wkeSetViewProxy(self.webview, Box::into_raw(Box::new(proxy.to_wke_proxy())));
         }
     }
 
-    /// Load the provided HTML string when the builder calling [`WebViewBuilder::build`] to create the [`WebView`].
-    /// This will be ignored if `url` is provided.
+    /// Load the provided HTML. See wkeLoadHTML.
     pub fn load_html(&self, html: &str) {
         unsafe {
             call_api().wkeLoadHTML(self.webview, CString::safe_new(html).into_raw());
         }
     }
 
+    /// Load the provided URL. See wkeLoadURL.
     pub fn load_url(&self, url: &str) {
         unsafe {
             call_api().wkeLoadURL(self.webview, CString::safe_new(url).into_raw());
         }
     }
 
+    /// Run the provided script. See wkeRunJS.
     pub fn run_js(&self, script: &str) -> JsValue {
         let js_value =
             unsafe { call_api().wkeRunJS(self.webview, CString::safe_new(script).into_raw()) };
@@ -374,6 +344,8 @@ impl WebView {
     }
 }
 
+
+/// Navigation Type. See wkeNavigationType.
 pub enum NavigationType {
     LinkClick,
     FormSubmitte,
