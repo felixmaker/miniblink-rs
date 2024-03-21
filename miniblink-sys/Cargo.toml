@@ -1,6 +1,6 @@
 [package]
 name = "miniblink-sys"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["The miniblink-rs Authors"]
 description = "Rust bindings to mininlink49"

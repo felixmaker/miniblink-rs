@@ -1,6 +1,6 @@
 [package]
 name = "miniblink"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["The miniblink-rs Authors"]
 description = "Rust bindings to mininlink49"
@@ -12,4 +12,4 @@ exclude = ["./examples"]
 
 [dependencies]
 thiserror = "1"
-miniblink-sys = { path = "../miniblink-sys", version = "0.1.0" }
+miniblink-sys = { path = "../miniblink-sys", version = "0.1.1" }
