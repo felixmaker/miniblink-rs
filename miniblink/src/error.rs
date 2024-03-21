@@ -5,8 +5,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("Failed to initialize miniblink. Ensure node.dll")]
-    InitMiniblinkError(#[from] miniblink_sys::libloading::Error),
     #[error(transparent)]
     NulError(#[from] std::ffi::NulError)
 }
