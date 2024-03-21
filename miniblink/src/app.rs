@@ -4,6 +4,7 @@ use miniblink_sys::Library;
 
 use crate::{
     call_api,
+    proxy::ProxyConfig,
     util::SafeCString,
     value::{JsExecState, JsValue},
     LIB,
@@ -23,7 +24,7 @@ pub fn run_message_loop() {
     }
 }
 
-/// Bind the global function to `window` object.
+/// Bind function to global `window` object.
 pub fn bind(name: &str, func: impl Fn(String) -> String + 'static) {
     unsafe extern "C" fn shim(
         es: miniblink_sys::jsExecState,
@@ -51,4 +52,8 @@ pub fn bind(name: &str, func: impl Fn(String) -> String + 'static) {
             1,
         )
     }
+}
+
+pub fn set_proxy(config: &ProxyConfig) {
+    unsafe { call_api().wkeSetProxy(&config.to_wke_proxy()) }
 }

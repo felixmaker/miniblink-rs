@@ -3,7 +3,7 @@ use std::ffi::CString;
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
 use crate::value::JsValue;
-use crate::{handler, call_api};
+use crate::{call_api, handler};
 
 /// A rectangular region.
 #[derive(Clone, Copy, Debug)]
@@ -113,7 +113,7 @@ impl WebViewBuilder {
         self
     }
 
-    /// Set a proxy configuration for the webview. Supports HTTP CONNECT and SOCKSv4, SOCKSv4A, SOCKSv5, Socks5Hostname proxies
+    /// Set a proxy configuration for the webview. Supports HTTP CONNECT and SOCKSv4, SOCKSv4A, SOCKSv5, SOCKSv5HOSTNAME proxies
     pub fn with_proxy_config(mut self, configuration: ProxyConfig) -> Self {
         self.attrs.proxy_config = Some(configuration);
         self
@@ -206,6 +206,10 @@ impl WebView {
         let bounds = attributes.bounds.unwrap_or(Rect::default());
         let webview = WebView::create_window(bounds);
 
+        if let Some(proxy_config) = attributes.proxy_config {
+            webview.set_proxy(&proxy_config);
+        }
+
         if let Some(user_agent) = attributes.user_agent {
             webview.set_user_agent(user_agent.as_str());
         }
@@ -270,6 +274,12 @@ impl WebView {
         }
     }
 
+    pub fn set_proxy(&self, proxy: &ProxyConfig) {
+        unsafe {
+            call_api().wkeSetViewProxy(self.webview, Box::into_raw(Box::new(proxy.to_wke_proxy())));
+        }
+    }
+
     /// Load the provided HTML string when the builder calling [`WebViewBuilder::build`] to create the [`WebView`].
     /// This will be ignored if `url` is provided.
     pub fn load_html(&self, html: &str) {
@@ -285,7 +295,8 @@ impl WebView {
     }
 
     pub fn run_js(&self, script: &str) -> JsValue {
-        let js_value = unsafe { call_api().wkeRunJS(self.webview, CString::safe_new(script).into_raw()) };
+        let js_value =
+            unsafe { call_api().wkeRunJS(self.webview, CString::safe_new(script).into_raw()) };
         JsValue { inner: js_value }
     }
 
