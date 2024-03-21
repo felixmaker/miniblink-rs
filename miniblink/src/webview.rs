@@ -246,7 +246,7 @@ impl WebView {
     fn create_window(bounds: Rect) -> Self {
         let window = unsafe {
             API.wkeCreateWebWindow(
-                miniblink_sys::_wkeWindowType_WKE_WINDOW_TYPE_POPUP,
+                miniblink_sys::wkeWindowType::WKE_WINDOW_TYPE_POPUP,
                 std::ptr::null_mut(),
                 bounds.x,
                 bounds.y,
@@ -352,20 +352,20 @@ pub enum NavigationType {
     Other,
 }
 
-impl From<i32> for NavigationType {
-    fn from(value: i32) -> Self {
+impl From<miniblink_sys::wkeNavigationType> for NavigationType {
+    fn from(value: miniblink_sys::wkeNavigationType) -> Self {
         match value {
-            miniblink_sys::_wkeNavigationType_WKE_NAVIGATION_TYPE_LINKCLICK => {
+            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_LINKCLICK => {
                 NavigationType::LinkClick
             }
-            miniblink_sys::_wkeNavigationType_WKE_NAVIGATION_TYPE_FORMSUBMITTE => {
+            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_FORMRESUBMITT => {
                 NavigationType::FormSubmitte
             }
-            miniblink_sys::_wkeNavigationType_WKE_NAVIGATION_TYPE_BACKFORWARD => {
+            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_BACKFORWARD => {
                 NavigationType::BackForward
             }
-            miniblink_sys::_wkeNavigationType_WKE_NAVIGATION_TYPE_RELOAD => NavigationType::Reload,
-            miniblink_sys::_wkeNavigationType_WKE_NAVIGATION_TYPE_FORMRESUBMITT => {
+            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_RELOAD => NavigationType::Reload,
+            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_FORMSUBMITTE => {
                 NavigationType::FormResubmit
             }
             _ => NavigationType::Other,

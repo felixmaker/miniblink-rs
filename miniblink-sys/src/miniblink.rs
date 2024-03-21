@@ -21,61 +21,11 @@ pub type LRESULT = LONG_PTR;
 pub struct HWND__ {
     pub unused: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout_HWND__() {
-    const UNINIT: ::std::mem::MaybeUninit<HWND__> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<HWND__>(),
-        4usize,
-        concat!("Size of: ", stringify!(HWND__))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<HWND__>(),
-        4usize,
-        concat!("Alignment of ", stringify!(HWND__))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).unused) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(HWND__),
-            "::",
-            stringify!(unused)
-        )
-    );
-}
 pub type HWND = *mut HWND__;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct HDC__ {
     pub unused: ::std::os::raw::c_int,
-}
-#[test]
-fn bindgen_test_layout_HDC__() {
-    const UNINIT: ::std::mem::MaybeUninit<HDC__> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<HDC__>(),
-        4usize,
-        concat!("Size of: ", stringify!(HDC__))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<HDC__>(),
-        4usize,
-        concat!("Alignment of ", stringify!(HDC__))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).unused) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(HDC__),
-            "::",
-            stringify!(unused)
-        )
-    );
 }
 pub type HDC = *mut HDC__;
 pub type COLORREF = DWORD;
@@ -87,102 +37,12 @@ pub struct tagRECT {
     pub right: LONG,
     pub bottom: LONG,
 }
-#[test]
-fn bindgen_test_layout_tagRECT() {
-    const UNINIT: ::std::mem::MaybeUninit<tagRECT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<tagRECT>(),
-        16usize,
-        concat!("Size of: ", stringify!(tagRECT))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<tagRECT>(),
-        4usize,
-        concat!("Alignment of ", stringify!(tagRECT))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).left) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagRECT),
-            "::",
-            stringify!(left)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).top) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagRECT),
-            "::",
-            stringify!(top)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).right) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagRECT),
-            "::",
-            stringify!(right)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).bottom) as usize - ptr as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagRECT),
-            "::",
-            stringify!(bottom)
-        )
-    );
-}
 pub type RECT = tagRECT;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct tagPOINT {
     pub x: LONG,
     pub y: LONG,
-}
-#[test]
-fn bindgen_test_layout_tagPOINT() {
-    const UNINIT: ::std::mem::MaybeUninit<tagPOINT> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<tagPOINT>(),
-        8usize,
-        concat!("Size of: ", stringify!(tagPOINT))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<tagPOINT>(),
-        4usize,
-        concat!("Alignment of ", stringify!(tagPOINT))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagPOINT),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagPOINT),
-            "::",
-            stringify!(y)
-        )
-    );
 }
 pub type POINT = tagPOINT;
 #[repr(C)]
@@ -207,201 +67,6 @@ pub struct _STARTUPINFOW {
     pub hStdOutput: HANDLE,
     pub hStdError: HANDLE,
 }
-#[test]
-fn bindgen_test_layout__STARTUPINFOW() {
-    const UNINIT: ::std::mem::MaybeUninit<_STARTUPINFOW> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_STARTUPINFOW>(),
-        104usize,
-        concat!("Size of: ", stringify!(_STARTUPINFOW))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_STARTUPINFOW>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_STARTUPINFOW))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).cb) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(cb)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).lpReserved) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(lpReserved)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).lpDesktop) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(lpDesktop)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).lpTitle) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(lpTitle)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwX) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwX)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwY) as usize - ptr as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwY)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwXSize) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwXSize)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwYSize) as usize - ptr as usize },
-        44usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwYSize)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwXCountChars) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwXCountChars)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwYCountChars) as usize - ptr as usize },
-        52usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwYCountChars)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwFillAttribute) as usize - ptr as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwFillAttribute)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dwFlags) as usize - ptr as usize },
-        60usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(dwFlags)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).wShowWindow) as usize - ptr as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(wShowWindow)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).cbReserved2) as usize - ptr as usize },
-        66usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(cbReserved2)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).lpReserved2) as usize - ptr as usize },
-        72usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(lpReserved2)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hStdInput) as usize - ptr as usize },
-        80usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(hStdInput)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hStdOutput) as usize - ptr as usize },
-        88usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(hStdOutput)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hStdError) as usize - ptr as usize },
-        96usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_STARTUPINFOW),
-            "::",
-            stringify!(hStdError)
-        )
-    );
-}
 pub type STARTUPINFOW = _STARTUPINFOW;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -411,102 +76,12 @@ pub struct _wkeRect {
     pub w: ::std::os::raw::c_int,
     pub h: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout__wkeRect() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeRect> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeRect>(),
-        16usize,
-        concat!("Size of: ", stringify!(_wkeRect))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeRect>(),
-        4usize,
-        concat!("Alignment of ", stringify!(_wkeRect))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeRect),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeRect),
-            "::",
-            stringify!(y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).w) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeRect),
-            "::",
-            stringify!(w)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).h) as usize - ptr as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeRect),
-            "::",
-            stringify!(h)
-        )
-    );
-}
 pub type wkeRect = _wkeRect;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _wkePoint {
     pub x: ::std::os::raw::c_int,
     pub y: ::std::os::raw::c_int,
-}
-#[test]
-fn bindgen_test_layout__wkePoint() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkePoint> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkePoint>(),
-        8usize,
-        concat!("Size of: ", stringify!(_wkePoint))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkePoint>(),
-        4usize,
-        concat!("Alignment of ", stringify!(_wkePoint))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePoint),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePoint),
-            "::",
-            stringify!(y)
-        )
-    );
 }
 pub type wkePoint = _wkePoint;
 pub type utf8 = ::std::os::raw::c_char;
@@ -542,13 +117,27 @@ pub struct _tabblinkWebURLRequestPtr {
     _unused: [u8; 0],
 }
 pub type blinkWebURLRequestPtr = *mut _tabblinkWebURLRequestPtr;
-pub const _wkeProxyType_WKE_PROXY_NONE: _wkeProxyType = 0;
-pub const _wkeProxyType_WKE_PROXY_HTTP: _wkeProxyType = 1;
-pub const _wkeProxyType_WKE_PROXY_SOCKS4: _wkeProxyType = 2;
-pub const _wkeProxyType_WKE_PROXY_SOCKS4A: _wkeProxyType = 3;
-pub const _wkeProxyType_WKE_PROXY_SOCKS5: _wkeProxyType = 4;
-pub const _wkeProxyType_WKE_PROXY_SOCKS5HOSTNAME: _wkeProxyType = 5;
-pub type _wkeProxyType = ::std::os::raw::c_int;
+impl _wkeProxyType {
+    pub const WKE_PROXY_NONE: _wkeProxyType = _wkeProxyType(0);
+}
+impl _wkeProxyType {
+    pub const WKE_PROXY_HTTP: _wkeProxyType = _wkeProxyType(1);
+}
+impl _wkeProxyType {
+    pub const WKE_PROXY_SOCKS4: _wkeProxyType = _wkeProxyType(2);
+}
+impl _wkeProxyType {
+    pub const WKE_PROXY_SOCKS4A: _wkeProxyType = _wkeProxyType(3);
+}
+impl _wkeProxyType {
+    pub const WKE_PROXY_SOCKS5: _wkeProxyType = _wkeProxyType(4);
+}
+impl _wkeProxyType {
+    pub const WKE_PROXY_SOCKS5HOSTNAME: _wkeProxyType = _wkeProxyType(5);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeProxyType(pub ::std::os::raw::c_int);
 pub use self::_wkeProxyType as wkeProxyType;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -559,71 +148,6 @@ pub struct _wkeProxy {
     pub username: [::std::os::raw::c_char; 50usize],
     pub password: [::std::os::raw::c_char; 50usize],
 }
-#[test]
-fn bindgen_test_layout__wkeProxy() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeProxy> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeProxy>(),
-        208usize,
-        concat!("Size of: ", stringify!(_wkeProxy))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeProxy>(),
-        4usize,
-        concat!("Alignment of ", stringify!(_wkeProxy))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeProxy),
-            "::",
-            stringify!(type_)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).hostname) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeProxy),
-            "::",
-            stringify!(hostname)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).port) as usize - ptr as usize },
-        104usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeProxy),
-            "::",
-            stringify!(port)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).username) as usize - ptr as usize },
-        106usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeProxy),
-            "::",
-            stringify!(username)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).password) as usize - ptr as usize },
-        156usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeProxy),
-            "::",
-            stringify!(password)
-        )
-    );
-}
 pub type wkeProxy = _wkeProxy;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -632,51 +156,6 @@ pub struct _wkeSettings {
     pub mask: ::std::os::raw::c_uint,
     pub extension: *const ::std::os::raw::c_char,
 }
-#[test]
-fn bindgen_test_layout__wkeSettings() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeSettings> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeSettings>(),
-        224usize,
-        concat!("Size of: ", stringify!(_wkeSettings))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeSettings>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeSettings))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).proxy) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeSettings),
-            "::",
-            stringify!(proxy)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).mask) as usize - ptr as usize },
-        208usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeSettings),
-            "::",
-            stringify!(mask)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).extension) as usize - ptr as usize },
-        216usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeSettings),
-            "::",
-            stringify!(extension)
-        )
-    );
-}
 pub type wkeSettings = _wkeSettings;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -684,56 +163,47 @@ pub struct _wkeViewSettings {
     pub size: ::std::os::raw::c_int,
     pub bgColor: ::std::os::raw::c_uint,
 }
-#[test]
-fn bindgen_test_layout__wkeViewSettings() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeViewSettings> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeViewSettings>(),
-        8usize,
-        concat!("Size of: ", stringify!(_wkeViewSettings))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeViewSettings>(),
-        4usize,
-        concat!("Alignment of ", stringify!(_wkeViewSettings))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeViewSettings),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).bgColor) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeViewSettings),
-            "::",
-            stringify!(bgColor)
-        )
-    );
-}
 pub type wkeViewSettings = _wkeViewSettings;
 pub type wkeWebFrameHandle = *mut ::std::os::raw::c_void;
-pub const _wkeMenuItemId_kWkeMenuSelectedAllId: _wkeMenuItemId = 2;
-pub const _wkeMenuItemId_kWkeMenuSelectedTextId: _wkeMenuItemId = 4;
-pub const _wkeMenuItemId_kWkeMenuUndoId: _wkeMenuItemId = 8;
-pub const _wkeMenuItemId_kWkeMenuCopyImageId: _wkeMenuItemId = 16;
-pub const _wkeMenuItemId_kWkeMenuInspectElementAtId: _wkeMenuItemId = 32;
-pub const _wkeMenuItemId_kWkeMenuCutId: _wkeMenuItemId = 64;
-pub const _wkeMenuItemId_kWkeMenuPasteId: _wkeMenuItemId = 128;
-pub const _wkeMenuItemId_kWkeMenuPrintId: _wkeMenuItemId = 256;
-pub const _wkeMenuItemId_kWkeMenuGoForwardId: _wkeMenuItemId = 512;
-pub const _wkeMenuItemId_kWkeMenuGoBackId: _wkeMenuItemId = 1024;
-pub const _wkeMenuItemId_kWkeMenuReloadId: _wkeMenuItemId = 2048;
-pub const _wkeMenuItemId_kWkeMenuSaveImageId: _wkeMenuItemId = 4096;
-pub type _wkeMenuItemId = ::std::os::raw::c_int;
+impl _wkeMenuItemId {
+    pub const kWkeMenuSelectedAllId: _wkeMenuItemId = _wkeMenuItemId(2);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuSelectedTextId: _wkeMenuItemId = _wkeMenuItemId(4);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuUndoId: _wkeMenuItemId = _wkeMenuItemId(8);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuCopyImageId: _wkeMenuItemId = _wkeMenuItemId(16);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuInspectElementAtId: _wkeMenuItemId = _wkeMenuItemId(32);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuCutId: _wkeMenuItemId = _wkeMenuItemId(64);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuPasteId: _wkeMenuItemId = _wkeMenuItemId(128);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuPrintId: _wkeMenuItemId = _wkeMenuItemId(256);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuGoForwardId: _wkeMenuItemId = _wkeMenuItemId(512);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuGoBackId: _wkeMenuItemId = _wkeMenuItemId(1024);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuReloadId: _wkeMenuItemId = _wkeMenuItemId(2048);
+}
+impl _wkeMenuItemId {
+    pub const kWkeMenuSaveImageId: _wkeMenuItemId = _wkeMenuItemId(4096);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeMenuItemId(pub ::std::os::raw::c_int);
 pub use self::_wkeMenuItemId as wkeMenuItemId;
 pub type FILE_OPEN_ = ::std::option::Option<
     unsafe extern "C" fn(path: *const ::std::os::raw::c_char) -> *mut ::std::os::raw::c_void,
@@ -773,41 +243,6 @@ pub struct _wkeClientHandler {
     pub onTitleChanged: ON_TITLE_CHANGED,
     pub onURLChanged: ON_URL_CHANGED,
 }
-#[test]
-fn bindgen_test_layout__wkeClientHandler() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeClientHandler> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeClientHandler>(),
-        16usize,
-        concat!("Size of: ", stringify!(_wkeClientHandler))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeClientHandler>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeClientHandler))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).onTitleChanged) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeClientHandler),
-            "::",
-            stringify!(onTitleChanged)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).onURLChanged) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeClientHandler),
-            "::",
-            stringify!(onURLChanged)
-        )
-    );
-}
 pub type wkeClientHandler = _wkeClientHandler;
 pub type wkeCookieVisitor = ::std::option::Option<
     unsafe extern "C" fn(
@@ -821,19 +256,43 @@ pub type wkeCookieVisitor = ::std::option::Option<
         expires: *mut ::std::os::raw::c_int,
     ) -> bool,
 >;
-pub const _wkeCookieCommand_wkeCookieCommandClearAllCookies: _wkeCookieCommand = 0;
-pub const _wkeCookieCommand_wkeCookieCommandClearSessionCookies: _wkeCookieCommand = 1;
-pub const _wkeCookieCommand_wkeCookieCommandFlushCookiesToFile: _wkeCookieCommand = 2;
-pub const _wkeCookieCommand_wkeCookieCommandReloadCookiesFromFile: _wkeCookieCommand = 3;
-pub type _wkeCookieCommand = ::std::os::raw::c_int;
+impl _wkeCookieCommand {
+    pub const wkeCookieCommandClearAllCookies: _wkeCookieCommand = _wkeCookieCommand(0);
+}
+impl _wkeCookieCommand {
+    pub const wkeCookieCommandClearSessionCookies: _wkeCookieCommand = _wkeCookieCommand(1);
+}
+impl _wkeCookieCommand {
+    pub const wkeCookieCommandFlushCookiesToFile: _wkeCookieCommand = _wkeCookieCommand(2);
+}
+impl _wkeCookieCommand {
+    pub const wkeCookieCommandReloadCookiesFromFile: _wkeCookieCommand = _wkeCookieCommand(3);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeCookieCommand(pub ::std::os::raw::c_int);
 pub use self::_wkeCookieCommand as wkeCookieCommand;
-pub const _wkeNavigationType_WKE_NAVIGATION_TYPE_LINKCLICK: _wkeNavigationType = 0;
-pub const _wkeNavigationType_WKE_NAVIGATION_TYPE_FORMSUBMITTE: _wkeNavigationType = 1;
-pub const _wkeNavigationType_WKE_NAVIGATION_TYPE_BACKFORWARD: _wkeNavigationType = 2;
-pub const _wkeNavigationType_WKE_NAVIGATION_TYPE_RELOAD: _wkeNavigationType = 3;
-pub const _wkeNavigationType_WKE_NAVIGATION_TYPE_FORMRESUBMITT: _wkeNavigationType = 4;
-pub const _wkeNavigationType_WKE_NAVIGATION_TYPE_OTHER: _wkeNavigationType = 5;
-pub type _wkeNavigationType = ::std::os::raw::c_int;
+impl _wkeNavigationType {
+    pub const WKE_NAVIGATION_TYPE_LINKCLICK: _wkeNavigationType = _wkeNavigationType(0);
+}
+impl _wkeNavigationType {
+    pub const WKE_NAVIGATION_TYPE_FORMSUBMITTE: _wkeNavigationType = _wkeNavigationType(1);
+}
+impl _wkeNavigationType {
+    pub const WKE_NAVIGATION_TYPE_BACKFORWARD: _wkeNavigationType = _wkeNavigationType(2);
+}
+impl _wkeNavigationType {
+    pub const WKE_NAVIGATION_TYPE_RELOAD: _wkeNavigationType = _wkeNavigationType(3);
+}
+impl _wkeNavigationType {
+    pub const WKE_NAVIGATION_TYPE_FORMRESUBMITT: _wkeNavigationType = _wkeNavigationType(4);
+}
+impl _wkeNavigationType {
+    pub const WKE_NAVIGATION_TYPE_OTHER: _wkeNavigationType = _wkeNavigationType(5);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeNavigationType(pub ::std::os::raw::c_int);
 pub use self::_wkeNavigationType as wkeNavigationType;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -850,131 +309,6 @@ pub struct _wkeWindowFeatures {
     pub resizable: bool,
     pub fullscreen: bool,
 }
-#[test]
-fn bindgen_test_layout__wkeWindowFeatures() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeWindowFeatures> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeWindowFeatures>(),
-        24usize,
-        concat!("Size of: ", stringify!(_wkeWindowFeatures))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeWindowFeatures>(),
-        4usize,
-        concat!("Alignment of ", stringify!(_wkeWindowFeatures))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).menuBarVisible) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(menuBarVisible)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).statusBarVisible) as usize - ptr as usize },
-        17usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(statusBarVisible)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).toolBarVisible) as usize - ptr as usize },
-        18usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(toolBarVisible)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).locationBarVisible) as usize - ptr as usize },
-        19usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(locationBarVisible)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scrollbarsVisible) as usize - ptr as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(scrollbarsVisible)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).resizable) as usize - ptr as usize },
-        21usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(resizable)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fullscreen) as usize - ptr as usize },
-        22usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowFeatures),
-            "::",
-            stringify!(fullscreen)
-        )
-    );
-}
 pub type wkeWindowFeatures = _wkeWindowFeatures;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -982,51 +316,6 @@ pub struct _wkeMemBuf {
     pub unuse: ::std::os::raw::c_int,
     pub data: *mut ::std::os::raw::c_void,
     pub length: usize,
-}
-#[test]
-fn bindgen_test_layout__wkeMemBuf() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeMemBuf> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeMemBuf>(),
-        24usize,
-        concat!("Size of: ", stringify!(_wkeMemBuf))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeMemBuf>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeMemBuf))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).unuse) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeMemBuf),
-            "::",
-            stringify!(unuse)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeMemBuf),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).length) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeMemBuf),
-            "::",
-            stringify!(length)
-        )
-    );
 }
 pub type wkeMemBuf = _wkeMemBuf;
 #[repr(C)]
@@ -1052,215 +341,109 @@ pub struct _wkeWebDragData_Item {
     pub fileSystemFileSize: ::std::os::raw::c_longlong,
     pub baseURL: *mut wkeMemBuf,
 }
-pub const _wkeWebDragData_Item_wkeStorageType_StorageTypeString:
-    _wkeWebDragData_Item_wkeStorageType = 0;
-pub const _wkeWebDragData_Item_wkeStorageType_StorageTypeFilename:
-    _wkeWebDragData_Item_wkeStorageType = 1;
-pub const _wkeWebDragData_Item_wkeStorageType_StorageTypeBinaryData:
-    _wkeWebDragData_Item_wkeStorageType = 2;
-pub const _wkeWebDragData_Item_wkeStorageType_StorageTypeFileSystemFile:
-    _wkeWebDragData_Item_wkeStorageType = 3;
-pub type _wkeWebDragData_Item_wkeStorageType = ::std::os::raw::c_int;
-#[test]
-fn bindgen_test_layout__wkeWebDragData_Item() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeWebDragData_Item> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeWebDragData_Item>(),
-        80usize,
-        concat!("Size of: ", stringify!(_wkeWebDragData_Item))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeWebDragData_Item>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeWebDragData_Item))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).storageType) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(storageType)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).stringType) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(stringType)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).stringData) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(stringData)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).filenameData) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(filenameData)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).displayNameData) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(displayNameData)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).binaryData) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(binaryData)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).title) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(title)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fileSystemURL) as usize - ptr as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(fileSystemURL)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fileSystemFileSize) as usize - ptr as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(fileSystemFileSize)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).baseURL) as usize - ptr as usize },
-        72usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData_Item),
-            "::",
-            stringify!(baseURL)
-        )
-    );
+impl _wkeWebDragData_Item_wkeStorageType {
+    pub const StorageTypeString: _wkeWebDragData_Item_wkeStorageType =
+        _wkeWebDragData_Item_wkeStorageType(0);
 }
-#[test]
-fn bindgen_test_layout__wkeWebDragData() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeWebDragData> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeWebDragData>(),
-        104usize,
-        concat!("Size of: ", stringify!(_wkeWebDragData))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeWebDragData>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeWebDragData))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).m_itemList) as usize - ptr as usize },
-        80usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData),
-            "::",
-            stringify!(m_itemList)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).m_itemListLength) as usize - ptr as usize },
-        88usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData),
-            "::",
-            stringify!(m_itemListLength)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).m_modifierKeyState) as usize - ptr as usize },
-        92usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData),
-            "::",
-            stringify!(m_modifierKeyState)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).m_filesystemId) as usize - ptr as usize },
-        96usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWebDragData),
-            "::",
-            stringify!(m_filesystemId)
-        )
-    );
+impl _wkeWebDragData_Item_wkeStorageType {
+    pub const StorageTypeFilename: _wkeWebDragData_Item_wkeStorageType =
+        _wkeWebDragData_Item_wkeStorageType(1);
 }
+impl _wkeWebDragData_Item_wkeStorageType {
+    pub const StorageTypeBinaryData: _wkeWebDragData_Item_wkeStorageType =
+        _wkeWebDragData_Item_wkeStorageType(2);
+}
+impl _wkeWebDragData_Item_wkeStorageType {
+    pub const StorageTypeFileSystemFile: _wkeWebDragData_Item_wkeStorageType =
+        _wkeWebDragData_Item_wkeStorageType(3);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeWebDragData_Item_wkeStorageType(pub ::std::os::raw::c_int);
 pub type wkeWebDragData = _wkeWebDragData;
-pub const _wkeWebDragOperation_wkeWebDragOperationNone: _wkeWebDragOperation = 0;
-pub const _wkeWebDragOperation_wkeWebDragOperationCopy: _wkeWebDragOperation = 1;
-pub const _wkeWebDragOperation_wkeWebDragOperationLink: _wkeWebDragOperation = 2;
-pub const _wkeWebDragOperation_wkeWebDragOperationGeneric: _wkeWebDragOperation = 4;
-pub const _wkeWebDragOperation_wkeWebDragOperationPrivate: _wkeWebDragOperation = 8;
-pub const _wkeWebDragOperation_wkeWebDragOperationMove: _wkeWebDragOperation = 16;
-pub const _wkeWebDragOperation_wkeWebDragOperationDelete: _wkeWebDragOperation = 32;
-pub const _wkeWebDragOperation_wkeWebDragOperationEvery: _wkeWebDragOperation = -1;
-pub type _wkeWebDragOperation = ::std::os::raw::c_int;
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationNone: _wkeWebDragOperation = _wkeWebDragOperation(0);
+}
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationCopy: _wkeWebDragOperation = _wkeWebDragOperation(1);
+}
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationLink: _wkeWebDragOperation = _wkeWebDragOperation(2);
+}
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationGeneric: _wkeWebDragOperation = _wkeWebDragOperation(4);
+}
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationPrivate: _wkeWebDragOperation = _wkeWebDragOperation(8);
+}
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationMove: _wkeWebDragOperation = _wkeWebDragOperation(16);
+}
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationDelete: _wkeWebDragOperation = _wkeWebDragOperation(32);
+}
+impl _wkeWebDragOperation {
+    pub const wkeWebDragOperationEvery: _wkeWebDragOperation = _wkeWebDragOperation(-1);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeWebDragOperation(pub ::std::os::raw::c_int);
 pub use self::_wkeWebDragOperation as wkeWebDragOperation;
 pub use self::wkeWebDragOperation as wkeWebDragOperationsMask;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_MAIN_FRAME: _wkeResourceType = 0;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_SUB_FRAME: _wkeResourceType = 1;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_STYLESHEET: _wkeResourceType = 2;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_SCRIPT: _wkeResourceType = 3;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_IMAGE: _wkeResourceType = 4;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_FONT_RESOURCE: _wkeResourceType = 5;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_SUB_RESOURCE: _wkeResourceType = 6;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_OBJECT: _wkeResourceType = 7;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_MEDIA: _wkeResourceType = 8;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_WORKER: _wkeResourceType = 9;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_SHARED_WORKER: _wkeResourceType = 10;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_PREFETCH: _wkeResourceType = 11;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_FAVICON: _wkeResourceType = 12;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_XHR: _wkeResourceType = 13;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_PING: _wkeResourceType = 14;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_SERVICE_WORKER: _wkeResourceType = 15;
-pub const _wkeResourceType_WKE_RESOURCE_TYPE_LAST_TYPE: _wkeResourceType = 16;
-pub type _wkeResourceType = ::std::os::raw::c_int;
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_MAIN_FRAME: _wkeResourceType = _wkeResourceType(0);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_SUB_FRAME: _wkeResourceType = _wkeResourceType(1);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_STYLESHEET: _wkeResourceType = _wkeResourceType(2);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_SCRIPT: _wkeResourceType = _wkeResourceType(3);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_IMAGE: _wkeResourceType = _wkeResourceType(4);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_FONT_RESOURCE: _wkeResourceType = _wkeResourceType(5);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_SUB_RESOURCE: _wkeResourceType = _wkeResourceType(6);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_OBJECT: _wkeResourceType = _wkeResourceType(7);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_MEDIA: _wkeResourceType = _wkeResourceType(8);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_WORKER: _wkeResourceType = _wkeResourceType(9);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_SHARED_WORKER: _wkeResourceType = _wkeResourceType(10);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_PREFETCH: _wkeResourceType = _wkeResourceType(11);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_FAVICON: _wkeResourceType = _wkeResourceType(12);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_XHR: _wkeResourceType = _wkeResourceType(13);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_PING: _wkeResourceType = _wkeResourceType(14);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_SERVICE_WORKER: _wkeResourceType = _wkeResourceType(15);
+}
+impl _wkeResourceType {
+    pub const WKE_RESOURCE_TYPE_LAST_TYPE: _wkeResourceType = _wkeResourceType(16);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeResourceType(pub ::std::os::raw::c_int);
 pub use self::_wkeResourceType as wkeResourceType;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1273,96 +456,16 @@ pub struct _wkeWillSendRequestInfo {
     pub referrer: wkeString,
     pub headers: *mut ::std::os::raw::c_void,
 }
-#[test]
-fn bindgen_test_layout__wkeWillSendRequestInfo() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeWillSendRequestInfo> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeWillSendRequestInfo>(),
-        48usize,
-        concat!("Size of: ", stringify!(_wkeWillSendRequestInfo))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeWillSendRequestInfo>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeWillSendRequestInfo))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).url) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWillSendRequestInfo),
-            "::",
-            stringify!(url)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).newUrl) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWillSendRequestInfo),
-            "::",
-            stringify!(newUrl)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).resourceType) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWillSendRequestInfo),
-            "::",
-            stringify!(resourceType)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).httpResponseCode) as usize - ptr as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWillSendRequestInfo),
-            "::",
-            stringify!(httpResponseCode)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).method) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWillSendRequestInfo),
-            "::",
-            stringify!(method)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).referrer) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWillSendRequestInfo),
-            "::",
-            stringify!(referrer)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).headers) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWillSendRequestInfo),
-            "::",
-            stringify!(headers)
-        )
-    );
-}
 pub type wkeWillSendRequestInfo = _wkeWillSendRequestInfo;
-pub const _wkeHttBodyElementType_wkeHttBodyElementTypeData: _wkeHttBodyElementType = 0;
-pub const _wkeHttBodyElementType_wkeHttBodyElementTypeFile: _wkeHttBodyElementType = 1;
-pub type _wkeHttBodyElementType = ::std::os::raw::c_int;
+impl _wkeHttBodyElementType {
+    pub const wkeHttBodyElementTypeData: _wkeHttBodyElementType = _wkeHttBodyElementType(0);
+}
+impl _wkeHttBodyElementType {
+    pub const wkeHttBodyElementTypeFile: _wkeHttBodyElementType = _wkeHttBodyElementType(1);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeHttBodyElementType(pub ::std::os::raw::c_int);
 pub use self::_wkeHttBodyElementType as wkeHttBodyElementType;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1374,81 +477,6 @@ pub struct _wkePostBodyElement {
     pub fileStart: ::std::os::raw::c_longlong,
     pub fileLength: ::std::os::raw::c_longlong,
 }
-#[test]
-fn bindgen_test_layout__wkePostBodyElement() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkePostBodyElement> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkePostBodyElement>(),
-        40usize,
-        concat!("Size of: ", stringify!(_wkePostBodyElement))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkePostBodyElement>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkePostBodyElement))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElement),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElement),
-            "::",
-            stringify!(type_)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElement),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).filePath) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElement),
-            "::",
-            stringify!(filePath)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fileStart) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElement),
-            "::",
-            stringify!(fileStart)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fileLength) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElement),
-            "::",
-            stringify!(fileLength)
-        )
-    );
-}
 pub type wkePostBodyElement = _wkePostBodyElement;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1458,61 +486,6 @@ pub struct _wkePostBodyElements {
     pub elementSize: usize,
     pub isDirty: bool,
 }
-#[test]
-fn bindgen_test_layout__wkePostBodyElements() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkePostBodyElements> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkePostBodyElements>(),
-        32usize,
-        concat!("Size of: ", stringify!(_wkePostBodyElements))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkePostBodyElements>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkePostBodyElements))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElements),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).element) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElements),
-            "::",
-            stringify!(element)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).elementSize) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElements),
-            "::",
-            stringify!(elementSize)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).isDirty) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePostBodyElements),
-            "::",
-            stringify!(isDirty)
-        )
-    );
-}
 pub type wkePostBodyElements = _wkePostBodyElements;
 pub type wkeNetJob = *mut ::std::os::raw::c_void;
 #[repr(C)]
@@ -1520,41 +493,6 @@ pub type wkeNetJob = *mut ::std::os::raw::c_void;
 pub struct _wkeSlist {
     pub data: *mut ::std::os::raw::c_char,
     pub next: *mut _wkeSlist,
-}
-#[test]
-fn bindgen_test_layout__wkeSlist() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeSlist> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeSlist>(),
-        16usize,
-        concat!("Size of: ", stringify!(_wkeSlist))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeSlist>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeSlist))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeSlist),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).next) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeSlist),
-            "::",
-            stringify!(next)
-        )
-    );
 }
 pub type wkeSlist = _wkeSlist;
 #[repr(C)]
@@ -1567,87 +505,22 @@ pub struct _wkeTempCallbackInfo {
     pub postBody: *mut wkePostBodyElements,
     pub job: wkeNetJob,
 }
-#[test]
-fn bindgen_test_layout__wkeTempCallbackInfo() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeTempCallbackInfo> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeTempCallbackInfo>(),
-        48usize,
-        concat!("Size of: ", stringify!(_wkeTempCallbackInfo))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeTempCallbackInfo>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeTempCallbackInfo))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeTempCallbackInfo),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).frame) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeTempCallbackInfo),
-            "::",
-            stringify!(frame)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).willSendRequestInfo) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeTempCallbackInfo),
-            "::",
-            stringify!(willSendRequestInfo)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).url) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeTempCallbackInfo),
-            "::",
-            stringify!(url)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).postBody) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeTempCallbackInfo),
-            "::",
-            stringify!(postBody)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).job) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeTempCallbackInfo),
-            "::",
-            stringify!(job)
-        )
-    );
-}
 pub type wkeTempCallbackInfo = _wkeTempCallbackInfo;
-pub const _wkeRequestType_kWkeRequestTypeInvalidation: _wkeRequestType = 0;
-pub const _wkeRequestType_kWkeRequestTypeGet: _wkeRequestType = 1;
-pub const _wkeRequestType_kWkeRequestTypePost: _wkeRequestType = 2;
-pub const _wkeRequestType_kWkeRequestTypePut: _wkeRequestType = 3;
-pub type _wkeRequestType = ::std::os::raw::c_int;
+impl _wkeRequestType {
+    pub const kWkeRequestTypeInvalidation: _wkeRequestType = _wkeRequestType(0);
+}
+impl _wkeRequestType {
+    pub const kWkeRequestTypeGet: _wkeRequestType = _wkeRequestType(1);
+}
+impl _wkeRequestType {
+    pub const kWkeRequestTypePost: _wkeRequestType = _wkeRequestType(2);
+}
+impl _wkeRequestType {
+    pub const kWkeRequestTypePut: _wkeRequestType = _wkeRequestType(3);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeRequestType(pub ::std::os::raw::c_int);
 pub use self::_wkeRequestType as wkeRequestType;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1655,51 +528,6 @@ pub struct _wkePdfDatas {
     pub count: ::std::os::raw::c_int,
     pub sizes: *mut usize,
     pub datas: *mut *const ::std::os::raw::c_void,
-}
-#[test]
-fn bindgen_test_layout__wkePdfDatas() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkePdfDatas> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkePdfDatas>(),
-        24usize,
-        concat!("Size of: ", stringify!(_wkePdfDatas))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkePdfDatas>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkePdfDatas))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePdfDatas),
-            "::",
-            stringify!(count)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sizes) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePdfDatas),
-            "::",
-            stringify!(sizes)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).datas) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePdfDatas),
-            "::",
-            stringify!(datas)
-        )
-    );
 }
 pub type wkePdfDatas = _wkePdfDatas;
 #[repr(C)]
@@ -1718,141 +546,6 @@ pub struct _wkePrintSettings {
     pub isLandscape: BOOL,
     pub isPrintToMultiPage: BOOL,
 }
-#[test]
-fn bindgen_test_layout__wkePrintSettings() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkePrintSettings> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkePrintSettings>(),
-        48usize,
-        concat!("Size of: ", stringify!(_wkePrintSettings))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkePrintSettings>(),
-        4usize,
-        concat!("Alignment of ", stringify!(_wkePrintSettings))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).structSize) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(structSize)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).dpi) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(dpi)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).marginTop) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(marginTop)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).marginBottom) as usize - ptr as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(marginBottom)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).marginLeft) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(marginLeft)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).marginRight) as usize - ptr as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(marginRight)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).isPrintPageHeadAndFooter) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(isPrintPageHeadAndFooter)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).isPrintBackgroud) as usize - ptr as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(isPrintBackgroud)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).isLandscape) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(isLandscape)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).isPrintToMultiPage) as usize - ptr as usize },
-        44usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkePrintSettings),
-            "::",
-            stringify!(isPrintToMultiPage)
-        )
-    );
-}
 pub type wkePrintSettings = _wkePrintSettings;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1860,52 +553,6 @@ pub struct _wkeScreenshotSettings {
     pub structSize: ::std::os::raw::c_int,
     pub width: ::std::os::raw::c_int,
     pub height: ::std::os::raw::c_int,
-}
-#[test]
-fn bindgen_test_layout__wkeScreenshotSettings() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeScreenshotSettings> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeScreenshotSettings>(),
-        12usize,
-        concat!("Size of: ", stringify!(_wkeScreenshotSettings))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeScreenshotSettings>(),
-        4usize,
-        concat!("Alignment of ", stringify!(_wkeScreenshotSettings))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).structSize) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeScreenshotSettings),
-            "::",
-            stringify!(structSize)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeScreenshotSettings),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeScreenshotSettings),
-            "::",
-            stringify!(height)
-        )
-    );
 }
 pub type wkeScreenshotSettings = _wkeScreenshotSettings;
 pub type wkeCaretChangedCallback = ::std::option::Option<
@@ -2042,61 +689,6 @@ pub struct _wkeMediaLoadInfo {
     pub height: ::std::os::raw::c_int,
     pub duration: f64,
 }
-#[test]
-fn bindgen_test_layout__wkeMediaLoadInfo() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeMediaLoadInfo> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeMediaLoadInfo>(),
-        24usize,
-        concat!("Size of: ", stringify!(_wkeMediaLoadInfo))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeMediaLoadInfo>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeMediaLoadInfo))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeMediaLoadInfo),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeMediaLoadInfo),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeMediaLoadInfo),
-            "::",
-            stringify!(height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).duration) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeMediaLoadInfo),
-            "::",
-            stringify!(duration)
-        )
-    );
-}
 pub type wkeMediaLoadInfo = _wkeMediaLoadInfo;
 pub type wkeWillMediaLoadCallback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2126,14 +718,30 @@ pub type wkeUiThreadPostTaskCallback = ::std::option::Option<
         param: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int,
 >;
-pub const _wkeOtherLoadType_WKE_DID_START_LOADING: _wkeOtherLoadType = 0;
-pub const _wkeOtherLoadType_WKE_DID_STOP_LOADING: _wkeOtherLoadType = 1;
-pub const _wkeOtherLoadType_WKE_DID_NAVIGATE: _wkeOtherLoadType = 2;
-pub const _wkeOtherLoadType_WKE_DID_NAVIGATE_IN_PAGE: _wkeOtherLoadType = 3;
-pub const _wkeOtherLoadType_WKE_DID_GET_RESPONSE_DETAILS: _wkeOtherLoadType = 4;
-pub const _wkeOtherLoadType_WKE_DID_GET_REDIRECT_REQUEST: _wkeOtherLoadType = 5;
-pub const _wkeOtherLoadType_WKE_DID_POST_REQUEST: _wkeOtherLoadType = 6;
-pub type _wkeOtherLoadType = ::std::os::raw::c_int;
+impl _wkeOtherLoadType {
+    pub const WKE_DID_START_LOADING: _wkeOtherLoadType = _wkeOtherLoadType(0);
+}
+impl _wkeOtherLoadType {
+    pub const WKE_DID_STOP_LOADING: _wkeOtherLoadType = _wkeOtherLoadType(1);
+}
+impl _wkeOtherLoadType {
+    pub const WKE_DID_NAVIGATE: _wkeOtherLoadType = _wkeOtherLoadType(2);
+}
+impl _wkeOtherLoadType {
+    pub const WKE_DID_NAVIGATE_IN_PAGE: _wkeOtherLoadType = _wkeOtherLoadType(3);
+}
+impl _wkeOtherLoadType {
+    pub const WKE_DID_GET_RESPONSE_DETAILS: _wkeOtherLoadType = _wkeOtherLoadType(4);
+}
+impl _wkeOtherLoadType {
+    pub const WKE_DID_GET_REDIRECT_REQUEST: _wkeOtherLoadType = _wkeOtherLoadType(5);
+}
+impl _wkeOtherLoadType {
+    pub const WKE_DID_POST_REQUEST: _wkeOtherLoadType = _wkeOtherLoadType(6);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeOtherLoadType(pub ::std::os::raw::c_int);
 pub use self::_wkeOtherLoadType as wkeOtherLoadType;
 pub type wkeOnOtherLoadCallback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2143,15 +751,25 @@ pub type wkeOnOtherLoadCallback = ::std::option::Option<
         info: *mut wkeTempCallbackInfo,
     ),
 >;
-pub const _wkeOnContextMenuItemClickType_kWkeContextMenuItemClickTypePrint:
-    _wkeOnContextMenuItemClickType = 1;
-pub type _wkeOnContextMenuItemClickType = ::std::os::raw::c_int;
+impl _wkeOnContextMenuItemClickType {
+    pub const kWkeContextMenuItemClickTypePrint: _wkeOnContextMenuItemClickType =
+        _wkeOnContextMenuItemClickType(1);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeOnContextMenuItemClickType(pub ::std::os::raw::c_int);
 pub use self::_wkeOnContextMenuItemClickType as wkeOnContextMenuItemClickType;
-pub const _wkeOnContextMenuItemClickStep_kWkeContextMenuItemClickStepShow:
-    _wkeOnContextMenuItemClickStep = 1;
-pub const _wkeOnContextMenuItemClickStep_kWkeContextMenuItemClickStepClick:
-    _wkeOnContextMenuItemClickStep = 2;
-pub type _wkeOnContextMenuItemClickStep = ::std::os::raw::c_int;
+impl _wkeOnContextMenuItemClickStep {
+    pub const kWkeContextMenuItemClickStepShow: _wkeOnContextMenuItemClickStep =
+        _wkeOnContextMenuItemClickStep(1);
+}
+impl _wkeOnContextMenuItemClickStep {
+    pub const kWkeContextMenuItemClickStepClick: _wkeOnContextMenuItemClickStep =
+        _wkeOnContextMenuItemClickStep(2);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeOnContextMenuItemClickStep(pub ::std::os::raw::c_int);
 pub use self::_wkeOnContextMenuItemClickStep as wkeOnContextMenuItemClickStep;
 pub type wkeOnContextMenuItemClickCallback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2163,14 +781,28 @@ pub type wkeOnContextMenuItemClickCallback = ::std::option::Option<
         info: *mut ::std::os::raw::c_void,
     ) -> bool,
 >;
-pub const _wkeLoadingResult_WKE_LOADING_SUCCEEDED: _wkeLoadingResult = 0;
-pub const _wkeLoadingResult_WKE_LOADING_FAILED: _wkeLoadingResult = 1;
-pub const _wkeLoadingResult_WKE_LOADING_CANCELED: _wkeLoadingResult = 2;
-pub type _wkeLoadingResult = ::std::os::raw::c_int;
+impl _wkeLoadingResult {
+    pub const WKE_LOADING_SUCCEEDED: _wkeLoadingResult = _wkeLoadingResult(0);
+}
+impl _wkeLoadingResult {
+    pub const WKE_LOADING_FAILED: _wkeLoadingResult = _wkeLoadingResult(1);
+}
+impl _wkeLoadingResult {
+    pub const WKE_LOADING_CANCELED: _wkeLoadingResult = _wkeLoadingResult(2);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeLoadingResult(pub ::std::os::raw::c_int);
 pub use self::_wkeLoadingResult as wkeLoadingResult;
-pub const _wkeDownloadOpt_kWkeDownloadOptCancel: _wkeDownloadOpt = 0;
-pub const _wkeDownloadOpt_kWkeDownloadOptCacheData: _wkeDownloadOpt = 1;
-pub type _wkeDownloadOpt = ::std::os::raw::c_int;
+impl _wkeDownloadOpt {
+    pub const kWkeDownloadOptCancel: _wkeDownloadOpt = _wkeDownloadOpt(0);
+}
+impl _wkeDownloadOpt {
+    pub const kWkeDownloadOptCacheData: _wkeDownloadOpt = _wkeDownloadOpt(1);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeDownloadOpt(pub ::std::os::raw::c_int);
 pub use self::_wkeDownloadOpt as wkeDownloadOpt;
 pub type wkeNetJobDataRecvCallback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2194,51 +826,6 @@ pub struct _wkeNetJobDataBind {
     pub recvCallback: wkeNetJobDataRecvCallback,
     pub finishCallback: wkeNetJobDataFinishCallback,
 }
-#[test]
-fn bindgen_test_layout__wkeNetJobDataBind() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeNetJobDataBind> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeNetJobDataBind>(),
-        24usize,
-        concat!("Size of: ", stringify!(_wkeNetJobDataBind))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeNetJobDataBind>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeNetJobDataBind))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).param) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeNetJobDataBind),
-            "::",
-            stringify!(param)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).recvCallback) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeNetJobDataBind),
-            "::",
-            stringify!(recvCallback)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).finishCallback) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeNetJobDataBind),
-            "::",
-            stringify!(finishCallback)
-        )
-    );
-}
 pub type wkeNetJobDataBind = _wkeNetJobDataBind;
 pub type wkePopupDialogSaveNameCallback = ::std::option::Option<
     unsafe extern "C" fn(ptr: *mut ::std::os::raw::c_void, filePath: *const wchar_t),
@@ -2251,113 +838,43 @@ pub struct _wkeDownloadBind {
     pub finishCallback: wkeNetJobDataFinishCallback,
     pub saveNameCallback: wkePopupDialogSaveNameCallback,
 }
-#[test]
-fn bindgen_test_layout__wkeDownloadBind() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeDownloadBind> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeDownloadBind>(),
-        32usize,
-        concat!("Size of: ", stringify!(_wkeDownloadBind))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeDownloadBind>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeDownloadBind))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).param) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDownloadBind),
-            "::",
-            stringify!(param)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).recvCallback) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDownloadBind),
-            "::",
-            stringify!(recvCallback)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).finishCallback) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDownloadBind),
-            "::",
-            stringify!(finishCallback)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).saveNameCallback) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDownloadBind),
-            "::",
-            stringify!(saveNameCallback)
-        )
-    );
-}
 pub type wkeDownloadBind = _wkeDownloadBind;
-pub const wkeDialogProperties_kWkeDialogPropertiesOpenFile: wkeDialogProperties = 2;
-pub const wkeDialogProperties_kWkeDialogPropertiesOpenDirectory: wkeDialogProperties = 4;
-pub const wkeDialogProperties_kWkeDialogPropertiesMultiSelections: wkeDialogProperties = 8;
-pub const wkeDialogProperties_kWkeDialogPropertiesShowHiddenFiles: wkeDialogProperties = 16;
-pub const wkeDialogProperties_kWkeDialogPropertiesCreateDirectory: wkeDialogProperties = 32;
-pub const wkeDialogProperties_kWkeDialogPropertiesPromptToCreate: wkeDialogProperties = 64;
-pub const wkeDialogProperties_kWkeDialogPropertiesNoResolveAliases: wkeDialogProperties = 128;
-pub const wkeDialogProperties_kWkeDialogPropertiesTreatPackageAsDirectory: wkeDialogProperties =
-    256;
-pub const wkeDialogProperties_kWkeDialogPropertiesDontAddToRecent: wkeDialogProperties = 512;
-pub type wkeDialogProperties = ::std::os::raw::c_int;
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesOpenFile: wkeDialogProperties = wkeDialogProperties(2);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesOpenDirectory: wkeDialogProperties = wkeDialogProperties(4);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesMultiSelections: wkeDialogProperties = wkeDialogProperties(8);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesShowHiddenFiles: wkeDialogProperties = wkeDialogProperties(16);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesCreateDirectory: wkeDialogProperties = wkeDialogProperties(32);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesPromptToCreate: wkeDialogProperties = wkeDialogProperties(64);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesNoResolveAliases: wkeDialogProperties = wkeDialogProperties(128);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesTreatPackageAsDirectory: wkeDialogProperties =
+        wkeDialogProperties(256);
+}
+impl wkeDialogProperties {
+    pub const kWkeDialogPropertiesDontAddToRecent: wkeDialogProperties = wkeDialogProperties(512);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct wkeDialogProperties(pub ::std::os::raw::c_int);
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _wkeFileFilter {
     pub name: *const utf8,
     pub extensions: *const utf8,
-}
-#[test]
-fn bindgen_test_layout__wkeFileFilter() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeFileFilter> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeFileFilter>(),
-        16usize,
-        concat!("Size of: ", stringify!(_wkeFileFilter))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeFileFilter>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeFileFilter))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).name) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeFileFilter),
-            "::",
-            stringify!(name)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).extensions) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeFileFilter),
-            "::",
-            stringify!(extensions)
-        )
-    );
 }
 pub type wkeFileFilter = _wkeFileFilter;
 #[repr(C)]
@@ -2372,111 +889,6 @@ pub struct _wkeDialogOptions {
     pub prop: wkeDialogProperties,
     pub message: *mut utf8,
     pub securityScopedBookmarks: BOOL,
-}
-#[test]
-fn bindgen_test_layout__wkeDialogOptions() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeDialogOptions> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeDialogOptions>(),
-        64usize,
-        concat!("Size of: ", stringify!(_wkeDialogOptions))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeDialogOptions>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeDialogOptions))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).magic) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(magic)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).title) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(title)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).defaultPath) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(defaultPath)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).buttonLabel) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(buttonLabel)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).filters) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(filters)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).filtersCount) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(filtersCount)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).prop) as usize - ptr as usize },
-        44usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(prop)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).message) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(message)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).securityScopedBookmarks) as usize - ptr as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeDialogOptions),
-            "::",
-            stringify!(securityScopedBookmarks)
-        )
-    );
 }
 pub type wkeDialogOptions = _wkeDialogOptions;
 pub type wkeLoadingFinishCallback = ::std::option::Option<
@@ -2507,14 +919,30 @@ pub type wkeDownload2Callback = ::std::option::Option<
         dataBind: *mut wkeNetJobDataBind,
     ) -> wkeDownloadOpt,
 >;
-pub const _wkeConsoleLevel_wkeLevelDebug: _wkeConsoleLevel = 4;
-pub const _wkeConsoleLevel_wkeLevelLog: _wkeConsoleLevel = 1;
-pub const _wkeConsoleLevel_wkeLevelInfo: _wkeConsoleLevel = 5;
-pub const _wkeConsoleLevel_wkeLevelWarning: _wkeConsoleLevel = 2;
-pub const _wkeConsoleLevel_wkeLevelError: _wkeConsoleLevel = 3;
-pub const _wkeConsoleLevel_wkeLevelRevokedError: _wkeConsoleLevel = 6;
-pub const _wkeConsoleLevel_wkeLevelLast: _wkeConsoleLevel = 5;
-pub type _wkeConsoleLevel = ::std::os::raw::c_int;
+impl _wkeConsoleLevel {
+    pub const wkeLevelDebug: _wkeConsoleLevel = _wkeConsoleLevel(4);
+}
+impl _wkeConsoleLevel {
+    pub const wkeLevelLog: _wkeConsoleLevel = _wkeConsoleLevel(1);
+}
+impl _wkeConsoleLevel {
+    pub const wkeLevelInfo: _wkeConsoleLevel = _wkeConsoleLevel(5);
+}
+impl _wkeConsoleLevel {
+    pub const wkeLevelWarning: _wkeConsoleLevel = _wkeConsoleLevel(2);
+}
+impl _wkeConsoleLevel {
+    pub const wkeLevelError: _wkeConsoleLevel = _wkeConsoleLevel(3);
+}
+impl _wkeConsoleLevel {
+    pub const wkeLevelRevokedError: _wkeConsoleLevel = _wkeConsoleLevel(6);
+}
+impl _wkeConsoleLevel {
+    pub const wkeLevelLast: _wkeConsoleLevel = _wkeConsoleLevel(5);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeConsoleLevel(pub ::std::os::raw::c_int);
 pub use self::_wkeConsoleLevel as wkeConsoleLevel;
 pub type wkeConsoleCallback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2610,72 +1038,6 @@ pub struct _wkeUrlRequestCallbacks {
     pub didFailCallback: wkeOnUrlRequestDidFailCallback,
     pub didFinishLoadingCallback: wkeOnUrlRequestDidFinishLoadingCallback,
 }
-#[test]
-fn bindgen_test_layout__wkeUrlRequestCallbacks() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeUrlRequestCallbacks> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeUrlRequestCallbacks>(),
-        40usize,
-        concat!("Size of: ", stringify!(_wkeUrlRequestCallbacks))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeUrlRequestCallbacks>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeUrlRequestCallbacks))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).willRedirectCallback) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeUrlRequestCallbacks),
-            "::",
-            stringify!(willRedirectCallback)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).didReceiveResponseCallback) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeUrlRequestCallbacks),
-            "::",
-            stringify!(didReceiveResponseCallback)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).didReceiveDataCallback) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeUrlRequestCallbacks),
-            "::",
-            stringify!(didReceiveDataCallback)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).didFailCallback) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeUrlRequestCallbacks),
-            "::",
-            stringify!(didFailCallback)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).didFinishLoadingCallback) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeUrlRequestCallbacks),
-            "::",
-            stringify!(didFinishLoadingCallback)
-        )
-    );
-}
 pub type wkeUrlRequestCallbacks = _wkeUrlRequestCallbacks;
 pub type wkeLoadUrlBeginCallback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2757,10 +1119,18 @@ pub type wkeOnNetGetFaviconCallback = ::std::option::Option<
 >;
 pub type v8ContextPtr = *mut ::std::os::raw::c_void;
 pub type v8Isolate = *mut ::std::os::raw::c_void;
-pub const _wkeWindowType_WKE_WINDOW_TYPE_POPUP: _wkeWindowType = 0;
-pub const _wkeWindowType_WKE_WINDOW_TYPE_TRANSPARENT: _wkeWindowType = 1;
-pub const _wkeWindowType_WKE_WINDOW_TYPE_CONTROL: _wkeWindowType = 2;
-pub type _wkeWindowType = ::std::os::raw::c_int;
+impl _wkeWindowType {
+    pub const WKE_WINDOW_TYPE_POPUP: _wkeWindowType = _wkeWindowType(0);
+}
+impl _wkeWindowType {
+    pub const WKE_WINDOW_TYPE_TRANSPARENT: _wkeWindowType = _wkeWindowType(1);
+}
+impl _wkeWindowType {
+    pub const WKE_WINDOW_TYPE_CONTROL: _wkeWindowType = _wkeWindowType(2);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeWindowType(pub ::std::os::raw::c_int);
 pub use self::_wkeWindowType as wkeWindowType;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2775,111 +1145,6 @@ pub struct _wkeWindowCreateInfo {
     pub height: ::std::os::raw::c_int,
     pub color: COLORREF,
 }
-#[test]
-fn bindgen_test_layout__wkeWindowCreateInfo() {
-    const UNINIT: ::std::mem::MaybeUninit<_wkeWindowCreateInfo> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_wkeWindowCreateInfo>(),
-        48usize,
-        concat!("Size of: ", stringify!(_wkeWindowCreateInfo))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_wkeWindowCreateInfo>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_wkeWindowCreateInfo))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).parent) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(parent)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).style) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(style)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).styleEx) as usize - ptr as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(styleEx)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).color) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_wkeWindowCreateInfo),
-            "::",
-            stringify!(color)
-        )
-    );
-}
 pub type wkeWindowCreateInfo = _wkeWindowCreateInfo;
 pub type wkeWindowClosingCallback = ::std::option::Option<
     unsafe extern "C" fn(webWindow: wkeWebView, param: *mut ::std::os::raw::c_void) -> bool,
@@ -2893,41 +1158,6 @@ pub struct wkeDraggableRegion {
     pub bounds: RECT,
     pub draggable: bool,
 }
-#[test]
-fn bindgen_test_layout_wkeDraggableRegion() {
-    const UNINIT: ::std::mem::MaybeUninit<wkeDraggableRegion> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<wkeDraggableRegion>(),
-        20usize,
-        concat!("Size of: ", stringify!(wkeDraggableRegion))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<wkeDraggableRegion>(),
-        4usize,
-        concat!("Alignment of ", stringify!(wkeDraggableRegion))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).bounds) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(wkeDraggableRegion),
-            "::",
-            stringify!(bounds)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).draggable) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(wkeDraggableRegion),
-            "::",
-            stringify!(draggable)
-        )
-    );
-}
 pub type wkeDraggableRegionsChangedCallback = ::std::option::Option<
     unsafe extern "C" fn(
         webView: wkeWebView,
@@ -2940,15 +1170,33 @@ pub type jsNativeFunction = ::std::option::Option<unsafe extern "C" fn(es: jsExe
 pub type wkeJsNativeFunction = ::std::option::Option<
     unsafe extern "C" fn(es: jsExecState, param: *mut ::std::os::raw::c_void) -> jsValue,
 >;
-pub const _jsType_JSTYPE_NUMBER: _jsType = 0;
-pub const _jsType_JSTYPE_STRING: _jsType = 1;
-pub const _jsType_JSTYPE_BOOLEAN: _jsType = 2;
-pub const _jsType_JSTYPE_OBJECT: _jsType = 3;
-pub const _jsType_JSTYPE_FUNCTION: _jsType = 4;
-pub const _jsType_JSTYPE_UNDEFINED: _jsType = 5;
-pub const _jsType_JSTYPE_ARRAY: _jsType = 6;
-pub const _jsType_JSTYPE_NULL: _jsType = 7;
-pub type _jsType = ::std::os::raw::c_int;
+impl _jsType {
+    pub const JSTYPE_NUMBER: _jsType = _jsType(0);
+}
+impl _jsType {
+    pub const JSTYPE_STRING: _jsType = _jsType(1);
+}
+impl _jsType {
+    pub const JSTYPE_BOOLEAN: _jsType = _jsType(2);
+}
+impl _jsType {
+    pub const JSTYPE_OBJECT: _jsType = _jsType(3);
+}
+impl _jsType {
+    pub const JSTYPE_FUNCTION: _jsType = _jsType(4);
+}
+impl _jsType {
+    pub const JSTYPE_UNDEFINED: _jsType = _jsType(5);
+}
+impl _jsType {
+    pub const JSTYPE_ARRAY: _jsType = _jsType(6);
+}
+impl _jsType {
+    pub const JSTYPE_NULL: _jsType = _jsType(7);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _jsType(pub ::std::os::raw::c_int);
 pub use self::_jsType as jsType;
 pub type jsGetPropertyCallback = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2983,71 +1231,6 @@ pub struct tagjsData {
     pub finalize: jsFinalizeCallback,
     pub callAsFunction: jsCallAsFunctionCallback,
 }
-#[test]
-fn bindgen_test_layout_tagjsData() {
-    const UNINIT: ::std::mem::MaybeUninit<tagjsData> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<tagjsData>(),
-        136usize,
-        concat!("Size of: ", stringify!(tagjsData))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<tagjsData>(),
-        8usize,
-        concat!("Alignment of ", stringify!(tagjsData))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).typeName) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagjsData),
-            "::",
-            stringify!(typeName)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).propertyGet) as usize - ptr as usize },
-        104usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagjsData),
-            "::",
-            stringify!(propertyGet)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).propertySet) as usize - ptr as usize },
-        112usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagjsData),
-            "::",
-            stringify!(propertySet)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).finalize) as usize - ptr as usize },
-        120usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagjsData),
-            "::",
-            stringify!(finalize)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).callAsFunction) as usize - ptr as usize },
-        128usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(tagjsData),
-            "::",
-            stringify!(callAsFunction)
-        )
-    );
-}
 pub type jsData = tagjsData;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -3062,152 +1245,12 @@ pub struct _jsExceptionInfo {
     pub endColumn: ::std::os::raw::c_int,
     pub callstackString: *const utf8,
 }
-#[test]
-fn bindgen_test_layout__jsExceptionInfo() {
-    const UNINIT: ::std::mem::MaybeUninit<_jsExceptionInfo> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_jsExceptionInfo>(),
-        56usize,
-        concat!("Size of: ", stringify!(_jsExceptionInfo))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_jsExceptionInfo>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_jsExceptionInfo))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).message) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(message)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sourceLine) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(sourceLine)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).scriptResourceName) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(scriptResourceName)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).lineNumber) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(lineNumber)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).startPosition) as usize - ptr as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(startPosition)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).endPosition) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(endPosition)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).startColumn) as usize - ptr as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(startColumn)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).endColumn) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(endColumn)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).callstackString) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsExceptionInfo),
-            "::",
-            stringify!(callstackString)
-        )
-    );
-}
 pub type jsExceptionInfo = _jsExceptionInfo;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _jsKeys {
     pub length: ::std::os::raw::c_uint,
     pub keys: *mut *const ::std::os::raw::c_char,
-}
-#[test]
-fn bindgen_test_layout__jsKeys() {
-    const UNINIT: ::std::mem::MaybeUninit<_jsKeys> = ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<_jsKeys>(),
-        16usize,
-        concat!("Size of: ", stringify!(_jsKeys))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<_jsKeys>(),
-        8usize,
-        concat!("Alignment of ", stringify!(_jsKeys))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).length) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsKeys),
-            "::",
-            stringify!(length)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).keys) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(_jsKeys),
-            "::",
-            stringify!(keys)
-        )
-    );
 }
 pub type jsKeys = _jsKeys;
 extern crate libloading;
