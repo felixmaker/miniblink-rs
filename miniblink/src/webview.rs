@@ -36,6 +36,8 @@ pub struct WebViewAttributes {
     /// Whether the WebView should have a custom user-agent.
     pub user_agent: Option<String>,
 
+    pub window_title: Option<String>,
+
     /// The webview bounds. Defaults to `x: 0, y: 0, width: 200, height: 200`.
     /// This is only effective if the webview was created by [`WebView::new_as_child`] or [`WebViewBuilder::new_as_child`]
     /// or on Linux, if was created by [`WebViewExtUnix::new_gtk`] or [`WebViewBuilderExtUnix::new_gtk`] with [`gtk::Fixed`].
@@ -77,6 +79,7 @@ impl Default for WebViewAttributes {
         Self {
             visible: false,
             user_agent: None,
+            window_title: None,
             proxy_config: None,
             bounds: Some(Rect {
                 x: 0,
@@ -189,6 +192,12 @@ impl WebViewBuilder {
         self
     }
 
+    /// Set the title of native window.
+    pub fn with_window_title(mut self, title: impl Into<String>) -> Self {
+        self.attrs.window_title = Some(title.into());
+        self
+    }
+
     /// Consume the builder and create the [`WebView`].
     pub fn build(self) -> WebView {
         WebView::new(self.attrs)
@@ -208,6 +217,10 @@ impl WebView {
 
         if let Some(proxy_config) = attributes.proxy_config {
             webview.set_proxy(&proxy_config);
+        }
+
+        if let Some(window_title) = attributes.window_title {
+            webview.set_window_title(&window_title);
         }
 
         if let Some(user_agent) = attributes.user_agent {
@@ -260,6 +273,13 @@ impl WebView {
         };
 
         Self { webview: window }
+    }
+
+    /// Set the native window title
+    pub fn set_window_title(&self, title: &str) {
+        unsafe {
+            call_api().wkeSetWindowTitle(self.webview, CString::safe_new(title).into_raw());
+        }
     }
 
     pub fn set_user_agent(&self, user_agent: &str) {

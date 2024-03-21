@@ -5,7 +5,9 @@ fn main() {
     app::bind("hello", |x| format!("Hello, {x}"));
 
     let _webview = WebViewBuilder::default()
-        .with_html(r#"
+        .with_window_title("Hello, Miniblink")
+        .with_html(
+            r#"
         <html>
         <head>
         <title>Hello, world!</title>        
@@ -23,7 +25,8 @@ fn main() {
         </script>
         </body>
         <html>        
-        "#)
+        "#,
+        )
         .with_visible(true)
         .with_on_window_closing_handler(|_| {
             std::process::exit(0);
