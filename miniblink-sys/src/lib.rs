@@ -5,4 +5,3 @@
 mod miniblink;
 
 pub use miniblink::*;
-pub use libloading;

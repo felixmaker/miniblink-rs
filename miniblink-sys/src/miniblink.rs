@@ -1254,7 +1254,7 @@ pub struct _jsKeys {
 }
 pub type jsKeys = _jsKeys;
 extern crate libloading;
-pub struct api {
+pub struct Library {
     __library: ::libloading::Library,
     pub wkeInit: Result<unsafe extern "C" fn(), ::libloading::Error>,
     pub wkeInitialize: Result<unsafe extern "C" fn(), ::libloading::Error>,
@@ -2854,7 +2854,7 @@ pub struct api {
     pub jsGetCallstack:
         Result<unsafe extern "C" fn(es: jsExecState) -> *const utf8, ::libloading::Error>,
 }
-impl api {
+impl Library {
     pub unsafe fn new<P>(path: P) -> Result<Self, ::libloading::Error>
     where
         P: AsRef<::std::ffi::OsStr>,
@@ -3319,7 +3319,7 @@ impl api {
             .map(|sym| *sym);
         let jsThrowException = __library.get(b"jsThrowException\0").map(|sym| *sym);
         let jsGetCallstack = __library.get(b"jsGetCallstack\0").map(|sym| *sym);
-        Ok(api {
+        Ok(Library {
             __library,
             wkeInit,
             wkeInitialize,
