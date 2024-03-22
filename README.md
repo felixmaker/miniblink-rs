@@ -3,10 +3,10 @@
 Rust bindings to [mininlink49](https://github.com/weolar/miniblink49)
 
 ```rust
-use miniblink::{app, webview::WebViewBuilder};
+use miniblink::{app::AppBuilder, webview::WebViewBuilder};
 
 fn main() {
-    app::init("node.dll");
+    let app = AppBuilder::default().build().unwrap();
 
     let _webview = WebViewBuilder::default()
         .with_window_title("Hello, Miniblink")
@@ -17,7 +17,7 @@ fn main() {
         })
         .build();
 
-    app::run_message_loop();
+    app.run_message_loop();
 }
 ```
 
