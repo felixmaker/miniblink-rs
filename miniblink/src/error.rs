@@ -1,10 +1,28 @@
 /// Convenient type alias of Result type for miniblink.
-pub type Result<T> = std::result::Result<T, Error>;
+pub type MBResult<T> = std::result::Result<T, MBError>;
 
 /// Errors returned by miniblink.
 #[non_exhaustive]
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    NulError(#[from] std::ffi::NulError)
+#[derive(Debug)]
+pub enum MBError {
+    NotInitialized,
+    LibraryUnloaded(String),
 }
+
+impl MBError {
+    pub(crate) fn to_string(&self) -> String {
+        use MBError::*;
+        match self {
+            NotInitialized => "The miniblink is not initialized".into(),
+            LibraryUnloaded(error) => format!("Failed to load miniblink! {error}"),
+        }
+    }
+}
+
+impl std::fmt::Display for MBError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.to_string())
+    }
+}
+
+impl std::error::Error for MBError {}

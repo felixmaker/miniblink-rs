@@ -11,5 +11,4 @@ categories = [ "gui" ]
 exclude = ["./examples"]
 
 [dependencies]
-thiserror = "1"
 miniblink-sys = { path = "../miniblink-sys", version = "0.1.1" }
