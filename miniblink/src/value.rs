@@ -66,9 +66,7 @@ impl JsValue {
     pub fn new_string(es: JsExecState, text: &str) -> Self {
         Self {
             inner: unsafe {
-                call_api()
-                    .unwrap()
-                    .jsString(es.inner, CString::safe_new(text).into_raw())
+                call_api_or_panic().jsString(es.inner, CString::safe_new(text).into_raw())
             },
         }
     }
