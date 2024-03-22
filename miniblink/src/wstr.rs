@@ -2,7 +2,7 @@ use std::ffi::CStr;
 
 use miniblink_sys::wkeString;
 
-use crate::call_api;
+use crate::call_api_or_panic;
 
 /// A wrapper to wkeString. See wkeString.
 pub struct WkeStr {
@@ -16,7 +16,7 @@ impl WkeStr {
 
     pub fn to_string(&self) -> String {
         let cstr = unsafe {
-            let ptr = call_api().wkeGetString(self.inner);
+            let ptr = call_api_or_panic().wkeGetString(self.inner);
             CStr::from_ptr(ptr)
         };
         cstr.to_string_lossy().to_string()
