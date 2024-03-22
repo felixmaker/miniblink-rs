@@ -1,9 +1,10 @@
 use std::ffi::CString;
 
+use crate::error::MBResult;
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
 use crate::value::JsValue;
-use crate::{call_api, handler};
+use crate::{call_api, call_api_or_panic, handler};
 
 /// A rectangular region.
 #[derive(Clone, Copy, Debug)]
@@ -165,7 +166,7 @@ impl WebViewBuilder {
     }
 
     /// Consume the builder and create the [`WebView`].
-    pub fn build(self) -> WebView {
+    pub fn build(self) -> MBResult<WebView> {
         WebView::new(self.attrs)
     }
 }
@@ -177,9 +178,9 @@ pub struct WebView {
 }
 
 impl WebView {
-    fn new(attributes: WebViewAttributes) -> Self {
+    fn new(attributes: WebViewAttributes) -> MBResult<Self> {
         let bounds = attributes.bounds.unwrap_or(Rect::default());
-        let webview = WebView::create_window(bounds);
+        let webview = WebView::create_window(bounds)?;
 
         if let Some(proxy_config) = attributes.proxy_config {
             webview.set_proxy(&proxy_config);
@@ -223,12 +224,12 @@ impl WebView {
 
         webview.set_visible(attributes.visible);
 
-        webview
+        Ok(webview)
     }
 
-    fn create_window(bounds: Rect) -> Self {
+    fn create_window(bounds: Rect) -> MBResult<Self> {
         let window = unsafe {
-            call_api().wkeCreateWebWindow(
+            call_api()?.wkeCreateWebWindow(
                 miniblink_sys::wkeWindowType::WKE_WINDOW_TYPE_POPUP,
                 std::ptr::null_mut(),
                 bounds.x,
@@ -238,55 +239,59 @@ impl WebView {
             )
         };
 
-        Self { webview: window }
+        Ok(Self { webview: window })
     }
 
     /// Set the title of native window. See wkeSetWindowTitle.
     pub fn set_window_title(&self, title: &str) {
         unsafe {
-            call_api().wkeSetWindowTitle(self.webview, CString::safe_new(title).into_raw());
+            call_api_or_panic()
+                .wkeSetWindowTitle(self.webview, CString::safe_new(title).into_raw());
         }
     }
 
     /// Set the user agent. See wkeSetUserAgent.
     pub fn set_user_agent(&self, user_agent: &str) {
         unsafe {
-            call_api().wkeSetUserAgent(self.webview, CString::safe_new(user_agent).into_raw());
+            call_api_or_panic()
+                .wkeSetUserAgent(self.webview, CString::safe_new(user_agent).into_raw());
         }
     }
 
     /// Set the visibility. See wkeShowWindow.
     pub fn set_visible(&self, visible: bool) {
         unsafe {
-            call_api().wkeShowWindow(self.webview, visible);
+            call_api_or_panic().wkeShowWindow(self.webview, visible);
         }
     }
 
     /// Set the proxy of current webview. Use `app::set_proxy`` to set global proxy. See wkeSetViewProxy.
     pub fn set_proxy(&self, proxy: &ProxyConfig) {
         unsafe {
-            call_api().wkeSetViewProxy(self.webview, Box::into_raw(Box::new(proxy.to_wke_proxy())));
+            call_api_or_panic()
+                .wkeSetViewProxy(self.webview, Box::into_raw(Box::new(proxy.to_wke_proxy())));
         }
     }
 
     /// Load the provided HTML. See wkeLoadHTML.
     pub fn load_html(&self, html: &str) {
         unsafe {
-            call_api().wkeLoadHTML(self.webview, CString::safe_new(html).into_raw());
+            call_api_or_panic().wkeLoadHTML(self.webview, CString::safe_new(html).into_raw());
         }
     }
 
     /// Load the provided URL. See wkeLoadURL.
     pub fn load_url(&self, url: &str) {
         unsafe {
-            call_api().wkeLoadURL(self.webview, CString::safe_new(url).into_raw());
+            call_api_or_panic().wkeLoadURL(self.webview, CString::safe_new(url).into_raw());
         }
     }
 
     /// Run the provided script. See wkeRunJS.
     pub fn run_js(&self, script: &str) -> JsValue {
-        let js_value =
-            unsafe { call_api().wkeRunJS(self.webview, CString::safe_new(script).into_raw()) };
+        let js_value = unsafe {
+            call_api_or_panic().wkeRunJS(self.webview, CString::safe_new(script).into_raw())
+        };
         JsValue { inner: js_value }
     }
 
@@ -295,7 +300,7 @@ impl WebView {
         callback: *mut Box<dyn FnMut(&mut WebView, NavigationType, String) -> bool>,
     ) {
         unsafe {
-            call_api().wkeOnNavigation(
+            call_api_or_panic().wkeOnNavigation(
                 self.webview,
                 Some(handler::navigation_handler),
                 callback as *mut _,
@@ -305,7 +310,7 @@ impl WebView {
 
     fn on_title_changed(&self, callback: *mut Box<dyn FnMut(&mut WebView, String) -> bool>) {
         unsafe {
-            call_api().wkeOnTitleChanged(
+            call_api_or_panic().wkeOnTitleChanged(
                 self.webview,
                 Some(handler::wkestring_handler),
                 callback as *mut _,
@@ -315,7 +320,7 @@ impl WebView {
 
     fn on_download(&self, callback: *mut Box<dyn FnMut(&mut WebView, String) -> bool>) {
         unsafe {
-            call_api().wkeOnDownload(
+            call_api_or_panic().wkeOnDownload(
                 self.webview,
                 Some(handler::cstr_to_bool_handler),
                 callback as *mut _,
@@ -325,7 +330,7 @@ impl WebView {
 
     fn on_document_ready(&self, callback: *mut Box<dyn FnMut(&mut WebView)>) {
         unsafe {
-            call_api().wkeOnDocumentReady(
+            call_api_or_panic().wkeOnDocumentReady(
                 self.webview,
                 Some(handler::void_handler),
                 callback as *mut _,
@@ -335,7 +340,7 @@ impl WebView {
 
     fn on_window_closing(&self, callback: *mut Box<dyn FnMut(&mut WebView) -> bool>) {
         unsafe {
-            call_api().wkeOnWindowClosing(
+            call_api_or_panic().wkeOnWindowClosing(
                 self.webview,
                 Some(handler::void_to_bool_handler),
                 callback as *mut _,
@@ -343,7 +348,6 @@ impl WebView {
         }
     }
 }
-
 
 /// Navigation Type. See wkeNavigationType.
 pub enum NavigationType {

@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 mod handler;
 mod util;
 
@@ -10,10 +12,15 @@ pub mod wstr;
 
 use std::sync::OnceLock;
 
+use error::{MBError, MBResult};
 use miniblink_sys::Library;
 
 pub(crate) static LIB: OnceLock<Library> = OnceLock::new();
 
-pub(crate) fn call_api() -> &'static Library {
-    LIB.get().expect("You must init before using miniblink")
+pub(crate) fn call_api() -> MBResult<&'static Library> {
+    LIB.get().ok_or_else(|| MBError::NotInitialized)
+}
+
+pub(crate) fn call_api_or_panic() -> &'static Library {
+    call_api().unwrap()
 }
