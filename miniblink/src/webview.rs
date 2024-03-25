@@ -53,7 +53,7 @@ pub struct WebViewAttributes {
 impl Default for WebViewAttributes {
     fn default() -> Self {
         Self {
-            visible: false,
+            visible: true,
             user_agent: None,
             window_title: None,
             proxy_config: None,
