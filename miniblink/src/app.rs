@@ -6,12 +6,7 @@ use std::{
 use miniblink_sys::Library;
 
 use crate::{
-    call_api,
-    error::{MBError, MBResult},
-    proxy::ProxyConfig,
-    util::SafeCString,
-    value::{JsExecState, JsValue},
-    LIB,
+    call_api, call_api_or_panic, error::{MBError, MBResult}, proxy::ProxyConfig, util::SafeCString, value::{JsExecState, JsValue}, LIB
 };
 
 const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";
@@ -19,6 +14,7 @@ const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";
 #[derive(Default)]
 pub struct AppAttributes {
     pub lib_path: Option<OsString>,
+    pub dpi_support: bool,
     pub proxy_config: Option<ProxyConfig>,
     pub js_bind: HashMap<String, Box<dyn Fn(String) -> String>>,
 }
@@ -56,6 +52,12 @@ impl AppBuilder {
         self
     }
 
+    /// Enable high DPI support
+    pub fn with_dpi_support(mut self, dpi_support: bool) -> Self {
+        self.attrs.dpi_support = dpi_support;
+        self
+    }
+
     /// Consume the builder and create the [`App`].
     pub fn build(self) -> MBResult<App> {
         App::new(self.attrs)
@@ -68,6 +70,10 @@ impl App {
     fn new(attrs: AppAttributes) -> MBResult<Self> {
         let lib_path = attrs.lib_path.unwrap_or(DEFAULT_MINIBLINK_LIB.into());
         let app = Self::init(lib_path)?;
+
+        if attrs.dpi_support {
+            app.enable_dpi_support();
+        }
 
         if let Some(proxy_config) = attrs.proxy_config {
             app.set_proxy(&proxy_config);
@@ -128,6 +134,11 @@ impl App {
 
     /// Set the global proxy. See wkeSetProxy.
     pub fn set_proxy(&self, config: &ProxyConfig) {
-        unsafe { call_api().unwrap().wkeSetProxy(&config.to_wke_proxy()) }
+        unsafe { call_api_or_panic().wkeSetProxy(&config.to_wke_proxy()) }
+    }
+
+    /// Enable high DPI support. See wkeEnableHighDPISupport.
+    pub fn enable_dpi_support(&self) {
+        unsafe { call_api_or_panic().wkeEnableHighDPISupport() }
     }
 }
