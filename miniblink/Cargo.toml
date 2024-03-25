@@ -1,6 +1,6 @@
 [package]
 name = "miniblink"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["The miniblink-rs Authors"]
 description = "Rust bindings to mininlink49"
@@ -11,7 +11,7 @@ categories = [ "gui" ]
 exclude = ["./examples"]
 
 [dependencies]
-miniblink-sys = { path = "../miniblink-sys", version = "0.1.1" }
+miniblink-sys = { path = "../miniblink-sys", version = ">=0.1.1" }
 raw-window-handle = { version = "0.6" }
 
 [dev-dependencies]
