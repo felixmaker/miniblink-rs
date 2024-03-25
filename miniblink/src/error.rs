@@ -5,6 +5,7 @@ pub type MBResult<T> = std::result::Result<T, MBError>;
 #[non_exhaustive]
 #[derive(Debug)]
 pub enum MBError {
+    UnsupportedPlatform,
     NotInitialized,
     LibraryUnloaded(String),
 }
@@ -13,6 +14,7 @@ impl MBError {
     pub(crate) fn to_string(&self) -> String {
         use MBError::*;
         match self {
+            UnsupportedPlatform => "Failed to create as child window. Only windows is supported!".into(),
             NotInitialized => "The miniblink is not initialized".into(),
             LibraryUnloaded(error) => format!("Failed to load miniblink! {error}"),
         }

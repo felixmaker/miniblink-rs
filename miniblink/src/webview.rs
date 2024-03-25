@@ -1,8 +1,9 @@
 use std::ffi::CString;
 
-use miniblink_sys::wkeWindowType;
+use miniblink_sys::{wkeWindowType, HWND};
+use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
-use crate::error::MBResult;
+use crate::error::{MBError, MBResult};
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
 use crate::value::JsValue;
@@ -69,11 +70,18 @@ impl Default for WebViewAttributes {
 }
 
 #[derive(Default)]
-pub struct WebViewBuilder {
+pub struct WebViewBuilder<'a> {
     pub attrs: WebViewAttributes,
+    hwnd: Option<&'a dyn HasWindowHandle>,
 }
 
-impl WebViewBuilder {
+impl<'a> WebViewBuilder<'a> {
+    /// Create [`WebViewBuilder`] as a child window inside the provided [`HasWindowHandle`]
+    pub fn with_parent(mut self, parent: &'a impl HasWindowHandle) -> Self {
+        self.hwnd = Some(parent);
+        self
+    }
+
     /// Set a custom [user-agent](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) for the WebView.
     pub fn with_user_agent(mut self, user_agent: &str) -> Self {
         self.attrs.user_agent = Some(user_agent.to_string());
@@ -170,7 +178,11 @@ impl WebViewBuilder {
 
     /// Consume the builder and create the [`WebView`].
     pub fn build(self) -> MBResult<WebView> {
-        WebView::new(self.attrs)
+        if let Some(hwnd) = &self.hwnd {
+            WebView::new_as_child(hwnd, self.attrs)
+        } else {
+            WebView::new(self.attrs)
+        }
     }
 }
 
@@ -183,52 +195,71 @@ pub struct WebView {
 impl WebView {
     fn new(attributes: WebViewAttributes) -> MBResult<Self> {
         let bounds = attributes.bounds.unwrap_or(Rect::default());
-
         let webview = WebView::create_popup_window(bounds)?;
 
+        webview.apply_attributes(attributes);
+        Ok(webview)
+    }
+
+    fn new_as_child(hwnd: &impl HasWindowHandle, attributes: WebViewAttributes) -> MBResult<Self> {
+        let bounds = attributes.bounds.unwrap_or(Rect::default());
+
+        let webview = {
+            match hwnd.window_handle().map(|x| x.as_raw()) {
+                Ok(RawWindowHandle::Win32(handle)) => {
+                    WebView::create_control_window(isize::from(handle.hwnd) as HWND, bounds)
+                }
+                _ => Err(MBError::UnsupportedPlatform),
+            }
+        }?;
+
+        webview.apply_attributes(attributes);
+
+        Ok(webview)
+    }
+
+    fn apply_attributes(&self, attributes: WebViewAttributes) {
         if let Some(proxy_config) = attributes.proxy_config {
-            webview.set_proxy(&proxy_config);
+            self.set_proxy(&proxy_config);
         }
 
         if let Some(window_title) = attributes.window_title {
-            webview.set_window_title(&window_title);
+            self.set_window_title(&window_title);
         }
 
         if let Some(user_agent) = attributes.user_agent {
-            webview.set_user_agent(user_agent.as_str());
+            self.set_user_agent(user_agent.as_str());
         }
 
         if let Some(html) = attributes.html {
-            webview.load_html(html.as_str());
+            self.load_html(html.as_str());
         }
 
         if let Some(url) = attributes.url {
-            webview.load_url(url.as_str());
+            self.load_url(url.as_str());
         }
 
         if let Some(on_navigation_handler) = attributes.on_navigation_handler {
-            webview.on_navigation(Box::into_raw(Box::new(on_navigation_handler)));
+            self.on_navigation(Box::into_raw(Box::new(on_navigation_handler)));
         }
 
         if let Some(on_title_changed_handler) = attributes.on_title_changed_handler {
-            webview.on_title_changed(Box::into_raw(Box::new(on_title_changed_handler)));
+            self.on_title_changed(Box::into_raw(Box::new(on_title_changed_handler)));
         }
 
         if let Some(on_window_closing_handler) = attributes.on_window_closing_handler {
-            webview.on_window_closing(Box::into_raw(Box::new(on_window_closing_handler)));
+            self.on_window_closing(Box::into_raw(Box::new(on_window_closing_handler)));
         }
 
         if let Some(on_download_handler) = attributes.on_download_handler {
-            webview.on_download(Box::into_raw(Box::new(on_download_handler)));
+            self.on_download(Box::into_raw(Box::new(on_download_handler)));
         }
 
         if let Some(on_document_ready_handler) = attributes.on_document_ready_handler {
-            webview.on_document_ready(Box::into_raw(Box::new(on_document_ready_handler)));
+            self.on_document_ready(Box::into_raw(Box::new(on_document_ready_handler)));
         }
 
-        webview.set_visible(attributes.visible);
-
-        Ok(webview)
+        self.set_visible(attributes.visible);
     }
 
     fn create_popup_window(bounds: Rect) -> MBResult<Self> {
@@ -236,6 +267,21 @@ impl WebView {
             call_api()?.wkeCreateWebWindow(
                 wkeWindowType::WKE_WINDOW_TYPE_POPUP,
                 std::ptr::null_mut(),
+                bounds.x,
+                bounds.y,
+                bounds.width,
+                bounds.height,
+            )
+        };
+
+        Ok(Self { webview: window })
+    }
+
+    fn create_control_window(parent: HWND, bounds: Rect) -> MBResult<Self> {
+        let window = unsafe {
+            call_api()?.wkeCreateWebWindow(
+                wkeWindowType::WKE_WINDOW_TYPE_CONTROL,
+                parent,
                 bounds.x,
                 bounds.y,
                 bounds.width,
@@ -281,6 +327,13 @@ impl WebView {
     pub fn load_html(&self, html: &str) {
         unsafe {
             call_api_or_panic().wkeLoadHTML(self.webview, CString::safe_new(html).into_raw());
+        }
+    }
+
+    /// Set the size. See wkeResize.
+    pub fn set_size(&self, width: u32, height: u32) {
+        unsafe {
+            call_api_or_panic().wkeResize(self.webview, width as i32, height as i32);
         }
     }
 
