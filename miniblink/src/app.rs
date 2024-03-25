@@ -6,7 +6,12 @@ use std::{
 use miniblink_sys::Library;
 
 use crate::{
-    call_api, call_api_or_panic, error::{MBError, MBResult}, proxy::ProxyConfig, util::SafeCString, value::{JsExecState, JsValue}, LIB
+    call_api, call_api_or_panic,
+    error::{MBError, MBResult},
+    proxy::ProxyConfig,
+    util::SafeCString,
+    value::{JsExecState, JsValue},
+    LIB,
 };
 
 const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";
