@@ -1,9 +1,12 @@
 use std::ffi::CString;
 
+use miniblink_sys::wkeWindowType;
+
 use crate::error::MBResult;
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
 use crate::value::JsValue;
+
 use crate::{call_api, call_api_or_panic, handler};
 
 /// A rectangular region.
@@ -180,7 +183,8 @@ pub struct WebView {
 impl WebView {
     fn new(attributes: WebViewAttributes) -> MBResult<Self> {
         let bounds = attributes.bounds.unwrap_or(Rect::default());
-        let webview = WebView::create_window(bounds)?;
+
+        let webview = WebView::create_popup_window(bounds)?;
 
         if let Some(proxy_config) = attributes.proxy_config {
             webview.set_proxy(&proxy_config);
@@ -227,10 +231,10 @@ impl WebView {
         Ok(webview)
     }
 
-    fn create_window(bounds: Rect) -> MBResult<Self> {
+    fn create_popup_window(bounds: Rect) -> MBResult<Self> {
         let window = unsafe {
             call_api()?.wkeCreateWebWindow(
-                miniblink_sys::wkeWindowType::WKE_WINDOW_TYPE_POPUP,
+                wkeWindowType::WKE_WINDOW_TYPE_POPUP,
                 std::ptr::null_mut(),
                 bounds.x,
                 bounds.y,
