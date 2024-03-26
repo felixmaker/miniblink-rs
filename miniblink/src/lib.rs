@@ -8,7 +8,7 @@ pub mod error;
 pub mod proxy;
 pub mod value;
 pub mod webview;
-pub mod wstr;
+pub(crate) mod wstr;
 
 use std::sync::OnceLock;
 
