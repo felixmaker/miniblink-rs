@@ -37,7 +37,6 @@ impl Default for Rect {
 pub struct WebViewAttributes {
     pub visible: bool,
     pub user_agent: Option<String>,
-    pub window_title: Option<String>,
     pub bounds: Option<Rect>,
     pub proxy_config: Option<ProxyConfig>,
     pub url: Option<String>,
@@ -45,8 +44,11 @@ pub struct WebViewAttributes {
 
     pub on_navigation_handler: Option<Box<dyn FnMut(&mut WebView, NavigationType, String) -> bool>>,
     pub on_download_handler: Option<Box<dyn FnMut(&mut WebView, String) -> bool>>,
-    pub on_title_changed_handler: Option<Box<dyn FnMut(&mut WebView, String) -> bool>>,
+    pub on_title_changed_handler: Option<Box<dyn FnMut(&mut WebView, String)>>,
     pub on_document_ready_handler: Option<Box<dyn FnMut(&mut WebView)>>,
+
+    // Window params
+    pub window_title: Option<String>,
     pub on_window_closing_handler: Option<Box<dyn FnMut(&mut WebView) -> bool>>,
 }
 
@@ -54,8 +56,7 @@ impl Default for WebViewAttributes {
     fn default() -> Self {
         Self {
             visible: true,
-            user_agent: None,
-            window_title: None,
+            user_agent: None,            
             proxy_config: None,
             bounds: Some(Rect::default()),
             url: None,
@@ -64,6 +65,8 @@ impl Default for WebViewAttributes {
             on_download_handler: None,
             on_title_changed_handler: None,
             on_document_ready_handler: None,
+
+            window_title: None,
             on_window_closing_handler: None,
         }
     }
@@ -146,7 +149,7 @@ impl<'a> WebViewBuilder<'a> {
     /// Set a handler closure to process the change of the webview's document title.
     pub fn with_on_title_changed_handler(
         mut self,
-        callback: impl FnMut(&mut WebView, String) -> bool + 'static,
+        callback: impl FnMut(&mut WebView, String) + 'static,
     ) -> Self {
         self.attrs.on_title_changed_handler = Some(Box::new(callback));
         self
@@ -365,7 +368,7 @@ impl WebView {
         }
     }
 
-    fn on_title_changed(&self, callback: *mut Box<dyn FnMut(&mut WebView, String) -> bool>) {
+    fn on_title_changed(&self, callback: *mut Box<dyn FnMut(&mut WebView, String)>) {
         unsafe {
             call_api_or_panic().wkeOnTitleChanged(
                 self.webview,
