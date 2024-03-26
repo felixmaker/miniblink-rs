@@ -1,4 +1,4 @@
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 
 use miniblink_sys::{wkeWindowType, HWND};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
@@ -56,7 +56,7 @@ impl Default for WebViewAttributes {
     fn default() -> Self {
         Self {
             visible: true,
-            user_agent: None,            
+            user_agent: None,
             proxy_config: None,
             bounds: Some(Rect::default()),
             url: None,
@@ -353,6 +353,27 @@ impl WebView {
             call_api_or_panic().wkeRunJS(self.webview, CString::safe_new(script).into_raw())
         };
         JsValue { inner: js_value }
+    }
+
+    /// Get the cookie from web page. See wkeGetCookie.
+    pub fn get_cookie(&self) -> String {
+        let cstr = unsafe {
+            let cstr = call_api_or_panic().wkeGetCookie(self.webview);
+            let cstr = CStr::from_ptr(cstr);
+            cstr
+        };
+        cstr.to_string_lossy().to_string()
+    }
+
+    /// Set the cookie to url. See wkeSetCookie.
+    ///
+    /// Cookie is a curl cookie, like "PERSONALIZE=123;expires=Monday, 13-Jun-2022 03:04:55 GMT; domain=.fidelity.com; path=/; secure"
+    pub fn set_cookie(&self, url: &str, cookie: &str) {
+        let url = CString::safe_new(url);
+        let cookie = CString::safe_new(cookie);
+        unsafe {
+            call_api_or_panic().wkeSetCookie(self.webview, url.as_ptr(), cookie.as_ptr());
+        }
     }
 
     fn on_navigation(
