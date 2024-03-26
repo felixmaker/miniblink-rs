@@ -353,7 +353,7 @@ impl WebView {
     /// Run the provided script. See wkeRunJS.
     pub fn run_js<T>(&self, script: &str) -> MBResult<T>
     where
-        JsValue: MBExecStateValue<T>,
+        JsValue: MBExecStateValue<T>
     {
         let script = CString::safe_new(script);
         let js_value = JsValue {

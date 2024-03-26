@@ -94,18 +94,34 @@ impl App {
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    pub fn bind<P, T>(&self, name: &str, func: impl Fn(P) -> T + 'static)
+    pub fn bind<P1, T>(&self, name: &str, func: impl Fn(P1) -> T + 'static)
     where
-        JsValue: MBExecStateValue<P>,
+        JsValue: MBExecStateValue<P1>,
         JsValue: MBExecStateValue<T>,
+        P1: Default,
+    {
+        self.js_bind_function(
+            name,
+            move |es| JsValue::from_value(es, func(es.arg_value(0).unwrap())),
+            1,
+        );
+    }
+
+    /// Bind function to global `window` object. See wkeJsBindFunction.
+    pub fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
+    where
+        JsValue: MBExecStateValue<P1>,
+        JsValue: MBExecStateValue<P2>,
+        JsValue: MBExecStateValue<T>,
+        P1: Default,
+        P2: Default,
     {
         self.js_bind_function(
             name,
             move |es| {
-                let arg = es.arg(0);
-                JsValue::from_value(es, func(arg.to_value(es).unwrap()))
+                JsValue::from_value(es, func(es.arg_value(0).unwrap(), es.arg_value(1).unwrap()))
             },
-            1,
+            2,
         );
     }
 

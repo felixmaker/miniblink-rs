@@ -45,6 +45,14 @@ impl JsExecState {
         }
     }
 
+    pub fn arg_value<T>(&self, index: i32) -> MBResult<T>
+    where
+        JsValue: MBExecStateValue<T>,
+    {
+        let value = self.arg(index);
+        MBExecStateValue::to_value(&value, *self).map_err(|_| MBError::TypeError(index))
+    }
+
     pub fn arg_count(&self) -> i32 {
         unsafe { call_api_or_panic().jsArgCount(self.inner) }
     }
