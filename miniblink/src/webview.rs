@@ -297,17 +297,19 @@ impl WebView {
 
     /// Set the title of native window. See wkeSetWindowTitle.
     pub fn set_window_title(&self, title: &str) {
+        let title = CString::safe_new(title);
         unsafe {
             call_api_or_panic()
-                .wkeSetWindowTitle(self.webview, CString::safe_new(title).into_raw());
+                .wkeSetWindowTitle(self.webview, title.as_ptr());
         }
     }
 
     /// Set the user agent. See wkeSetUserAgent.
     pub fn set_user_agent(&self, user_agent: &str) {
+        let user_agent = CString::safe_new(user_agent);
         unsafe {
             call_api_or_panic()
-                .wkeSetUserAgent(self.webview, CString::safe_new(user_agent).into_raw());
+                .wkeSetUserAgent(self.webview, user_agent.as_ptr());
         }
     }
 
@@ -328,8 +330,9 @@ impl WebView {
 
     /// Load the provided HTML. See wkeLoadHTML.
     pub fn load_html(&self, html: &str) {
+        let html = CString::safe_new(html);
         unsafe {
-            call_api_or_panic().wkeLoadHTML(self.webview, CString::safe_new(html).into_raw());
+            call_api_or_panic().wkeLoadHTML(self.webview, html.as_ptr());
         }
     }
 
@@ -342,15 +345,17 @@ impl WebView {
 
     /// Load the provided URL. See wkeLoadURL.
     pub fn load_url(&self, url: &str) {
+        let url = CString::safe_new(url);
         unsafe {
-            call_api_or_panic().wkeLoadURL(self.webview, CString::safe_new(url).into_raw());
+            call_api_or_panic().wkeLoadURL(self.webview, url.as_ptr());
         }
     }
 
     /// Run the provided script. See wkeRunJS.
     pub fn run_js(&self, script: &str) -> JsValue {
+        let script = CString::safe_new(script);
         let js_value = unsafe {
-            call_api_or_panic().wkeRunJS(self.webview, CString::safe_new(script).into_raw())
+            call_api_or_panic().wkeRunJS(self.webview, script.as_ptr())
         };
         JsValue { inner: js_value }
     }
