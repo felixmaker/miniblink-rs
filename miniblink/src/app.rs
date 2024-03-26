@@ -123,7 +123,8 @@ impl App {
         }
 
         let name = CString::safe_new(name);
-        let param = Box::into_raw(Box::new(Box::new(func)));
+        let param: *mut Box<dyn Fn(JsExecState) -> JsValue> =
+            Box::into_raw(Box::new(Box::new(func)));
 
         unsafe { call_api_or_panic().wkeJsBindFunction(name.as_ptr(), Some(shim), param as _, 1) }
     }
