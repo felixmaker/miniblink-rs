@@ -12,9 +12,12 @@ use miniblink::{app::AppBuilder, webview::WebViewBuilder};
 fn main() {
     let app = AppBuilder::default()
         .with_lib_path("node.dll")
-        .with_js_bind("hello", |x| format!("Hello, {x}"))
         .build()
         .expect("Failed to initialize miniblink!");
+
+    app.bind("hello", |x: String| {
+        format!("hello {x}")
+    });
 
     let _ = WebViewBuilder::default()
         .with_window_title("Hello, Miniblink")
