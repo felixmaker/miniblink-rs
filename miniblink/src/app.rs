@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    ffi::{CString, OsStr, OsString},
-};
+use std::ffi::{CString, OsStr, OsString};
 
 use miniblink_sys::Library;
 
@@ -10,7 +7,7 @@ use crate::{
     error::{MBError, MBResult},
     proxy::ProxyConfig,
     util::SafeCString,
-    value::{JsExecState, JsValue},
+    value::{JsExecState, JsValue, MBExecStateValue},
     LIB,
 };
 
@@ -21,7 +18,6 @@ pub struct AppAttributes {
     pub lib_path: Option<OsString>,
     pub dpi_support: bool,
     pub proxy_config: Option<ProxyConfig>,
-    pub js_bind: HashMap<String, Box<dyn Fn(String) -> String>>,
 }
 
 pub struct AppBuilder {
@@ -48,12 +44,6 @@ impl AppBuilder {
     /// Set a global proxy configuration.
     pub fn with_proxy_config(mut self, configuration: ProxyConfig) -> Self {
         self.attrs.proxy_config = Some(configuration);
-        self
-    }
-
-    /// Bind a javascript function to window object.
-    pub fn with_js_bind(mut self, name: &str, func: impl Fn(String) -> String + 'static) -> Self {
-        self.attrs.js_bind.insert(name.into(), Box::new(func));
         self
     }
 
@@ -84,10 +74,6 @@ impl App {
             app.set_proxy(&proxy_config);
         }
 
-        for (name, func) in attrs.js_bind {
-            app.bind(&name, func);
-        }
-
         Ok(app)
     }
 
@@ -108,29 +94,39 @@ impl App {
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    pub fn bind(&self, name: &str, func: impl Fn(String) -> String + 'static) {
-        unsafe extern "C" fn shim(
+    pub fn bind<P, T>(&self, name: &str, func: impl Fn(P) -> T + 'static)
+    where
+        JsValue: MBExecStateValue<P>,
+        JsValue: MBExecStateValue<T>,
+    {
+        unsafe extern "C" fn shim<P, T>(
             es: miniblink_sys::jsExecState,
             param: *mut std::os::raw::c_void,
-        ) -> miniblink_sys::jsValue {
+        ) -> miniblink_sys::jsValue
+        where
+            JsValue: MBExecStateValue<P>,
+            JsValue: MBExecStateValue<T>,
+        {
             let es = JsExecState { inner: es };
-            let arg = es.arg(0).to_string(es);
-            let cb = param as *mut Box<dyn Fn(String) -> String>;
+            let arg0 = es.arg(0);
+            let arg0 = arg0.to_value(es).unwrap();
+            let cb = param as *mut Box<dyn Fn(P) -> T>;
             let f = &mut **cb;
 
-            if let Ok(r) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(arg))) {
-                JsValue::new_string(es, &r).as_ptr()
+            if let Ok(r) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(arg0))) {
+                let value = JsValue::from_value(es, r);
+                value.as_ptr()
             } else {
-                JsValue::new_null().as_ptr()
+                unsafe { call_api_or_panic().jsNull() }
             }
         }
 
-        let param: *mut Box<dyn Fn(String) -> String> = Box::into_raw(Box::new(Box::new(func)));
+        let param = Box::into_raw(Box::new(Box::new(func)));
 
         unsafe {
             call_api().unwrap().wkeJsBindFunction(
                 CString::safe_new(name).into_raw(),
-                Some(shim),
+                Some(shim::<P, T>),
                 param as _,
                 1,
             )

@@ -1,3 +1,5 @@
+use crate::value::JsValue;
+
 /// Convenient type alias of Result type for miniblink.
 pub type MBResult<T> = std::result::Result<T, MBError>;
 
@@ -8,15 +10,19 @@ pub enum MBError {
     UnsupportedPlatform,
     NotInitialized,
     LibraryUnloaded(String),
+    FromJsValueFailed(JsValue),
 }
 
 impl MBError {
     pub(crate) fn to_string(&self) -> String {
         use MBError::*;
         match self {
-            UnsupportedPlatform => "Failed to create as child window. Only windows is supported!".into(),
+            UnsupportedPlatform => {
+                "Failed to create as child window. Only windows is supported!".into()
+            }
             NotInitialized => "The miniblink is not initialized".into(),
             LibraryUnloaded(error) => format!("Failed to load miniblink! {error}"),
+            FromJsValueFailed(value) => format!("Failed to convert jsValue `{value:?}`!"),
         }
     }
 }

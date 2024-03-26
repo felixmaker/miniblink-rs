@@ -6,7 +6,7 @@ use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use crate::error::{MBError, MBResult};
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
-use crate::value::JsValue;
+use crate::value::{JsValue, MBExecStateValue};
 
 use crate::{call_api, call_api_or_panic, handler};
 
@@ -34,6 +34,7 @@ impl Default for Rect {
     }
 }
 
+/// WebView Attributes
 pub struct WebViewAttributes {
     pub visible: bool,
     pub user_agent: Option<String>,
@@ -299,8 +300,7 @@ impl WebView {
     pub fn set_window_title(&self, title: &str) {
         let title = CString::safe_new(title);
         unsafe {
-            call_api_or_panic()
-                .wkeSetWindowTitle(self.webview, title.as_ptr());
+            call_api_or_panic().wkeSetWindowTitle(self.webview, title.as_ptr());
         }
     }
 
@@ -308,8 +308,7 @@ impl WebView {
     pub fn set_user_agent(&self, user_agent: &str) {
         let user_agent = CString::safe_new(user_agent);
         unsafe {
-            call_api_or_panic()
-                .wkeSetUserAgent(self.webview, user_agent.as_ptr());
+            call_api_or_panic().wkeSetUserAgent(self.webview, user_agent.as_ptr());
         }
     }
 
@@ -352,12 +351,18 @@ impl WebView {
     }
 
     /// Run the provided script. See wkeRunJS.
-    pub fn run_js(&self, script: &str) -> JsValue {
+    pub fn run_js<T>(&self, script: &str) -> MBResult<T>
+    where
+        JsValue: MBExecStateValue<T>,
+    {
         let script = CString::safe_new(script);
-        let js_value = unsafe {
-            call_api_or_panic().wkeRunJS(self.webview, script.as_ptr())
+        let js_value = JsValue {
+            inner: unsafe { call_api_or_panic().wkeRunJS(self.webview, script.as_ptr()) },
         };
-        JsValue { inner: js_value }
+        let es = crate::value::JsExecState {
+            inner: unsafe { call_api_or_panic().wkeGlobalExec(self.webview) },
+        };
+        js_value.to_value(es)
     }
 
     /// Get the cookie from web page. See wkeGetCookie.
