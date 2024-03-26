@@ -99,14 +99,23 @@ impl App {
         JsValue: MBExecStateValue<P>,
         JsValue: MBExecStateValue<T>,
     {
-        self.js_bind_function(name, move |es| {
-            let arg = es.arg(0);
-            JsValue::from_value(es, func(arg.to_value(es).unwrap()))
-        })
+        self.js_bind_function(
+            name,
+            move |es| {
+                let arg = es.arg(0);
+                JsValue::from_value(es, func(arg.to_value(es).unwrap()))
+            },
+            1,
+        );
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    pub fn js_bind_function(&self, name: &str, func: impl Fn(JsExecState) -> JsValue + 'static) {
+    fn js_bind_function(
+        &self,
+        name: &str,
+        func: impl Fn(JsExecState) -> JsValue + 'static,
+        arg_count: u32,
+    ) {
         unsafe extern "C" fn shim(
             es: miniblink_sys::jsExecState,
             param: *mut std::os::raw::c_void,
@@ -126,7 +135,9 @@ impl App {
         let param: *mut Box<dyn Fn(JsExecState) -> JsValue> =
             Box::into_raw(Box::new(Box::new(func)));
 
-        unsafe { call_api_or_panic().wkeJsBindFunction(name.as_ptr(), Some(shim), param as _, 1) }
+        unsafe {
+            call_api_or_panic().wkeJsBindFunction(name.as_ptr(), Some(shim), param as _, arg_count)
+        }
     }
 
     /// Set the global proxy. See wkeSetProxy.
