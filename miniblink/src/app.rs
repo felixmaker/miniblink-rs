@@ -3,7 +3,7 @@ use std::ffi::{CString, OsStr, OsString};
 use miniblink_sys::Library;
 
 use crate::{
-    call_api, call_api_or_panic,
+    call_api_or_panic,
     error::{MBError, MBResult},
     proxy::ProxyConfig,
     util::SafeCString,
@@ -89,7 +89,7 @@ impl App {
     /// Run the miniblink message loop. See wkeRunMessageLoop.
     pub fn run_message_loop(&self) {
         unsafe {
-            call_api().unwrap().wkeRunMessageLoop();
+            call_api_or_panic().wkeRunMessageLoop();
         }
     }
 
@@ -99,38 +99,33 @@ impl App {
         JsValue: MBExecStateValue<P>,
         JsValue: MBExecStateValue<T>,
     {
-        unsafe extern "C" fn shim<P, T>(
+        self.js_bind_function(name, move |es| {
+            let arg = es.arg(0);
+            JsValue::from_value(es, func(arg.to_value(es).unwrap()))
+        })
+    }
+
+    /// Bind function to global `window` object. See wkeJsBindFunction.
+    pub fn js_bind_function(&self, name: &str, func: impl Fn(JsExecState) -> JsValue + 'static) {
+        unsafe extern "C" fn shim(
             es: miniblink_sys::jsExecState,
             param: *mut std::os::raw::c_void,
-        ) -> miniblink_sys::jsValue
-        where
-            JsValue: MBExecStateValue<P>,
-            JsValue: MBExecStateValue<T>,
-        {
+        ) -> miniblink_sys::jsValue {
             let es = JsExecState { inner: es };
-            let arg0 = es.arg(0);
-            let arg0 = arg0.to_value(es).unwrap();
-            let cb = param as *mut Box<dyn Fn(P) -> T>;
+            let cb = param as *mut Box<dyn Fn(JsExecState) -> JsValue>;
             let f = &mut **cb;
 
-            if let Ok(r) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(arg0))) {
-                let value = JsValue::from_value(es, r);
-                value.as_ptr()
+            if let Ok(r) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(es))) {
+                r.as_ptr()
             } else {
-                unsafe { call_api_or_panic().jsNull() }
+                JsValue::from_value(es, ()).as_ptr()
             }
         }
 
+        let name = CString::safe_new(name);
         let param = Box::into_raw(Box::new(Box::new(func)));
 
-        unsafe {
-            call_api().unwrap().wkeJsBindFunction(
-                CString::safe_new(name).into_raw(),
-                Some(shim::<P, T>),
-                param as _,
-                1,
-            )
-        }
+        unsafe { call_api_or_panic().wkeJsBindFunction(name.as_ptr(), Some(shim), param as _, 1) }
     }
 
     /// Set the global proxy. See wkeSetProxy.
