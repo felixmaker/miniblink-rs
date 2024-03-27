@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 
 use crate::error::{MBError, MBResult};
 use crate::{call_api_or_panic, util::SafeCString};
-use miniblink_sys::{jsExecState, jsType, jsValue};
+use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsType {
@@ -167,6 +168,58 @@ impl JsExecState {
             inner: unsafe { call_api_or_panic().jsEmptyArray(self.as_ptr()) },
         }
     }
+
+    fn empty_object(&self) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsEmptyObject(self.as_ptr()) },
+        }
+    }
+
+    fn get(&self, js_object: JsValue, prop: &str) -> JsValue {
+        let prop = CString::safe_new(prop);
+        JsValue {
+            inner: unsafe {
+                call_api_or_panic().jsGet(self.as_ptr(), js_object.as_ptr(), prop.as_ptr())
+            },
+        }
+    }
+
+    fn set(&self, js_object: JsValue, prop: &str, value: JsValue) {
+        let prop = CString::safe_new(prop);
+        unsafe {
+            call_api_or_panic().jsSet(
+                self.as_ptr(),
+                js_object.as_ptr(),
+                prop.as_ptr(),
+                value.as_ptr(),
+            )
+        }
+    }
+
+    fn get_keys(&self, js_object: JsValue) -> JsKeys {
+        let js_keys = unsafe { call_api_or_panic().jsGetKeys(self.as_ptr(), js_object.as_ptr()) };
+        JsKeys { inner: js_keys }
+    }
+}
+
+struct JsKeys {
+    inner: *mut jsKeys,
+}
+
+impl JsKeys {
+    fn get_length(&self) -> usize {
+        unsafe { (*self.inner).length as usize }
+    }
+
+    fn get_keys(&self) -> Vec<String> {
+        let keys = unsafe { std::slice::from_raw_parts((*self.inner).keys, self.get_length()) };
+        let mut vec = Vec::with_capacity(self.get_length());
+        for key in keys {
+            let cstr = unsafe { CStr::from_ptr(key.clone()) };
+            vec.push(cstr.to_string_lossy().to_string())
+        }
+        vec
+    }
 }
 
 /// A type used in miniblink. See jsValue.
@@ -264,5 +317,27 @@ where
             *v = self.value(self.get_at(js_array, i as i32))?
         }
         Ok(vec)
+    }
+}
+
+impl<V> MBExecStateValue<HashMap<String, V>> for JsExecState
+where
+    Self: MBExecStateValue<V>,
+{
+    fn js_value(&self, value: HashMap<String, V>) -> JsValue {
+        let object = self.empty_object();
+        for (k, v) in value.into_iter() {
+            self.set(object, k.as_str(), self.js_value(v));
+        }
+        object
+    }
+
+    fn value(&self, js_object: JsValue) -> MBResult<HashMap<String, V>> {
+        let mut map = HashMap::new();
+        let keys = self.get_keys(js_object);
+        for key in keys.get_keys().iter() {
+            map.insert(key.to_owned(), self.value(self.get(js_object, key))?);
+        }
+        Ok(map)
     }
 }
