@@ -61,6 +61,87 @@ impl JsExecState {
         self.inner
     }
 
+    fn int(&self, value: i32) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsInt(value as i32) },
+        }
+    }
+
+    fn to_int(&self, value: JsValue) -> MBResult<i32> {
+        unsafe {
+            match value.get_type() {
+                JsType::Number => Ok(call_api_or_panic().jsToInt(self.inner, value.inner)),
+                _ => Err(MBError::FromJsValueFailed(value)),
+            }
+        }
+    }
+
+    fn double(&self, value: f64) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsDouble(value) },
+        }
+    }
+
+    fn to_double(&self, value: JsValue) -> MBResult<f64> {
+        match value.get_type() {
+            JsType::Number => {
+                Ok(unsafe { call_api_or_panic().jsToDouble(self.inner, value.inner) })
+            }
+            _ => Err(MBError::FromJsValueFailed(value)),
+        }
+    }
+
+    fn boolean(&self, value: bool) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsBoolean(value) },
+        }
+    }
+
+    fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
+        match value.get_type() {
+            JsType::Boolean => {
+                Ok(unsafe { call_api_or_panic().jsToBoolean(self.inner, value.inner) != 0 })
+            }
+            _ => Err(MBError::FromJsValueFailed(value)),
+        }
+    }
+
+    fn string(&self, value: String) -> JsValue {
+        let text = CString::safe_new(&value);
+        let value = unsafe { call_api_or_panic().jsString(self.inner, text.as_ptr()) };
+        JsValue { inner: value }
+    }
+
+    fn to_string(&self, value: JsValue) -> MBResult<String> {
+        unsafe {
+            match value.get_type() {
+                JsType::Boolean
+                | JsType::Null
+                | JsType::Number
+                | JsType::String
+                | JsType::Undefined => {
+                    let cstr = call_api_or_panic().jsToTempString(self.inner, value.inner);
+                    let cstr = CStr::from_ptr(cstr);
+                    Ok(cstr.to_string_lossy().to_string())
+                }
+                _ => Err(MBError::FromJsValueFailed(value)),
+            }
+        }
+    }
+
+    fn undefined(&self) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsUndefined() },
+        }
+    }
+
+    #[allow(dead_code)]
+    fn null(&self) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsNull() },
+        }
+    }
+
     fn get_at(&self, js_array: JsValue, index: i32) -> JsValue {
         JsValue {
             inner: unsafe { call_api_or_panic().jsGetAt(self.as_ptr(), js_array.as_ptr(), index) },
@@ -79,6 +160,12 @@ impl JsExecState {
 
     fn set_length(&self, js_array: JsValue, length: i32) {
         unsafe { call_api_or_panic().jsSetLength(self.as_ptr(), js_array.as_ptr(), length) }
+    }
+
+    fn empty_array(&self) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsEmptyArray(self.as_ptr()) },
+        }
     }
 }
 
@@ -106,82 +193,47 @@ pub trait MBExecStateValue<T> {
 
 impl MBExecStateValue<i32> for JsExecState {
     fn js_value(&self, value: i32) -> JsValue {
-        let value = unsafe { call_api_or_panic().jsInt(value as i32) };
-        JsValue { inner: value }
+        self.int(value)
     }
 
     fn value(&self, value: JsValue) -> MBResult<i32> {
-        unsafe {
-            match value.get_type() {
-                JsType::Number => Ok(call_api_or_panic().jsToInt(self.inner, value.inner)),
-                _ => Err(MBError::FromJsValueFailed(value)),
-            }
-        }
+        self.to_int(value)
     }
 }
 
 impl MBExecStateValue<f64> for JsExecState {
     fn js_value(&self, value: f64) -> JsValue {
-        let value = unsafe { call_api_or_panic().jsDouble(value) };
-        JsValue { inner: value }
+        self.double(value)
     }
 
     fn value(&self, value: JsValue) -> MBResult<f64> {
-        match value.get_type() {
-            JsType::Number => {
-                Ok(unsafe { call_api_or_panic().jsToDouble(self.inner, value.inner) })
-            }
-            _ => Err(MBError::FromJsValueFailed(value)),
-        }
+        self.to_double(value)
     }
 }
 
 impl MBExecStateValue<bool> for JsExecState {
     fn js_value(&self, value: bool) -> JsValue {
-        let value = unsafe { call_api_or_panic().jsBoolean(value) };
-        JsValue { inner: value }
+        self.boolean(value)
     }
 
     fn value(&self, value: JsValue) -> MBResult<bool> {
-        match value.get_type() {
-            JsType::Boolean => {
-                Ok(unsafe { call_api_or_panic().jsToBoolean(self.inner, value.inner) != 0 })
-            }
-            _ => Err(MBError::FromJsValueFailed(value)),
-        }
+        self.to_boolean(value)
     }
 }
 
 impl MBExecStateValue<String> for JsExecState {
     fn js_value(&self, value: String) -> JsValue {
-        let text = CString::safe_new(&value);
-        let value = unsafe { call_api_or_panic().jsString(self.inner, text.as_ptr()) };
-        JsValue { inner: value }
+        self.string(value)
     }
 
     fn value(&self, value: JsValue) -> MBResult<String> {
-        unsafe {
-            match value.get_type() {
-                JsType::Boolean
-                | JsType::Null
-                | JsType::Number
-                | JsType::String
-                | JsType::Undefined => {
-                    let cstr = call_api_or_panic().jsToTempString(self.inner, value.inner);
-                    let cstr = CStr::from_ptr(cstr);
-                    Ok(cstr.to_string_lossy().to_string())
-                }
-                _ => Err(MBError::FromJsValueFailed(value)),
-            }
-        }
+        self.to_string(value)
     }
 }
 
 impl MBExecStateValue<()> for JsExecState {
     fn js_value(&self, _value: ()) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsUndefined() },
-        }
+        self.undefined()
     }
 
     fn value(&self, value: JsValue) -> MBResult<()> {
@@ -192,12 +244,25 @@ impl MBExecStateValue<()> for JsExecState {
     }
 }
 
-struct JsArray {
-    inner: jsValue,
-}
+impl<T> MBExecStateValue<Vec<T>> for JsExecState
+where
+    Self: MBExecStateValue<T>,
+{
+    fn js_value(&self, value: Vec<T>) -> JsValue {
+        let array = self.empty_array();
+        self.set_length(array, value.len() as i32);
+        for (i, v) in value.into_iter().enumerate() {
+            self.set_at(array, i as i32, self.js_value(v))
+        }
+        array
+    }
 
-impl JsArray {
-    fn get_at(&self, es: JsExecState, index: i32) {
-        call_api_or_panic().jsGetAt(es.as_ptr(), self.inner, index)
+    fn value(&self, js_array: JsValue) -> MBResult<Vec<T>> {
+        let length = self.get_length(js_array);
+        let mut vec = Vec::with_capacity(length as usize);
+        for (i, v) in vec.iter_mut().enumerate() {
+            *v = self.value(self.get_at(js_array, i as i32))?
+        }
+        Ok(vec)
     }
 }
