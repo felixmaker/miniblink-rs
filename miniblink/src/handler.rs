@@ -1,6 +1,7 @@
 use std::ffi::CStr;
 
 use crate::{
+    value::{JsExecState, JsValue, MBExecStateValue},
     webview::{NavigationType, WebView},
     wstr::WkeStr,
 };
@@ -84,4 +85,22 @@ where
 
     let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut webview, url)));
     r.unwrap_or(false)
+}
+
+pub(crate) unsafe extern "C" fn js_native_function_handler<F>(
+    es: miniblink_sys::jsExecState,
+    param: *mut std::os::raw::c_void,
+) -> miniblink_sys::jsValue
+where
+    F: Fn(JsExecState) -> JsValue,
+{
+    let es = JsExecState { inner: es };
+    let cb = param as *mut F;
+    let f = &mut *cb;
+
+    if let Ok(r) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(es))) {
+        r.as_ptr()
+    } else {
+        es.js_value(()).as_ptr()
+    }
 }

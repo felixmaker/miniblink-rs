@@ -5,6 +5,7 @@ use miniblink_sys::Library;
 use crate::{
     call_api_or_panic,
     error::{MBError, MBResult},
+    handler::js_native_function_handler,
     proxy::ProxyConfig,
     util::SafeCString,
     value::{JsExecState, JsValue, MBExecStateValue},
@@ -125,31 +126,20 @@ impl App {
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    fn js_bind_function<F>(&self, name: &str, func: F, arg_count: u32)
+    pub fn js_bind_function<F>(&self, name: &str, func: F, arg_count: u32)
     where
         F: Fn(JsExecState) -> JsValue + 'static,
     {
-        unsafe extern "C" fn shim(
-            es: miniblink_sys::jsExecState,
-            param: *mut std::os::raw::c_void,
-        ) -> miniblink_sys::jsValue {
-            let es = JsExecState { inner: es };
-            let cb = param as *mut Box<dyn Fn(JsExecState) -> JsValue>;
-            let f = &mut **cb;
-
-            if let Ok(r) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(es))) {
-                r.as_ptr()
-            } else {
-                es.js_value(()).as_ptr()
-            }
-        }
-
         let name = CString::safe_new(name);
-        let param: *mut Box<dyn Fn(JsExecState) -> JsValue> =
-            Box::into_raw(Box::new(Box::new(func)));
+        let param: *mut F = Box::into_raw(Box::new(func));
 
         unsafe {
-            call_api_or_panic().wkeJsBindFunction(name.as_ptr(), Some(shim), param as _, arg_count)
+            call_api_or_panic().wkeJsBindFunction(
+                name.as_ptr(),
+                Some(js_native_function_handler::<F>),
+                param as _,
+                arg_count,
+            )
         }
     }
 
