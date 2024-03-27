@@ -50,8 +50,7 @@ impl JsExecState {
         Self: MBExecStateValue<T>,
     {
         let value = self.arg(index);
-        self.value(value)
-            .map_err(|_| MBError::TypeError(index))
+        self.value(value).map_err(|_| MBError::TypeError(index))
     }
 
     pub fn arg_count(&self) -> i32 {
@@ -60,6 +59,26 @@ impl JsExecState {
 
     pub fn as_ptr(&self) -> jsExecState {
         self.inner
+    }
+
+    fn get_at(&self, js_array: JsValue, index: i32) -> JsValue {
+        JsValue {
+            inner: unsafe { call_api_or_panic().jsGetAt(self.as_ptr(), js_array.as_ptr(), index) },
+        }
+    }
+
+    fn set_at(&self, js_array: JsValue, index: i32, js_value: JsValue) {
+        unsafe {
+            call_api_or_panic().jsSetAt(self.as_ptr(), js_array.as_ptr(), index, js_value.as_ptr())
+        }
+    }
+
+    fn get_length(&self, js_array: JsValue) -> i32 {
+        unsafe { call_api_or_panic().jsGetLength(self.as_ptr(), js_array.as_ptr()) }
+    }
+
+    fn set_length(&self, js_array: JsValue, length: i32) {
+        unsafe { call_api_or_panic().jsSetLength(self.as_ptr(), js_array.as_ptr(), length) }
     }
 }
 
@@ -170,5 +189,15 @@ impl MBExecStateValue<()> for JsExecState {
             JsType::Undefined => Ok(()),
             _ => Err(MBError::FromJsValueFailed(value)),
         }
+    }
+}
+
+struct JsArray {
+    inner: jsValue,
+}
+
+impl JsArray {
+    fn get_at(&self, es: JsExecState, index: i32) {
+        call_api_or_panic().jsGetAt(es.as_ptr(), self.inner, index)
     }
 }
