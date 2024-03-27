@@ -81,14 +81,20 @@ pub struct WebViewBuilder<'a> {
 
 impl<'a> WebViewBuilder<'a> {
     /// Create [`WebViewBuilder`] as a child window inside the provided [`HasWindowHandle`]
-    pub fn with_parent(mut self, parent: &'a impl HasWindowHandle) -> Self {
+    pub fn with_parent<H>(mut self, parent: &'a H) -> Self
+    where
+        H: HasWindowHandle,
+    {
         self.hwnd = Some(parent);
         self
     }
 
     /// Set a custom [user-agent](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) for the WebView.
-    pub fn with_user_agent(mut self, user_agent: &str) -> Self {
-        self.attrs.user_agent = Some(user_agent.to_string());
+    pub fn with_user_agent<S>(mut self, user_agent: S) -> Self
+    where
+        S: Into<String>,
+    {
+        self.attrs.user_agent = Some(user_agent.into());
         self
     }
 
