@@ -78,7 +78,10 @@ impl App {
     }
 
     /// Initialize miniblink from `path`. Panic if failed to initialize. See wkeInitialize.
-    pub fn init<P: AsRef<OsStr>>(path: P) -> MBResult<Self> {
+    pub fn init<P>(path: P) -> MBResult<Self>
+    where
+        P: AsRef<OsStr>,
+    {
         let lib =
             unsafe { Library::new(path) }.map_err(|e| MBError::LibraryUnloaded(e.to_string()))?;
         let lib = LIB.get_or_init(|| lib);
@@ -94,10 +97,10 @@ impl App {
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    pub fn bind<P1, T>(&self, name: &str, func: impl Fn(P1) -> T + 'static)
+    pub fn bind<P1, T, F>(&self, name: &str, func: F)
     where
-        JsValue: MBExecStateValue<P1>,
-        JsValue: MBExecStateValue<T>,
+        F: Fn(P1) -> T + 'static,
+        JsValue: MBExecStateValue<P1> + MBExecStateValue<T>,
         P1: Default,
     {
         self.js_bind_function(
@@ -110,9 +113,7 @@ impl App {
     /// Bind function to global `window` object. See wkeJsBindFunction.
     pub fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
     where
-        JsValue: MBExecStateValue<P1>,
-        JsValue: MBExecStateValue<P2>,
-        JsValue: MBExecStateValue<T>,
+        JsValue: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
         P1: Default,
         P2: Default,
     {
@@ -126,12 +127,10 @@ impl App {
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    fn js_bind_function(
-        &self,
-        name: &str,
-        func: impl Fn(JsExecState) -> JsValue + 'static,
-        arg_count: u32,
-    ) {
+    fn js_bind_function<F>(&self, name: &str, func: F, arg_count: u32)
+    where
+        F: Fn(JsExecState) -> JsValue + 'static,
+    {
         unsafe extern "C" fn shim(
             es: miniblink_sys::jsExecState,
             param: *mut std::os::raw::c_void,

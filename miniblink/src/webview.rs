@@ -112,14 +112,20 @@ impl<'a> WebViewBuilder<'a> {
 
     /// Load the provided URL when the builder calling [`WebViewBuilder::build`] to create the [`WebView`].
     /// The provided URL must be valid.
-    pub fn with_url(mut self, url: impl Into<String>) -> Self {
+    pub fn with_url<S>(mut self, url: S) -> Self
+    where
+        S: Into<String>,
+    {
         self.attrs.url = Some(url.into());
         self
     }
 
     /// Load the provided HTML string when the builder calling [`WebViewBuilder::build`] to create the [`WebView`].
     /// This will be ignored if `url` is provided.
-    pub fn with_html(mut self, html: impl Into<String>) -> Self {
+    pub fn with_html<S>(mut self, html: S) -> Self
+    where
+        S: Into<String>,
+    {
         self.attrs.html = Some(html.into());
         self
     }
@@ -128,10 +134,10 @@ impl<'a> WebViewBuilder<'a> {
     ///
     /// The closure take a `String` parameter as url and returns a `bool` to determine whether the navigation should happen.
     /// `true` allows to navigate and `false` does not.
-    pub fn with_on_navigation_handler(
-        mut self,
-        callback: impl FnMut(&mut WebView, NavigationType, String) -> bool + 'static,
-    ) -> Self {
+    pub fn with_on_navigation_handler<F>(mut self, callback: F) -> Self
+    where
+        F: FnMut(&mut WebView, NavigationType, String) -> bool + 'static,
+    {
         self.attrs.on_navigation_handler = Some(Box::new(callback));
         self
     }
@@ -139,43 +145,46 @@ impl<'a> WebViewBuilder<'a> {
     /// Set a download started handler to manage incoming downloads.
     ///
     /// The closure takes a `String` as the url being downloaded from and  returns a `bool` to allow or deny the download.
-    pub fn with_on_download_handler(
-        mut self,
-        callback: impl FnMut(&mut WebView, String) -> bool + 'static,
-    ) -> Self {
+    pub fn with_on_download_handler<F>(mut self, callback: F) -> Self
+    where
+        F: FnMut(&mut WebView, String) -> bool + 'static,
+    {
         self.attrs.on_download_handler = Some(Box::new(callback));
         self
     }
 
     /// Set a handler closure to process the change of the webview's document title.
-    pub fn with_on_title_changed_handler(
-        mut self,
-        callback: impl FnMut(&mut WebView, String) + 'static,
-    ) -> Self {
+    pub fn with_on_title_changed_handler<F>(mut self, callback: F) -> Self
+    where
+        F: FnMut(&mut WebView, String) + 'static,
+    {
         self.attrs.on_title_changed_handler = Some(Box::new(callback));
         self
     }
 
     /// Set a handler closure on document ready.
-    pub fn with_on_document_ready_handler(
-        mut self,
-        callback: impl FnMut(&mut WebView) + 'static,
-    ) -> Self {
+    pub fn with_on_document_ready_handler<F>(mut self, callback: F) -> Self
+    where
+        F: FnMut(&mut WebView) + 'static,
+    {
         self.attrs.on_document_ready_handler = Some(Box::new(callback));
         self
     }
 
     /// Set a handler closure on window closing.
-    pub fn with_on_window_closing_handler(
-        mut self,
-        callback: impl FnMut(&mut WebView) -> bool + 'static,
-    ) -> Self {
+    pub fn with_on_window_closing_handler<F>(mut self, callback: F) -> Self
+    where
+        F: FnMut(&mut WebView) -> bool + 'static,
+    {
         self.attrs.on_window_closing_handler = Some(Box::new(callback));
         self
     }
 
     /// Set the title of native window.
-    pub fn with_window_title(mut self, title: impl Into<String>) -> Self {
+    pub fn with_window_title<S>(mut self, title: S) -> Self
+    where
+        S: Into<String>,
+    {
         self.attrs.window_title = Some(title.into());
         self
     }
@@ -353,7 +362,7 @@ impl WebView {
     /// Run the provided script. See wkeRunJS.
     pub fn run_js<T>(&self, script: &str) -> MBResult<T>
     where
-        JsValue: MBExecStateValue<T>
+        JsValue: MBExecStateValue<T>,
     {
         let script = CString::safe_new(script);
         let js_value = JsValue {
