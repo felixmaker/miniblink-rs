@@ -1,4 +1,4 @@
-use crate::value::{JsType, JsValue};
+use crate::value::JsValue;
 
 /// Convenient type alias of Result type for miniblink.
 pub type MBResult<T> = std::result::Result<T, MBError>;
@@ -11,7 +11,7 @@ pub enum MBError {
     NotInitialized,
     LibraryUnloaded(String),
     FromJsValueFailed(JsValue),
-    TypeError(i32)
+    TypeError(i32),
 }
 
 impl MBError {
@@ -24,7 +24,7 @@ impl MBError {
             NotInitialized => "The miniblink is not initialized".into(),
             LibraryUnloaded(error) => format!("Failed to load miniblink! {error}"),
             FromJsValueFailed(value) => format!("Failed to convert jsValue `{value:?}`!"),
-            TypeError(index) => format!("TypeError: param of index `{index}`")
+            TypeError(index) => format!("TypeError: param of index `{index}`"),
         }
     }
 }
