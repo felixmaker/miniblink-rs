@@ -100,12 +100,12 @@ impl App {
     pub fn bind<P1, T, F>(&self, name: &str, func: F)
     where
         F: Fn(P1) -> T + 'static,
-        JsValue: MBExecStateValue<P1> + MBExecStateValue<T>,
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>,
         P1: Default,
     {
         self.js_bind_function(
             name,
-            move |es| JsValue::from_value(es, func(es.arg_value(0).unwrap())),
+            move |es| es.js_value(func(es.arg_value(0).unwrap())),
             1,
         );
     }
@@ -113,15 +113,13 @@ impl App {
     /// Bind function to global `window` object. See wkeJsBindFunction.
     pub fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
     where
-        JsValue: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
         P1: Default,
         P2: Default,
     {
         self.js_bind_function(
             name,
-            move |es| {
-                JsValue::from_value(es, func(es.arg_value(0).unwrap(), es.arg_value(1).unwrap()))
-            },
+            move |es| es.js_value(func(es.arg_value(0).unwrap(), es.arg_value(1).unwrap())),
             2,
         );
     }
@@ -142,7 +140,7 @@ impl App {
             if let Ok(r) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(es))) {
                 r.as_ptr()
             } else {
-                JsValue::from_value(es, ()).as_ptr()
+                es.js_value(()).as_ptr()
             }
         }
 

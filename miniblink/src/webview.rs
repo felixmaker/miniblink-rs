@@ -6,7 +6,7 @@ use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use crate::error::{MBError, MBResult};
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
-use crate::value::{JsValue, MBExecStateValue};
+use crate::value::{JsExecState, JsValue, MBExecStateValue};
 
 use crate::{call_api, call_api_or_panic, handler};
 
@@ -368,16 +368,16 @@ impl WebView {
     /// Run the provided script. See wkeRunJS.
     pub fn run_js<T>(&self, script: &str) -> MBResult<T>
     where
-        JsValue: MBExecStateValue<T>,
+        JsExecState: MBExecStateValue<T>,
     {
         let script = CString::safe_new(script);
         let js_value = JsValue {
             inner: unsafe { call_api_or_panic().wkeRunJS(self.webview, script.as_ptr()) },
         };
-        let es = crate::value::JsExecState {
+        let es = JsExecState {
             inner: unsafe { call_api_or_panic().wkeGlobalExec(self.webview) },
         };
-        js_value.to_value(es)
+        es.value(js_value)
     }
 
     /// Get the cookie from web page. See wkeGetCookie.
