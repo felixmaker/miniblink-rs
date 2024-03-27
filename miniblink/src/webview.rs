@@ -253,23 +253,23 @@ impl WebView {
         }
 
         if let Some(on_navigation_handler) = attributes.on_navigation_handler {
-            self.on_navigation(Box::into_raw(Box::new(on_navigation_handler)));
+            self.on_navigation(on_navigation_handler);
         }
 
         if let Some(on_title_changed_handler) = attributes.on_title_changed_handler {
-            self.on_title_changed(Box::into_raw(Box::new(on_title_changed_handler)));
+            self.on_title_changed(on_title_changed_handler);
         }
 
         if let Some(on_window_closing_handler) = attributes.on_window_closing_handler {
-            self.on_window_closing(Box::into_raw(Box::new(on_window_closing_handler)));
+            self.on_window_closing(on_window_closing_handler);
         }
 
         if let Some(on_download_handler) = attributes.on_download_handler {
-            self.on_download(Box::into_raw(Box::new(on_download_handler)));
+            self.on_download(on_download_handler);
         }
 
         if let Some(on_document_ready_handler) = attributes.on_document_ready_handler {
-            self.on_document_ready(Box::into_raw(Box::new(on_document_ready_handler)));
+            self.on_document_ready(on_document_ready_handler);
         }
 
         self.set_visible(attributes.visible);
@@ -395,55 +395,72 @@ impl WebView {
         }
     }
 
-    fn on_navigation(
-        &self,
-        callback: *mut Box<dyn FnMut(&mut WebView, NavigationType, String) -> bool>,
-    ) {
+    fn on_navigation<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, NavigationType, String) -> bool,
+    {
+        let callback: *mut F = Box::into_raw(Box::new(callback));
         unsafe {
             call_api_or_panic().wkeOnNavigation(
                 self.webview,
-                Some(handler::navigation_handler),
-                callback as *mut _,
+                Some(handler::navigation_handler::<F>),
+                callback as _,
             );
         }
     }
 
-    fn on_title_changed(&self, callback: *mut Box<dyn FnMut(&mut WebView, String)>) {
+    fn on_title_changed<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, String),
+    {
+        let callback: *mut F = Box::into_raw(Box::new(callback));
         unsafe {
             call_api_or_panic().wkeOnTitleChanged(
                 self.webview,
-                Some(handler::wkestring_handler),
+                Some(handler::wkestring_handler::<F>),
                 callback as *mut _,
             );
         }
     }
 
-    fn on_download(&self, callback: *mut Box<dyn FnMut(&mut WebView, String) -> bool>) {
+    fn on_download<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, String) -> bool,
+    {
+        let callback: *mut F = Box::into_raw(Box::new(callback));
         unsafe {
             call_api_or_panic().wkeOnDownload(
                 self.webview,
-                Some(handler::cstr_to_bool_handler),
+                Some(handler::cstr_to_bool_handler::<F>),
                 callback as *mut _,
             );
         }
     }
 
-    fn on_document_ready(&self, callback: *mut Box<dyn FnMut(&mut WebView)>) {
+    fn on_document_ready<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView),
+    {
+        let callback: *mut F = Box::into_raw(Box::new(callback));
         unsafe {
             call_api_or_panic().wkeOnDocumentReady(
                 self.webview,
-                Some(handler::void_handler),
+                Some(handler::void_handler::<F>),
                 callback as *mut _,
             );
         }
     }
 
-    fn on_window_closing(&self, callback: *mut Box<dyn FnMut(&mut WebView) -> bool>) {
+    fn on_window_closing<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView) -> bool + 'static,
+    {
+        let callback: *mut F = Box::into_raw(Box::new(callback));
         unsafe {
             call_api_or_panic().wkeOnWindowClosing(
                 self.webview,
-                Some(handler::void_to_bool_handler),
-                callback as *mut _,
+                Some(handler::void_to_bool_handler::<F>),
+                callback as _,
             );
         }
     }
