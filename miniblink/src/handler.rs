@@ -27,7 +27,7 @@ where
     result.unwrap_or(false)
 }
 
-pub(crate) unsafe extern "C" fn wkestring_handler<F>(
+pub(crate) unsafe extern "C" fn title_changed_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
     title: miniblink_sys::wkeString,
@@ -42,7 +42,7 @@ pub(crate) unsafe extern "C" fn wkestring_handler<F>(
     let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut webview, title)));
 }
 
-pub(crate) unsafe extern "C" fn void_to_bool_handler<F>(
+pub(crate) unsafe extern "C" fn window_closing_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
 ) -> bool
@@ -57,7 +57,7 @@ where
     r.unwrap_or(false)
 }
 
-pub(crate) unsafe extern "C" fn void_handler<F>(
+pub(crate) unsafe extern "C" fn document_ready_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
 ) where
@@ -70,7 +70,7 @@ pub(crate) unsafe extern "C" fn void_handler<F>(
     let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut webview)));
 }
 
-pub(crate) unsafe extern "C" fn cstr_to_bool_handler<F>(
+pub(crate) unsafe extern "C" fn download_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
     url: *const ::std::os::raw::c_char,

@@ -423,7 +423,7 @@ impl WebView {
         unsafe {
             call_api_or_panic().wkeOnTitleChanged(
                 self.webview,
-                Some(handler::wkestring_handler::<F>),
+                Some(handler::title_changed_handler::<F>),
                 callback as *mut _,
             );
         }
@@ -437,7 +437,7 @@ impl WebView {
         unsafe {
             call_api_or_panic().wkeOnDownload(
                 self.webview,
-                Some(handler::cstr_to_bool_handler::<F>),
+                Some(handler::download_handler::<F>),
                 callback as *mut _,
             );
         }
@@ -451,7 +451,7 @@ impl WebView {
         unsafe {
             call_api_or_panic().wkeOnDocumentReady(
                 self.webview,
-                Some(handler::void_handler::<F>),
+                Some(handler::document_ready_handler::<F>),
                 callback as *mut _,
             );
         }
@@ -465,7 +465,7 @@ impl WebView {
         unsafe {
             call_api_or_panic().wkeOnWindowClosing(
                 self.webview,
-                Some(handler::void_to_bool_handler::<F>),
+                Some(handler::window_closing_handler::<F>),
                 callback as _,
             );
         }
