@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fmt::Display;
 
@@ -103,6 +102,7 @@ impl JsExecState {
         JsValue::from_ptr(unsafe { call_api_or_panic().jsDouble(value) })
     }
 
+    #[allow(dead_code)]
     pub(crate) fn to_double(&self, value: JsValue) -> MBResult<f64> {
         match value.get_type() {
             JsType::Number => {
@@ -125,7 +125,7 @@ impl JsExecState {
         }
     }
 
-    pub fn string(&self, value: &str) -> JsValue {
+    pub(crate) fn string(&self, value: &str) -> JsValue {
         let text = CString::safe_new(&value);
         let value = unsafe { call_api_or_panic().jsString(self.inner, text.as_ptr()) };
         JsValue::from_ptr(value)
@@ -148,6 +148,7 @@ impl JsExecState {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn undefined(&self) -> JsValue {
         JsValue::from_ptr(unsafe { call_api_or_panic().jsUndefined() })
     }
@@ -180,18 +181,18 @@ impl JsExecState {
         JsValue::from_ptr(unsafe { call_api_or_panic().jsEmptyArray(self.as_ptr()) })
     }
 
-    pub fn empty_object(&self) -> JsValue {
+    pub(crate) fn empty_object(&self) -> JsValue {
         JsValue::from_ptr(unsafe { call_api_or_panic().jsEmptyObject(self.as_ptr()) })
     }
 
-    pub fn get(&self, js_object: JsValue, prop: &str) -> JsValue {
+    pub(crate) fn get(&self, js_object: JsValue, prop: &str) -> JsValue {
         let prop = CString::safe_new(prop);
         JsValue::from_ptr(unsafe {
             call_api_or_panic().jsGet(self.as_ptr(), js_object.as_ptr(), prop.as_ptr())
         })
     }
 
-    pub fn set(&self, js_object: JsValue, prop: &str, value: JsValue) {
+    pub(crate) fn set(&self, js_object: JsValue, prop: &str, value: JsValue) {
         let prop = CString::safe_new(prop);
         unsafe {
             call_api_or_panic().jsSet(
@@ -281,14 +282,14 @@ impl JsValue {
 }
 
 pub trait MBExecStateValue<T> {
-    fn js_value(&self, value: T) -> JsValue;
+    fn js_value(&self, value: T) -> MBResult<JsValue>;
     fn value(&self, value: JsValue) -> MBResult<T>;
 }
 
 #[cfg(not(feature = "serde"))]
 impl MBExecStateValue<i32> for JsExecState {
-    fn js_value(&self, value: i32) -> JsValue {
-        self.int(value)
+    fn js_value(&self, value: i32) -> MBResult<JsValue> {
+        Ok(self.int(value))
     }
 
     fn value(&self, value: JsValue) -> MBResult<i32> {
@@ -298,8 +299,8 @@ impl MBExecStateValue<i32> for JsExecState {
 
 #[cfg(not(feature = "serde"))]
 impl MBExecStateValue<f64> for JsExecState {
-    fn js_value(&self, value: f64) -> JsValue {
-        self.double(value)
+    fn js_value(&self, value: f64) -> MBResult<JsValue> {
+        Ok(self.double(value))
     }
 
     fn value(&self, value: JsValue) -> MBResult<f64> {
@@ -309,8 +310,8 @@ impl MBExecStateValue<f64> for JsExecState {
 
 #[cfg(not(feature = "serde"))]
 impl MBExecStateValue<bool> for JsExecState {
-    fn js_value(&self, value: bool) -> JsValue {
-        self.boolean(value)
+    fn js_value(&self, value: bool) -> MBResult<JsValue> {
+        Ok(self.boolean(value))
     }
 
     fn value(&self, value: JsValue) -> MBResult<bool> {
@@ -320,8 +321,8 @@ impl MBExecStateValue<bool> for JsExecState {
 
 #[cfg(not(feature = "serde"))]
 impl MBExecStateValue<String> for JsExecState {
-    fn js_value(&self, value: String) -> JsValue {
-        self.string(value.as_str())
+    fn js_value(&self, value: String) -> MBResult<JsValue> {
+        Ok(self.string(value.as_str()))
     }
 
     fn value(&self, value: JsValue) -> MBResult<String> {
@@ -331,8 +332,8 @@ impl MBExecStateValue<String> for JsExecState {
 
 #[cfg(not(feature = "serde"))]
 impl MBExecStateValue<()> for JsExecState {
-    fn js_value(&self, _value: ()) -> JsValue {
-        self.undefined()
+    fn js_value(&self, _value: ()) -> MBResult<JsValue> {
+        Ok(self.undefined())
     }
 
     fn value(&self, value: JsValue) -> MBResult<()> {
@@ -348,13 +349,13 @@ impl<T> MBExecStateValue<Vec<T>> for JsExecState
 where
     Self: MBExecStateValue<T>,
 {
-    fn js_value(&self, value: Vec<T>) -> JsValue {
+    fn js_value(&self, value: Vec<T>) -> MBResult<JsValue> {
         let array = self.empty_array();
         self.set_length(array, value.len() as i32);
         for (i, v) in value.into_iter().enumerate() {
-            self.set_at(array, i as i32, self.js_value(v))
+            self.set_at(array, i as i32, self.js_value(v)?)
         }
-        array
+        Ok(array)
     }
 
     fn value(&self, js_array: JsValue) -> MBResult<Vec<T>> {
@@ -368,16 +369,18 @@ where
 }
 
 #[cfg(not(feature = "serde"))]
+use std::collections::HashMap;
+#[cfg(not(feature = "serde"))]
 impl<V> MBExecStateValue<HashMap<String, V>> for JsExecState
 where
     Self: MBExecStateValue<V>,
 {
-    fn js_value(&self, value: HashMap<String, V>) -> JsValue {
+    fn js_value(&self, value: HashMap<String, V>) -> MBResult<JsValue> {
         let object = self.empty_object();
         for (k, v) in value.into_iter() {
-            self.set(object, k.as_str(), self.js_value(v));
+            self.set(object, k.as_str(), self.js_value(v)?);
         }
-        object
+        Ok(object)
     }
 
     fn value(&self, js_object: JsValue) -> MBResult<HashMap<String, V>> {
@@ -395,8 +398,8 @@ impl<T> MBExecStateValue<T> for JsExecState
 where
     T: for<'de> serde::Deserialize<'de> + serde::Serialize,
 {
-    fn js_value(&self, value: T) -> JsValue {
-        crate::serde::to_value(*self, &value).unwrap()
+    fn js_value(&self, value: T) -> MBResult<JsValue> {
+        crate::serde::to_value(*self, &value)
     }
 
     fn value(&self, value: JsValue) -> MBResult<T> {

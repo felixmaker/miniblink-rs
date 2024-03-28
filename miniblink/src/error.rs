@@ -1,6 +1,7 @@
-use std::fmt::Display;
+use crate::value::JsValue;
 
-use crate::value::{JsType, JsValue};
+#[cfg(feature = "serde")]
+use  crate::value::JsType;
 
 /// Convenient type alias of Result type for miniblink.
 pub type MBResult<T> = std::result::Result<T, MBError>;
@@ -14,9 +15,12 @@ pub enum MBError {
     LibraryUnloaded(String),
     FromJsValueFailed(JsValue),
     TypeError(i32),
+    #[cfg(feature = "serde")]
     UnsupportedType(JsType, JsType),
+    #[cfg(feature = "serde")]
     SerdeMessage(String),
-    FailedToConvert(String, String)
+    #[cfg(feature = "serde")]
+    FailedToConvert(String, String),
 }
 
 impl MBError {
@@ -30,8 +34,11 @@ impl MBError {
             LibraryUnloaded(error) => format!("Failed to load miniblink! {error}"),
             FromJsValueFailed(value) => format!("Failed to convert jsValue `{value:?}`!"),
             TypeError(index) => format!("TypeError: param of index `{index}`"),
+            #[cfg(feature = "serde")]
             UnsupportedType(expected, but) => format!("Except {}, but {} provided!", expected, but),
+            #[cfg(feature = "serde")]
             SerdeMessage(msg) => format!("SerdeMessage: {msg}"),
+            #[cfg(feature = "serde")]
             FailedToConvert(from, to) => format!("Failed to convert from {from} to {to}"),
         }
     }
@@ -45,19 +52,21 @@ impl std::fmt::Display for MBError {
 
 impl std::error::Error for MBError {}
 
+#[cfg(feature = "serde")]
 impl serde::de::Error for MBError {
     fn custom<T>(msg: T) -> Self
     where
-        T: Display,
+        T: std::fmt::Display,
     {
         Self::SerdeMessage(msg.to_string())
     }
 }
 
+#[cfg(feature = "serde")]
 impl serde::ser::Error for MBError {
     fn custom<T>(msg: T) -> Self
     where
-        T: Display,
+        T: std::fmt::Display,
     {
         Self::SerdeMessage(msg.to_string())
     }

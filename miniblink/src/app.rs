@@ -100,7 +100,7 @@ impl App {
     /// Bind function to global `window` object. See wkeJsBindFunction.
     pub fn js_bind_function<F>(&self, name: &str, func: F, arg_count: u32)
     where
-        F: Fn(JsExecState) -> JsValue + 'static,
+        F: Fn(JsExecState) -> MBResult<JsValue> + 'static,
     {
         let name = CString::safe_new(name);
         let param: *mut F = Box::into_raw(Box::new(func));
@@ -129,42 +129,33 @@ impl App {
 pub trait AppExt {
     fn bind<P1, T, F>(&self, name: &str, func: F)
     where
-        F: Fn(P1) -> T + 'static,
-        JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>,
-        P1: Default;
+        F: Fn(P1) -> MBResult<T> + 'static,
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>;
 
-    fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
+    fn bind2<P1, P2, T, F>(&self, name: &str, func: F)
     where
-        JsExecState: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
-        P1: Default,
-        P2: Default;
+        F: Fn(P1, P2) -> MBResult<T> + 'static,
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>;
 }
 
 impl AppExt for App {
-    /// Bind function to global `window` object. See wkeJsBindFunction.
     fn bind<P1, T, F>(&self, name: &str, func: F)
     where
-        F: Fn(P1) -> T + 'static,
+        F: Fn(P1) -> MBResult<T> + 'static,
         JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>,
-        P1: Default,
     {
-        self.js_bind_function(
-            name,
-            move |es| es.js_value(func(es.arg_value(0).unwrap())),
-            1,
-        );
+        self.js_bind_function(name, move |es| es.js_value(func(es.arg_value(0)?)?), 1);
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
+    fn bind2<P1, P2, T, F>(&self, name: &str, func: F)
     where
+        F: Fn(P1, P2) -> MBResult<T> + 'static,
         JsExecState: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
-        P1: Default,
-        P2: Default,
     {
         self.js_bind_function(
             name,
-            move |es| es.js_value(func(es.arg_value(0).unwrap(), es.arg_value(1).unwrap())),
+            move |es| es.js_value(func(es.arg_value(0)?, es.arg_value(1)?)?),
             2,
         );
     }

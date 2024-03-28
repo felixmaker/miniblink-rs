@@ -7,7 +7,7 @@ fn main() {
         .expect("Failed to initialize miniblink!");
 
     app.bind("hello", |x: String| {
-        format!("hello {x}")
+        Ok(format!("hello {x}"))
     });
 
     let _ = WebViewBuilder::default()
