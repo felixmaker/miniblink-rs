@@ -5,7 +5,7 @@ use miniblink_sys::Library;
 use crate::{
     call_api_or_panic,
     error::{MBError, MBResult},
-    handler::js_native_function_handler,
+    handler,
     proxy::ProxyConfig,
     util::SafeCString,
     value::{JsExecState, JsValue, MBExecStateValue},
@@ -63,7 +63,7 @@ impl AppBuilder {
 pub struct App {}
 
 impl App {
-    fn new(attrs: AppAttributes) -> MBResult<Self> {
+    pub fn new(attrs: AppAttributes) -> MBResult<Self> {
         let lib_path = attrs.lib_path.unwrap_or(DEFAULT_MINIBLINK_LIB.into());
         let app = Self::init(lib_path)?;
 
@@ -98,34 +98,6 @@ impl App {
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
-    pub fn bind<P1, T, F>(&self, name: &str, func: F)
-    where
-        F: Fn(P1) -> T + 'static,
-        JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>,
-        P1: Default,
-    {
-        self.js_bind_function(
-            name,
-            move |es| es.js_value(func(es.arg_value(0).unwrap())),
-            1,
-        );
-    }
-
-    /// Bind function to global `window` object. See wkeJsBindFunction.
-    pub fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
-    where
-        JsExecState: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
-        P1: Default,
-        P2: Default,
-    {
-        self.js_bind_function(
-            name,
-            move |es| es.js_value(func(es.arg_value(0).unwrap(), es.arg_value(1).unwrap())),
-            2,
-        );
-    }
-
-    /// Bind function to global `window` object. See wkeJsBindFunction.
     pub fn js_bind_function<F>(&self, name: &str, func: F, arg_count: u32)
     where
         F: Fn(JsExecState) -> JsValue + 'static,
@@ -136,7 +108,7 @@ impl App {
         unsafe {
             call_api_or_panic().wkeJsBindFunction(
                 name.as_ptr(),
-                Some(js_native_function_handler::<F>),
+                Some(handler::js_native_function_handler::<F>),
                 param as _,
                 arg_count,
             )
@@ -151,5 +123,49 @@ impl App {
     /// Enable high DPI support. See wkeEnableHighDPISupport.
     pub fn enable_dpi_support(&self) {
         unsafe { call_api_or_panic().wkeEnableHighDPISupport() }
+    }
+}
+
+pub trait AppExt {
+    fn bind<P1, T, F>(&self, name: &str, func: F)
+    where
+        F: Fn(P1) -> T + 'static,
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>,
+        P1: Default;
+
+    fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
+    where
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
+        P1: Default,
+        P2: Default;
+}
+
+impl AppExt for App {
+    /// Bind function to global `window` object. See wkeJsBindFunction.
+    fn bind<P1, T, F>(&self, name: &str, func: F)
+    where
+        F: Fn(P1) -> T + 'static,
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>,
+        P1: Default,
+    {
+        self.js_bind_function(
+            name,
+            move |es| es.js_value(func(es.arg_value(0).unwrap())),
+            1,
+        );
+    }
+
+    /// Bind function to global `window` object. See wkeJsBindFunction.
+    fn bind2<P1, P2, T>(&self, name: &str, func: impl Fn(P1, P2) -> T + 'static)
+    where
+        JsExecState: MBExecStateValue<P1> + MBExecStateValue<P2> + MBExecStateValue<T>,
+        P1: Default,
+        P2: Default,
+    {
+        self.js_bind_function(
+            name,
+            move |es| es.js_value(func(es.arg_value(0).unwrap(), es.arg_value(1).unwrap())),
+            2,
+        );
     }
 }
