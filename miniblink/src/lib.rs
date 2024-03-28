@@ -7,9 +7,11 @@ mod wstr;
 pub mod app;
 pub mod error;
 pub mod proxy;
-pub mod serde;
 pub mod value;
 pub mod webview;
+
+#[cfg(feature = "serde")]
+pub mod serde;
 
 use std::sync::OnceLock;
 

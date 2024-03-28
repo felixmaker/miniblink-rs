@@ -285,6 +285,7 @@ pub trait MBExecStateValue<T> {
     fn value(&self, value: JsValue) -> MBResult<T>;
 }
 
+#[cfg(not(feature = "serde"))]
 impl MBExecStateValue<i32> for JsExecState {
     fn js_value(&self, value: i32) -> JsValue {
         self.int(value)
@@ -295,6 +296,7 @@ impl MBExecStateValue<i32> for JsExecState {
     }
 }
 
+#[cfg(not(feature = "serde"))]
 impl MBExecStateValue<f64> for JsExecState {
     fn js_value(&self, value: f64) -> JsValue {
         self.double(value)
@@ -305,6 +307,7 @@ impl MBExecStateValue<f64> for JsExecState {
     }
 }
 
+#[cfg(not(feature = "serde"))]
 impl MBExecStateValue<bool> for JsExecState {
     fn js_value(&self, value: bool) -> JsValue {
         self.boolean(value)
@@ -315,6 +318,7 @@ impl MBExecStateValue<bool> for JsExecState {
     }
 }
 
+#[cfg(not(feature = "serde"))]
 impl MBExecStateValue<String> for JsExecState {
     fn js_value(&self, value: String) -> JsValue {
         self.string(value.as_str())
@@ -325,6 +329,7 @@ impl MBExecStateValue<String> for JsExecState {
     }
 }
 
+#[cfg(not(feature = "serde"))]
 impl MBExecStateValue<()> for JsExecState {
     fn js_value(&self, _value: ()) -> JsValue {
         self.undefined()
@@ -338,6 +343,7 @@ impl MBExecStateValue<()> for JsExecState {
     }
 }
 
+#[cfg(not(feature = "serde"))]
 impl<T> MBExecStateValue<Vec<T>> for JsExecState
 where
     Self: MBExecStateValue<T>,
@@ -361,6 +367,7 @@ where
     }
 }
 
+#[cfg(not(feature = "serde"))]
 impl<V> MBExecStateValue<HashMap<String, V>> for JsExecState
 where
     Self: MBExecStateValue<V>,
@@ -380,5 +387,19 @@ where
             map.insert(key.to_owned(), self.value(self.get(js_object, key))?);
         }
         Ok(map)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<T> MBExecStateValue<T> for JsExecState
+where
+    T: for<'de> serde::Deserialize<'de> + serde::Serialize,
+{
+    fn js_value(&self, value: T) -> JsValue {
+        crate::serde::to_value(*self, &value).unwrap()
+    }
+
+    fn value(&self, value: JsValue) -> MBResult<T> {
+        crate::serde::from_value(*self, value)
     }
 }
