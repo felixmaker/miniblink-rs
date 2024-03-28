@@ -2,13 +2,14 @@
 
 mod handler;
 mod util;
+mod wstr;
 
 pub mod app;
 pub mod error;
 pub mod proxy;
+pub mod serde;
 pub mod value;
 pub mod webview;
-pub(crate) mod wstr;
 
 use std::sync::OnceLock;
 
