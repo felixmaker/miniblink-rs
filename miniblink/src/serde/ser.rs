@@ -11,7 +11,7 @@ pub struct Serializer {
     value: JsValue,
 }
 
-/// Convert [`T`] to [`JsValue`] using serde.
+/// Convert `T` to [`JsValue`] using serde.
 pub fn to_value<T>(es: JsExecState, value: &T) -> MBResult<JsValue>
 where
     T: ?Sized + Serialize,

@@ -5,18 +5,18 @@ mod handler;
 mod util;
 mod wstr;
 
-/// wrapper to wke global function, like wkeInitialize.
+/// Wrapper to wke global function, like wkeInitialize.
 pub mod app;
-/// error in miniblink (this crate). See [`MBResult`] and [`MBError`].
+/// Error in miniblink (this crate). See [`MBResult`] and [`MBError`].
 pub mod error;
-/// wapper to proxy structs, See [`ProxyConfig`].
+/// Wapper to proxy structs, See [`proxy::ProxyConfig`].
 pub mod proxy;
-/// wapper to jsValue. See [`JsValue`].
+/// Wapper to jsValue. See [`value::JsValue`].
 pub mod value;
-/// wapper to wkeWebView. See [`WebView`].
+/// Wapper to wkeWebView. See [`webview::WebView`].
 pub mod webview;
 
-/// support for serde. ensure to enable serde feature.
+/// Support for serde. Ensure to enable `serde` feature.
 #[cfg(feature = "serde")]
 pub mod serde;
 
@@ -27,7 +27,7 @@ use miniblink_sys::Library;
 
 pub(crate) static LIB: OnceLock<Library> = OnceLock::new();
 
-/// Get the inner [`Library`]. Use it to call unwrappered API.
+/// Call the inner [`Library`]. Use it to call unwrapped API.
 pub fn call_api() -> MBResult<&'static Library> {
     LIB.get().ok_or_else(|| MBError::NotInitialized)
 }

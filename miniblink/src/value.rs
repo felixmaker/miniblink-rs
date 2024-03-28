@@ -299,11 +299,11 @@ impl JsValue {
     }
 }
 
-/// Trait for converting between [`JsValue`] and [`T`].
+/// Trait for converting between [`JsValue`] and `T`.
 pub trait MBExecStateValue<T> {
-    /// Convert from [`T`] to [`JsValue`].
+    /// Convert from `T` to [`JsValue`].
     fn js_value(&self, value: T) -> MBResult<JsValue>;
-    /// Convert from [`JsValue`] to [`T`].
+    /// Convert from [`JsValue`] to `T`.
     fn value(&self, value: JsValue) -> MBResult<T>;
 }
 

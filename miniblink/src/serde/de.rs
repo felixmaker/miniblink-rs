@@ -8,7 +8,7 @@ use crate::{
     value::{JsExecState, JsType, JsValue},
 };
 
-/// Convert [`JsValue`] to [`T`] using serde.
+/// Convert [`JsValue`] to `T` using serde.
 pub fn from_value<'de, T>(es: JsExecState, value: JsValue) -> MBResult<T>
 where
     T: ?Sized + Deserialize<'de>,

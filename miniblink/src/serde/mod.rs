@@ -1,6 +1,6 @@
-/// Deserializer for [`JsValue`]
+/// Deserializer for [`crate::value::JsValue`]
 pub mod de;
-/// Serializer for [`JsValue`]
+/// Serializer for [`crate::value::JsValue`]
 pub mod ser;
 
 pub use de::from_value;

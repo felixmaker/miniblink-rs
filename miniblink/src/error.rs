@@ -9,7 +9,7 @@ pub type MBResult<T> = std::result::Result<T, MBError>;
 pub enum MBError {
     /// Raised when using miniblink on unsupported platform. Currently, miniblink only support Windows.
     UnsupportedPlatform,
-    /// Raised when miniblink not initialized. Make sure to call [`App::init`] or [`AppBuilder::build`] before using miniblink.
+    /// Raised when miniblink not initialized. Make sure to call `App::init` or `AppBuilder::build` before using miniblink.
     NotInitialized,
     /// Raised when unable to load miniblink.
     LibraryUnloaded(String),
