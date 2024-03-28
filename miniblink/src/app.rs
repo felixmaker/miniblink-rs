@@ -66,7 +66,7 @@ impl AppBuilder {
     }
 }
 
-/// Wrapper to wke global functions. Like wkeInitialize et al.
+/// Wrapper to wke global functions, like wkeInitialize et al.
 pub struct App {}
 
 impl App {
@@ -133,9 +133,9 @@ impl App {
     }
 }
 
-/// Extend api for [`App`]
+/// Extend api for [`App`].
 /// 
-/// Note: make sure to call [`App::init`] before using miniblink.
+/// Note: make sure to call [`App::init`] or [`AppBuilder::build`] before using miniblink.
 pub trait AppExt {
     /// Bind function like `P1 -> R` to global window object.
     fn bind<P1, T, F>(&self, name: &str, func: F)
@@ -163,7 +163,6 @@ impl AppExt for App {
         );
     }
 
-    /// Bind function to global `window` object. See wkeJsBindFunction.
     fn bind2<P1, P2, T, F>(&self, name: &str, func: F)
     where
         F: Fn(P1, P2) -> MBResult<T> + 'static,
