@@ -1,5 +1,4 @@
 use std::ffi::{CStr, CString};
-use std::fmt::Display;
 
 use crate::error::{MBError, MBResult};
 use crate::{call_api_or_panic, util::SafeCString};
@@ -48,7 +47,7 @@ impl From<jsType> for JsType {
     }
 }
 
-impl Display for JsType {
+impl std::fmt::Display for JsType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.as_str())
     }
@@ -70,7 +69,16 @@ impl JsExecState {
         Self: MBExecStateValue<T>,
     {
         let value = self.arg(index);
-        self.value(value).map_err(|_| MBError::TypeError(index))
+        self.value(value).map_err(|e| match e {
+            #[cfg(feature = "serde")]
+            MBError::SerdeMessage(msg) => {
+                MBError::ArgNotMatch(format!("not match at arg index {index}, {msg}"))
+            }
+            MBError::UnsupportedType(expect, provided) => MBError::ArgNotMatch(format!(
+                "not match at arg index {index}, expect {expect} but {provided} provided"
+            )),
+            _ => MBError::ArgNotMatch(format!("not match at arg index {index}")),
+        })
     }
 
     pub fn arg_count(&self) -> i32 {
@@ -93,7 +101,7 @@ impl JsExecState {
         unsafe {
             match value.get_type() {
                 JsType::Number => Ok(call_api_or_panic().jsToInt(self.inner, value.inner)),
-                _ => Err(MBError::FromJsValueFailed(value)),
+                other => Err(MBError::UnsupportedType(JsType::Number, other)),
             }
         }
     }
@@ -108,7 +116,7 @@ impl JsExecState {
             JsType::Number => {
                 Ok(unsafe { call_api_or_panic().jsToDouble(self.inner, value.inner) })
             }
-            _ => Err(MBError::FromJsValueFailed(value)),
+            other => Err(MBError::UnsupportedType(JsType::Number, other)),
         }
     }
 
@@ -121,7 +129,7 @@ impl JsExecState {
             JsType::Boolean => {
                 Ok(unsafe { call_api_or_panic().jsToBoolean(self.inner, value.inner) != 0 })
             }
-            _ => Err(MBError::FromJsValueFailed(value)),
+            other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
         }
     }
 
@@ -143,7 +151,7 @@ impl JsExecState {
                     let cstr = CStr::from_ptr(cstr);
                     Ok(cstr.to_string_lossy().to_string())
                 }
-                _ => Err(MBError::FromJsValueFailed(value)),
+                other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
             }
         }
     }
@@ -339,7 +347,7 @@ impl MBExecStateValue<()> for JsExecState {
     fn value(&self, value: JsValue) -> MBResult<()> {
         match value.get_type() {
             JsType::Undefined => Ok(()),
-            _ => Err(MBError::FromJsValueFailed(value)),
+            other => Err(MBError::UnsupportedType(JsType::Undefined, other)),
         }
     }
 }

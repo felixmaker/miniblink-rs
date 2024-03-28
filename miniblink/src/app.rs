@@ -144,7 +144,11 @@ impl AppExt for App {
         F: Fn(P1) -> MBResult<T> + 'static,
         JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>,
     {
-        self.js_bind_function(name, move |es| es.js_value(func(es.arg_value(0)?)?), 1);
+        self.js_bind_function(
+            name,
+            move |es| es.js_value(func(es.arg_value(0).unwrap())?),
+            1,
+        );
     }
 
     /// Bind function to global `window` object. See wkeJsBindFunction.
@@ -155,7 +159,7 @@ impl AppExt for App {
     {
         self.js_bind_function(
             name,
-            move |es| es.js_value(func(es.arg_value(0)?, es.arg_value(1)?)?),
+            move |es| es.js_value(func(es.arg_value(0).unwrap(), es.arg_value(1).unwrap())?),
             2,
         );
     }

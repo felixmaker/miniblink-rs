@@ -54,11 +54,7 @@ impl<'a> serde::Serializer for &'a mut Serializer {
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        match i32::try_from(v) {
-            Ok(v) => self.value = self.es.int(v),
-            Err(_) => Err(MBError::FailedToConvert("i32".into(), "i64".into()))?,
-        }
-        Ok(())
+        self.serialize_i32(v as i32)
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
@@ -74,11 +70,7 @@ impl<'a> serde::Serializer for &'a mut Serializer {
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        match i32::try_from(v) {
-            Ok(v) => self.value = self.es.int(v),
-            Err(_) => Err(MBError::FailedToConvert("i32".into(), "u64".into()))?,
-        }
-        Ok(())
+        self.serialize_i32(v as i32)
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {

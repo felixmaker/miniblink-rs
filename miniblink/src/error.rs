@@ -1,7 +1,4 @@
-use crate::value::JsValue;
-
-#[cfg(feature = "serde")]
-use  crate::value::JsType;
+use crate::value::JsType;
 
 /// Convenient type alias of Result type for miniblink.
 pub type MBResult<T> = std::result::Result<T, MBError>;
@@ -13,14 +10,10 @@ pub enum MBError {
     UnsupportedPlatform,
     NotInitialized,
     LibraryUnloaded(String),
-    FromJsValueFailed(JsValue),
-    TypeError(i32),
-    #[cfg(feature = "serde")]
+    ArgNotMatch(String),
     UnsupportedType(JsType, JsType),
     #[cfg(feature = "serde")]
-    SerdeMessage(String),
-    #[cfg(feature = "serde")]
-    FailedToConvert(String, String),
+    SerdeMessage(String)
 }
 
 impl MBError {
@@ -32,14 +25,10 @@ impl MBError {
             }
             NotInitialized => "The miniblink is not initialized".into(),
             LibraryUnloaded(error) => format!("Failed to load miniblink! {error}"),
-            FromJsValueFailed(value) => format!("Failed to convert jsValue `{value:?}`!"),
-            TypeError(index) => format!("TypeError: param of index `{index}`"),
-            #[cfg(feature = "serde")]
+            ArgNotMatch(msg) => format!("Invalid type: {msg}!"),
             UnsupportedType(expected, but) => format!("Except {}, but {} provided!", expected, but),
             #[cfg(feature = "serde")]
-            SerdeMessage(msg) => format!("SerdeMessage: {msg}"),
-            #[cfg(feature = "serde")]
-            FailedToConvert(from, to) => format!("Failed to convert from {from} to {to}"),
+            SerdeMessage(msg) => format!("Serde Message: {msg}"),
         }
     }
 }
