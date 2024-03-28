@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::fmt::Display;
 
 use crate::error::{MBError, MBResult};
 use crate::{call_api_or_panic, util::SafeCString};
-use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue};
+use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue, wkeMemBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsType {
@@ -15,6 +16,21 @@ pub enum JsType {
     Undefined,
     Array,
     Null,
+}
+
+impl JsType {
+    fn as_str(&self) -> &'static str {
+        match self {
+            JsType::Number => "NUMBER",
+            JsType::String => "STRING",
+            JsType::Boolean => "BOOLEAN",
+            JsType::Object => "OBJECT",
+            JsType::Function => "FUNCTION",
+            JsType::Undefined => "UNDEFINED",
+            JsType::Array => "ARRAY",
+            JsType::Null => "NULL",
+        }
+    }
 }
 
 impl From<jsType> for JsType {
@@ -33,6 +49,12 @@ impl From<jsType> for JsType {
     }
 }
 
+impl Display for JsType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// A type used in miniblink. See jsExecState.
 #[derive(Clone, Copy)]
 pub struct JsExecState {
@@ -41,9 +63,7 @@ pub struct JsExecState {
 
 impl JsExecState {
     pub fn arg(&self, index: i32) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsArg(self.inner, index) },
-        }
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsArg(self.inner, index) })
     }
 
     pub fn arg_value<T>(&self, index: i32) -> MBResult<T>
@@ -62,13 +82,15 @@ impl JsExecState {
         self.inner
     }
 
-    fn int(&self, value: i32) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsInt(value as i32) },
-        }
+    pub fn from_ptr(ptr: jsExecState) -> Self {
+        Self { inner: ptr }
     }
 
-    fn to_int(&self, value: JsValue) -> MBResult<i32> {
+    pub(crate) fn int(&self, value: i32) -> JsValue {
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsInt(value as i32) })
+    }
+
+    pub(crate) fn to_int(&self, value: JsValue) -> MBResult<i32> {
         unsafe {
             match value.get_type() {
                 JsType::Number => Ok(call_api_or_panic().jsToInt(self.inner, value.inner)),
@@ -77,13 +99,11 @@ impl JsExecState {
         }
     }
 
-    fn double(&self, value: f64) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsDouble(value) },
-        }
+    pub(crate) fn double(&self, value: f64) -> JsValue {
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsDouble(value) })
     }
 
-    fn to_double(&self, value: JsValue) -> MBResult<f64> {
+    pub(crate) fn to_double(&self, value: JsValue) -> MBResult<f64> {
         match value.get_type() {
             JsType::Number => {
                 Ok(unsafe { call_api_or_panic().jsToDouble(self.inner, value.inner) })
@@ -92,13 +112,11 @@ impl JsExecState {
         }
     }
 
-    fn boolean(&self, value: bool) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsBoolean(value) },
-        }
+    pub(crate) fn boolean(&self, value: bool) -> JsValue {
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsBoolean(value) })
     }
 
-    fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
+    pub(crate) fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
         match value.get_type() {
             JsType::Boolean => {
                 Ok(unsafe { call_api_or_panic().jsToBoolean(self.inner, value.inner) != 0 })
@@ -107,13 +125,13 @@ impl JsExecState {
         }
     }
 
-    fn string(&self, value: String) -> JsValue {
+    pub fn string(&self, value: &str) -> JsValue {
         let text = CString::safe_new(&value);
         let value = unsafe { call_api_or_panic().jsString(self.inner, text.as_ptr()) };
-        JsValue { inner: value }
+        JsValue::from_ptr(value)
     }
 
-    fn to_string(&self, value: JsValue) -> MBResult<String> {
+    pub(crate) fn to_string(&self, value: JsValue) -> MBResult<String> {
         unsafe {
             match value.get_type() {
                 JsType::Boolean
@@ -130,61 +148,50 @@ impl JsExecState {
         }
     }
 
-    fn undefined(&self) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsUndefined() },
-        }
+    pub(crate) fn undefined(&self) -> JsValue {
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsUndefined() })
     }
 
-    #[allow(dead_code)]
-    fn null(&self) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsNull() },
-        }
+    pub(crate) fn null(&self) -> JsValue {
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsNull() })
     }
 
-    fn get_at(&self, js_array: JsValue, index: i32) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsGetAt(self.as_ptr(), js_array.as_ptr(), index) },
-        }
+    pub(crate) fn get_at(&self, js_array: JsValue, index: i32) -> JsValue {
+        JsValue::from_ptr(unsafe {
+            call_api_or_panic().jsGetAt(self.as_ptr(), js_array.as_ptr(), index)
+        })
     }
 
-    fn set_at(&self, js_array: JsValue, index: i32, js_value: JsValue) {
+    pub(crate) fn set_at(&self, js_array: JsValue, index: i32, js_value: JsValue) {
         unsafe {
             call_api_or_panic().jsSetAt(self.as_ptr(), js_array.as_ptr(), index, js_value.as_ptr())
         }
     }
 
-    fn get_length(&self, js_array: JsValue) -> i32 {
+    pub(crate) fn get_length(&self, js_array: JsValue) -> i32 {
         unsafe { call_api_or_panic().jsGetLength(self.as_ptr(), js_array.as_ptr()) }
     }
 
-    fn set_length(&self, js_array: JsValue, length: i32) {
+    pub(crate) fn set_length(&self, js_array: JsValue, length: i32) {
         unsafe { call_api_or_panic().jsSetLength(self.as_ptr(), js_array.as_ptr(), length) }
     }
 
-    fn empty_array(&self) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsEmptyArray(self.as_ptr()) },
-        }
+    pub(crate) fn empty_array(&self) -> JsValue {
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsEmptyArray(self.as_ptr()) })
     }
 
-    fn empty_object(&self) -> JsValue {
-        JsValue {
-            inner: unsafe { call_api_or_panic().jsEmptyObject(self.as_ptr()) },
-        }
+    pub fn empty_object(&self) -> JsValue {
+        JsValue::from_ptr(unsafe { call_api_or_panic().jsEmptyObject(self.as_ptr()) })
     }
 
-    fn get(&self, js_object: JsValue, prop: &str) -> JsValue {
+    pub fn get(&self, js_object: JsValue, prop: &str) -> JsValue {
         let prop = CString::safe_new(prop);
-        JsValue {
-            inner: unsafe {
-                call_api_or_panic().jsGet(self.as_ptr(), js_object.as_ptr(), prop.as_ptr())
-            },
-        }
+        JsValue::from_ptr(unsafe {
+            call_api_or_panic().jsGet(self.as_ptr(), js_object.as_ptr(), prop.as_ptr())
+        })
     }
 
-    fn set(&self, js_object: JsValue, prop: &str, value: JsValue) {
+    pub fn set(&self, js_object: JsValue, prop: &str, value: JsValue) {
         let prop = CString::safe_new(prop);
         unsafe {
             call_api_or_panic().jsSet(
@@ -196,22 +203,36 @@ impl JsExecState {
         }
     }
 
-    fn get_keys(&self, js_object: JsValue) -> JsKeys {
+    pub(crate) fn get_keys(&self, js_object: JsValue) -> JsKeys {
         let js_keys = unsafe { call_api_or_panic().jsGetKeys(self.as_ptr(), js_object.as_ptr()) };
         JsKeys { inner: js_keys }
     }
+
+    #[allow(dead_code)]
+    pub(crate) fn array_buffer(&self, _buffer: &[u8], size: usize) -> JsValue {
+        JsValue::from_ptr(unsafe {
+            call_api_or_panic().jsArrayBuffer(self.as_ptr(), std::ptr::null(), size)
+        })
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn get_array_buffer(&self, buffer: JsValue) -> JsArrayBuffer {
+        JsArrayBuffer::from_ptr(unsafe {
+            call_api_or_panic().jsGetArrayBuffer(self.as_ptr(), buffer.as_ptr())
+        })
+    }
 }
 
-struct JsKeys {
+pub(crate) struct JsKeys {
     inner: *mut jsKeys,
 }
 
 impl JsKeys {
-    fn get_length(&self) -> usize {
+    pub(crate) fn get_length(&self) -> usize {
         unsafe { (*self.inner).length as usize }
     }
 
-    fn get_keys(&self) -> Vec<String> {
+    pub(crate) fn get_keys(&self) -> Vec<String> {
         let keys = unsafe { std::slice::from_raw_parts((*self.inner).keys, self.get_length()) };
         let mut vec = Vec::with_capacity(self.get_length());
         for key in keys {
@@ -219,6 +240,22 @@ impl JsKeys {
             vec.push(cstr.to_string_lossy().to_string())
         }
         vec
+    }
+
+    #[allow(dead_code)]
+    pub fn from_ptr(ptr: *mut jsKeys) -> Self {
+        Self { inner: ptr }
+    }
+}
+
+#[allow(dead_code)]
+pub(crate) struct JsArrayBuffer {
+    inner: *mut wkeMemBuf,
+}
+
+impl JsArrayBuffer {
+    pub fn from_ptr(ptr: *mut wkeMemBuf) -> Self {
+        Self { inner: ptr }
     }
 }
 
@@ -236,6 +273,10 @@ impl JsValue {
 
     pub fn as_ptr(&self) -> jsValue {
         self.inner
+    }
+
+    pub fn from_ptr(ptr: jsValue) -> Self {
+        Self { inner: ptr }
     }
 }
 
@@ -276,7 +317,7 @@ impl MBExecStateValue<bool> for JsExecState {
 
 impl MBExecStateValue<String> for JsExecState {
     fn js_value(&self, value: String) -> JsValue {
-        self.string(value)
+        self.string(value.as_str())
     }
 
     fn value(&self, value: JsValue) -> MBResult<String> {

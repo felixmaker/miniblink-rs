@@ -371,13 +371,16 @@ impl WebView {
         JsExecState: MBExecStateValue<T>,
     {
         let script = CString::safe_new(script);
-        let js_value = JsValue {
-            inner: unsafe { call_api_or_panic().wkeRunJS(self.webview, script.as_ptr()) },
-        };
-        let es = JsExecState {
-            inner: unsafe { call_api_or_panic().wkeGlobalExec(self.webview) },
-        };
+        let js_value = JsValue::from_ptr(unsafe {
+            call_api_or_panic().wkeRunJS(self.webview, script.as_ptr())
+        });
+        let es = self.global_exec();
         es.value(js_value)
+    }
+
+    /// Get JsExecState. See wkeGlobalExec.
+    pub fn global_exec(&self) -> JsExecState {
+        JsExecState::from_ptr(unsafe { call_api_or_panic().wkeGlobalExec(self.webview) })
     }
 
     /// Get the cookie from web page. See wkeGetCookie.

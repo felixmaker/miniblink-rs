@@ -94,7 +94,7 @@ pub(crate) unsafe extern "C" fn js_native_function_handler<F>(
 where
     F: Fn(JsExecState) -> JsValue,
 {
-    let es = JsExecState { inner: es };
+    let es = JsExecState::from_ptr(es);
     let cb = param as *mut F;
     let f = &mut *cb;
 
