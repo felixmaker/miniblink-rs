@@ -33,7 +33,7 @@ fn main() {
             var name=document.getElementById('name');
             var age=document.getElementById('age');
             var msg=document.getElementById('msg');
-            msg.value=window.format_user({name: name.value, age: age.value});
+            msg.value=window.format_user({name: name.value, age: parseInt(age.value)});
         }
         </script>
         </body>

@@ -30,7 +30,7 @@ fn main() {
         }
         </script>
         </body>
-        <html>        
+        </html>        
         "#,
         )
         .with_visible(true)
