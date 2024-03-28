@@ -8,6 +8,7 @@ use crate::{
     value::{JsExecState, JsType, JsValue},
 };
 
+/// Convert [`JsValue`] to [`T`] using serde.
 pub fn from_value<'de, T>(es: JsExecState, value: JsValue) -> MBResult<T>
 where
     T: ?Sized + Deserialize<'de>,
@@ -17,12 +18,14 @@ where
     Ok(t)
 }
 
+/// Deserializer for [`JsValue`]
 pub struct Deserializer {
     es: JsExecState,
     value: JsValue,
 }
 
 impl Deserializer {
+    /// Create [`Deserializer`] from [`JsValue`]
     pub fn from_value(es: JsExecState, value: JsValue) -> Self {
         Deserializer { es, value }
     }

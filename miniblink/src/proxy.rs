@@ -4,6 +4,7 @@ use miniblink_sys::{wkeProxy, wkeProxyType};
 
 use crate::util::SafeCString;
 
+/// Proxy Endpoint
 #[derive(Debug, Clone)]
 pub struct ProxyEndpoint {
     /// Proxy server host (e.g. 192.168.0.100, localhost, example.com, etc.)
@@ -16,6 +17,7 @@ pub struct ProxyEndpoint {
     pub password: Option<String>,
 }
 
+/// Proxy Config. Support HTTP, SOCKS4, SOCKS4A, SOCKS5, SOCKS5HOSTNAME
 #[derive(Debug, Clone)]
 pub enum ProxyConfig {
     /// Connect to no proxy server

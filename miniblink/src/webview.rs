@@ -34,6 +34,7 @@ impl Default for Rect {
     }
 }
 
+#[allow(missing_docs)]
 /// WebView Attributes
 pub struct WebViewAttributes {
     pub visible: bool,
@@ -73,6 +74,8 @@ impl Default for WebViewAttributes {
     }
 }
 
+/// Builder used to build [`WebView`]
+#[allow(missing_docs)]
 #[derive(Default)]
 pub struct WebViewBuilder<'a> {
     pub attrs: WebViewAttributes,
@@ -207,6 +210,7 @@ impl<'a> WebViewBuilder<'a> {
 
 type InnerWebView = miniblink_sys::wkeWebView;
 
+/// Wrapper to [`miniblink_sys::wkeWebView`]
 pub struct WebView {
     pub(crate) webview: InnerWebView,
 }
@@ -476,6 +480,7 @@ impl WebView {
 }
 
 /// Navigation Type. See wkeNavigationType.
+#[allow(missing_docs)]
 pub enum NavigationType {
     LinkClick,
     FormSubmitte,

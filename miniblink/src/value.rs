@@ -4,6 +4,8 @@ use crate::error::{MBError, MBResult};
 use crate::{call_api_or_panic, util::SafeCString};
 use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue, wkeMemBuf};
 
+/// Types in JavaScript, see [`jsType`].
+#[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsType {
     Number,
@@ -60,10 +62,12 @@ pub struct JsExecState {
 }
 
 impl JsExecState {
+    /// Get arg from execution state. See jsArg.
     pub fn arg(&self, index: i32) -> JsValue {
         JsValue::from_ptr(unsafe { call_api_or_panic().jsArg(self.inner, index) })
     }
 
+    /// Get arg value from execution state. Helper function.
     pub fn arg_value<T>(&self, index: i32) -> MBResult<T>
     where
         Self: MBExecStateValue<T>,
@@ -81,14 +85,17 @@ impl JsExecState {
         })
     }
 
+    /// Get arg count from execution state. See jsArgCount.
     pub fn arg_count(&self) -> i32 {
         unsafe { call_api_or_panic().jsArgCount(self.inner) }
     }
 
+    /// Get inner ptr of [`JsExecState`]. See [`jsExecState`].
     pub fn as_ptr(&self) -> jsExecState {
         self.inner
     }
 
+    /// Create [`JsExecState`] from ptr.
     pub fn from_ptr(ptr: jsExecState) -> Self {
         Self { inner: ptr }
     }
@@ -275,22 +282,28 @@ pub struct JsValue {
 }
 
 impl JsValue {
+    /// Get the type of [`JsValue`]. See jsTypeOf.
     pub fn get_type(&self) -> JsType {
         let js_type = unsafe { call_api_or_panic().jsTypeOf(self.inner) };
         js_type.into()
     }
 
+    /// Get the inner ptr of [`JsValue`]. See [`jsValue`].
     pub fn as_ptr(&self) -> jsValue {
         self.inner
     }
 
+    /// Create [`JsValue`] from ptr.
     pub fn from_ptr(ptr: jsValue) -> Self {
         Self { inner: ptr }
     }
 }
 
+/// Trait for converting between [`JsValue`] and [`T`].
 pub trait MBExecStateValue<T> {
+    /// Convert from [`T`] to [`JsValue`].
     fn js_value(&self, value: T) -> MBResult<JsValue>;
+    /// Convert from [`JsValue`] to [`T`].
     fn value(&self, value: JsValue) -> MBResult<T>;
 }
 

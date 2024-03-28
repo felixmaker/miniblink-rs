@@ -7,11 +7,17 @@ pub type MBResult<T> = std::result::Result<T, MBError>;
 #[non_exhaustive]
 #[derive(Debug)]
 pub enum MBError {
+    /// Raised when using miniblink on unsupported platform. Currently, miniblink only support Windows.
     UnsupportedPlatform,
+    /// Raised when miniblink not initialized. Make sure to call [`App::init`] or [`AppBuilder::build`] before using miniblink.
     NotInitialized,
+    /// Raised when unable to load miniblink.
     LibraryUnloaded(String),
+    /// Raised when args in callback failed to convert between Rust and miniblink.
     ArgNotMatch(String),
+    #[allow(missing_docs)]
     UnsupportedType(JsType, JsType),
+    #[allow(missing_docs)]
     #[cfg(feature = "serde")]
     SerdeMessage(String)
 }

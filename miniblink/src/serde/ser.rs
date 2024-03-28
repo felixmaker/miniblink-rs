@@ -5,11 +5,13 @@ use crate::{
     value::{JsExecState, JsValue},
 };
 
+/// Serializer for [`JsValue`]
 pub struct Serializer {
     es: JsExecState,
     value: JsValue,
 }
 
+/// Convert [`T`] to [`JsValue`] using serde.
 pub fn to_value<T>(es: JsExecState, value: &T) -> MBResult<JsValue>
 where
     T: ?Sized + Serialize,
@@ -206,6 +208,7 @@ impl<'a> serde::Serializer for &'a mut Serializer {
     }
 }
 
+#[doc(hidden)]
 pub struct MBSerializeSeq<'a> {
     ser: &'a mut Serializer,
     array: JsValue,
@@ -309,6 +312,7 @@ impl<'a> serde::ser::SerializeTupleVariant for MBSerializeSeq<'a> {
     }
 }
 
+#[doc(hidden)]
 pub struct MBSerializeMap<'a> {
     ser: &'a mut Serializer,
     object: JsValue,

@@ -14,6 +14,8 @@ use crate::{
 
 const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";
 
+/// App Attributes, used to build [`App`]
+#[allow(missing_docs)]
 #[derive(Default)]
 pub struct AppAttributes {
     pub lib_path: Option<OsString>,
@@ -21,6 +23,10 @@ pub struct AppAttributes {
     pub proxy_config: Option<ProxyConfig>,
 }
 
+/// App Builder, used to build [`App`]
+/// 
+/// Note: make sure to call [`App::init`] before using miniblink
+#[allow(missing_docs)]
 pub struct AppBuilder {
     pub attrs: AppAttributes,
 }
@@ -60,10 +66,11 @@ impl AppBuilder {
     }
 }
 
+/// Wrapper to wke global functions. Like wkeInitialize et al.
 pub struct App {}
 
 impl App {
-    pub fn new(attrs: AppAttributes) -> MBResult<Self> {
+    pub(crate) fn new(attrs: AppAttributes) -> MBResult<Self> {
         let lib_path = attrs.lib_path.unwrap_or(DEFAULT_MINIBLINK_LIB.into());
         let app = Self::init(lib_path)?;
 
@@ -126,12 +133,17 @@ impl App {
     }
 }
 
+/// Extend api for [`App`]
+/// 
+/// Note: make sure to call [`App::init`] before using miniblink.
 pub trait AppExt {
+    /// Bind function like `P1 -> R` to global window object.
     fn bind<P1, T, F>(&self, name: &str, func: F)
     where
         F: Fn(P1) -> MBResult<T> + 'static,
         JsExecState: MBExecStateValue<P1> + MBExecStateValue<T>;
 
+    /// Bind function like `P1, P2 -> R` to global window object.
     fn bind2<P1, P2, T, F>(&self, name: &str, func: F)
     where
         F: Fn(P1, P2) -> MBResult<T> + 'static,
