@@ -1,12 +1,13 @@
 [package]
 name = "miniblink"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["The miniblink-rs Authors"]
 description = "Rust bindings to mininlink49"
 license = "Apache-2.0 OR MIT"
 readme = "README.md"
 repository = "https://github.com/felixmaker/miniblink-rs"
+documentation = "https://docs.rs/miniblink"
 categories = [ "gui" ]
 exclude = ["./examples"]
 
