@@ -1,4 +1,4 @@
-use miniblink::{app::AppBuilder, webview::WebViewBuilder};
+use miniblink::{app::AppBuilder, webview::{WebViewBuilder, WebViewGetter}};
 
 fn main() {
     let app = AppBuilder::default()
