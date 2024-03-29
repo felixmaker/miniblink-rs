@@ -406,7 +406,7 @@ impl FromFFI<wkeString> for String {
 impl ToFFI<CCStr> for &str {
     fn to(&self) -> CCStr {
         let cstring = CString::safe_new(&self);
-        cstring.as_ptr()
+        cstring.into_raw()
     }
 }
 
