@@ -7,14 +7,11 @@ It's now under development, not ready for production.
 The api in this crate may change in the future.
 
 ```
-use miniblink::{app::AppBuilder, webview::WebViewBuilder};
+use miniblink::{app, webview::WebViewBuilder};
 
 fn main() {
-    let app = AppBuilder::default()
-        .with_lib_path("node.dll")
-        .build()
-        .expect("Failed to initialize miniblink!");
-
+    app::initialize("node.dll").unwrap();
+    
     let _ = WebViewBuilder::default()
         .with_window_title("Hello, Miniblink")
         .with_url("https://example.com")
@@ -23,6 +20,6 @@ fn main() {
         })
         .build();
 
-    app.run_message_loop();
+    app::run_message_loop();
 }
 ```
