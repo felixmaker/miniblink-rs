@@ -396,7 +396,7 @@ bind_target! {
 bind_target! {
     WebViewSetter for WebView {
         wkeSetResourceGc => set_resource_gc(resource_gc: i32);
-        // wkeSetFileSystem =>
+        // wkeSetFileSystem => set_file_system(...);
         wkeSetWebViewName => set_webview_name(webview_name: &str);
         // wkeSetClientHandler =>
         // wkeSetViewSettings =>
@@ -415,7 +415,7 @@ bind_target! {
         // wkeSetContextMenuItemShow =>
         wkeSetLanguage => set_language(language: &str);
         // wkeSetViewNetInterface =>
-        // wkeSetProxy =>
+        // wkeSetProxy => 
         wkeSetViewProxy => set_proxy(proxy: &ProxyConfig);
         wkeSetName => set_name(name: &str);
         // wkeSetHandle =>
@@ -424,7 +424,7 @@ bind_target! {
         wkeSetUserAgent => set_user_agent(user_agent: &str);
         // wkeSetUserAgentW =>
         // wkeSetDirty =>
-        // wkeSetCookie => set_cookie(cookie: &str)
+        wkeSetCookie => set_cookie(url: &str, cookie: &str);
         wkeSetCookieEnabled => set_cookie_enabled(cookie_enabled: bool);
         // wkeSetCookieJarPath => cookie_jar_path: &str;
         // wkeSetCookieJarFullPath => cookie_jar_full_path: &str;
@@ -441,9 +441,10 @@ bind_target! {
         // wkeSetDragFiles =>
         // wkeSetDeviceParameter =>
         // wkeSetUIThreadCallback =>
-        wkeSetWindowTitle => set_window_title(window_title: &str)
+        wkeSetWindowTitle => set_window_title(window_title: &str);
         // wkeSetWindowTitleW =>
         // wkeSetMediaPlayerFactory =>
+        wkeEnableWindow => enable_window(enable: bool)
     }
 }
 
@@ -452,6 +453,8 @@ bind_target! {
         wkeShowWindow => show_window(show: bool);
         wkeLoadHTML => load_html(html: &str);
         wkeLoadURL => load_url(url: &str);
-        wkeResize => resize(width: i32, height: i32)
+        wkeResize => resize(width: i32, height: i32);
+        wkeMoveWindow => move_window(x: i32, y: i32, width: i32, height: i32);
+        wkeMoveToCenter => move_to_center()
     }
 }
