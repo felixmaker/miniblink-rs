@@ -1,10 +1,14 @@
 #[doc(hidden)]
 #[macro_export]
 macro_rules! bind_handler {
-    ($trait: ident for $target: ident { $($mbcallback: ident => $handler: ident: ($($param: ident: $ctype: ty => $type: ty),*) $(-> $creturn: ty => $return: ty | $default: expr)?);* }) => {
-        #[doc=concat!("Handler for Webview. See [`", stringify!($trait), "`]")]
+    ($trait: ident for $target: ident {
+        $(
+            $mbcallback: ident ($($param: ident: $ctype: ty),*) $(-> $creturn: ty)? => 
+            $handler: ident ($($type: ty),*) $(-> $return: ty | $default: expr)?
+        );* 
+    }) => {
+        #[doc=concat!("Handlers for Webview. See [`", stringify!($trait), "`]")]
         pub trait $trait
-        // where Self: FromFFI<miniblink_sys::wkeWebView> + ToFFI<miniblink_sys::wkeWebView> + Sized 
         {
             $(
                 #[doc=concat!("Handler ", stringify!($handler), " handler. See ", stringify!($mbcallback), ".")]

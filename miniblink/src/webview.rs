@@ -10,7 +10,7 @@ use crate::util::SafeCString;
 use crate::value::{JsExecState, JsValue, MBExecStateValue};
 
 use crate::wstr::WkeStr;
-use crate::{bind_handler, bind_props_get, bind_props_set, call_api, call_api_or_panic};
+use crate::{bind_handler, bind_target, call_api, call_api_or_panic};
 
 /// A rectangular region.
 #[derive(Clone, Copy, Debug)]
@@ -284,7 +284,7 @@ impl WebView {
             self.on_document_ready(on_document_ready_handler);
         }
 
-        self.set_visible(attributes.visible);
+        self.show_window(attributes.visible);
     }
 
     fn create_popup_window(bounds: Rect) -> MBResult<Self> {
@@ -302,13 +302,6 @@ impl WebView {
         Ok(Self { webview: window })
     }
 
-    /// Set the visibility. See `wkeShowWindow`.
-    pub fn set_visible(&self, visible: bool) {
-        unsafe {
-            call_api_or_panic().wkeShowWindow(self.webview, visible);
-        }
-    }
-
     fn create_control_window(parent: HWND, bounds: Rect) -> MBResult<Self> {
         let window = unsafe {
             call_api()?.wkeCreateWebWindow(
@@ -322,29 +315,6 @@ impl WebView {
         };
 
         Ok(Self { webview: window })
-    }
-
-    /// Load the provided HTML. See `wkeLoadHTML`.
-    pub fn load_html(&self, html: &str) {
-        let html = CString::safe_new(html);
-        unsafe {
-            call_api_or_panic().wkeLoadHTML(self.webview, html.as_ptr());
-        }
-    }
-
-    /// Set the size. See `wkeResize`.
-    pub fn set_size(&self, width: u32, height: u32) {
-        unsafe {
-            call_api_or_panic().wkeResize(self.webview, width as i32, height as i32);
-        }
-    }
-
-    /// Load the provided URL. See `wkeLoadURL`.
-    pub fn load_url(&self, url: &str) {
-        let url = CString::safe_new(url);
-        unsafe {
-            call_api_or_panic().wkeLoadURL(self.webview, url.as_ptr());
-        }
     }
 
     /// Run the provided script. See `wkeRunJS`.
@@ -425,7 +395,7 @@ impl ToFFI<::std::os::raw::c_int> for i32 {
     }
 }
 
-use miniblink_sys::{wkeNavigationType, wkeString, wkeWebView, wkeProxy};
+use miniblink_sys::{wkeNavigationType, wkeProxy, wkeString, wkeWebView};
 impl FromFFI<wkeString> for String {
     fn from(value: wkeString) -> Self {
         let wke_str = WkeStr::from_ptr(value);
@@ -479,21 +449,21 @@ impl ToFFI<*mut wkeProxy> for &ProxyConfig {
 bind_handler! {
     WebViewHandler for WebView {
         // wkeOnCaretChanged => on_caret_changed
-        wkeOnMouseOverUrlChanged => on_mouse_over_url_changed: (title: wkeString => String);
-        wkeOnTitleChanged => on_title_changed: (title: wkeString => String);
-        wkeOnURLChanged => on_url_changed: (url: wkeString => String);
+        wkeOnMouseOverUrlChanged(title: wkeString) => on_mouse_over_url_changed(String);
+        wkeOnTitleChanged(title: wkeString) => on_title_changed(String);
+        wkeOnURLChanged(url: wkeString) => on_url_changed(String);
         // wkeOnURLChanged2 => on_url_changed2
         // wkeOnPaintUpdated => on_paint_updated
         // wkeOnPaintBitUpdated => on_paint_bit_updated
-        wkeOnAlertBox => on_alert_box: (msg: wkeString => String);
-        wkeOnConfirmBox => on_confirm_box: (msg: wkeString => String) -> bool => bool | false;
-        wkeOnPromptBox => on_prompt_box: (msg: wkeString => String, default_result: wkeString => String, result: wkeString => String) -> bool => bool | false;
-        wkeOnNavigation => on_navigation: (navigation_type: wkeNavigationType => NavigationType, url: wkeString => String) -> bool => bool | false;
+        wkeOnAlertBox(msg: wkeString) => on_alert_box(String);
+        wkeOnConfirmBox(msg: wkeString) -> bool => on_confirm_box(String) -> bool | false;
+        wkeOnPromptBox(msg: wkeString, default_result: wkeString, result: wkeString) -> bool => on_prompt_box(String, String, String) -> bool | false;
+        wkeOnNavigation(navigation_type: wkeNavigationType, url: wkeString) -> bool => on_navigation(NavigationType, String) -> bool | false;
         // wkeOnCreateView => on_create_view
-        wkeOnDocumentReady => on_document_ready: ();
+        wkeOnDocumentReady() => on_document_ready();
         // wkeOnDocumentReady2 => on_document_ready2
         // wkeOnLoadingFinish => on_loading_finish
-        wkeOnDownload => on_download: (url: CCStr => String) -> bool => bool | false;
+        wkeOnDownload(url: CCStr) -> bool => on_download(String) -> bool | false;
         // wkeOnDownload2 => on_download2
         // wkeOnConsole => on_console
         // wkeOnLoadUrlBegin => on_load_url_begin
@@ -503,8 +473,8 @@ bind_handler! {
         // wkeOnLoadUrlFail => on_load_url_fail
         // wkeOnDidCreateScriptContext => on_did_create_script_context
         // wkeOnWillReleaseScriptContext => on_will_release_script_context
-        wkeOnWindowClosing => on_window_closing: () -> bool => bool | false;
-        wkeOnWindowDestroy => on_window_destroy: ()
+        wkeOnWindowClosing() -> bool => on_window_closing() -> bool | false;
+        wkeOnWindowDestroy() => on_window_destroy()
         // wkeOnDraggableRegionsChanged => on_draggable_regions_changed
         // wkeOnWillMediaLoad => on_will_media_load
         // wkeOnStartDragging => on_start_dragging
@@ -515,38 +485,38 @@ bind_handler! {
     }
 }
 
-bind_props_get! {
+bind_target! {
     WebViewGetter for WebView {
-        wkeGetSource => source: String;
+        wkeGetSource => get_source() -> String;
         // wkeGetCaret =>
         // wkeGetClientHandler =>
         // wkeGetDebugConfig =>
-        wkeGetName => name: String;
-        wkeGetUserAgent => user_agent: String;
-        wkeGetURL => url: String;
+        wkeGetName => get_name() -> String;
+        wkeGetUserAgent => get_user_agent() -> String;
+        wkeGetURL => get_url() -> String;
         // wkeGetFrameUrl =>
-        wkeGetWebviewId => webview_id: i32;
+        wkeGetWebviewId => get_webview_id() -> i32;
         // wkeGetDocumentCompleteURL =>
-        wkeGetTitle => title: String;
+        wkeGetTitle => get_title() -> String;
         // wkeGetTitleW =>
-        wkeGetWidth => width: i32;
-        wkeGetHeight => height: i32;
-        wkeGetContentWidth => content_width: i32;
-        wkeGetContentHeight => content_height: i32;
+        wkeGetWidth => get_width() -> i32;
+        wkeGetHeight => get_height() -> i32;
+        wkeGetContentWidth => get_content_width() -> i32;
+        wkeGetContentHeight => get_content_height() -> i32;
         // wkeGetViewDC =>
         // wkeGetHostHWND =>
-        wkeGetNavigateIndex => navigate_index: i32;
+        wkeGetNavigateIndex => get_navigate_index() -> i32;
         // wkeGetCookieW =>
-        wkeGetCookie => cookie: String;
+        wkeGetCookie => get_cookie() -> String;
         // wkeGetMediaVolume =>
         // wkeGetCaretRect =>
         // wkeGetCaretRect2 =>
         // wkeGetGlobalExecByFrame =>
-        wkeGetZoomFactor => zoom_factor: f32
+        wkeGetZoomFactor => get_zoom_factor() -> f32
         // wkeGetString =>
         // wkeGetStringW =>
         // wkeGetStringLen =>
-        // wkeGetWebViewForCurrentContext => 
+        // wkeGetWebViewForCurrentContext =>
         // wkeGetUserKeyValue =>
         // wkeGetCursorInfoType =>
         // wkeGetTempCallbackInfo =>
@@ -557,57 +527,65 @@ bind_props_get! {
     }
 }
 
-
-bind_props_set! {
+bind_target! {
     WebViewSetter for WebView {
-        wkeSetResourceGc => resource_gc: i32;
-        // wkeSetFileSystem => 
-        wkeSetWebViewName => webview_name: &str;
-        // wkeSetClientHandler => 
-        // wkeSetViewSettings => 
-        // wkeSetDebugConfig => 
-        // wkeSetMemoryCacheEnable => 
-        wkeSetMouseEnabled => mouse_enabled: bool;
-        wkeSetTouchEnabled => touch_enabled: bool;
-        wkeSetSystemTouchEnabled => system_touch_enabled: bool;
-        wkeSetContextMenuEnabled => context_menu_enabled: bool;
-        wkeSetNavigationToNewWindowEnable => navigation_to_new_window_enabled: bool;
-        wkeSetCspCheckEnable => csp_check_enabled: bool;
-        wkeSetNpapiPluginsEnabled => npapi_plugins_enabled: bool;
-        wkeSetHeadlessEnabled => headless_enabled: bool;
-        wkeSetDragEnable => drag_enabled: bool;
-        wkeSetDragDropEnable => drag_drop_enable: bool;
+        wkeSetResourceGc => set_resource_gc(resource_gc: i32);
+        // wkeSetFileSystem =>
+        wkeSetWebViewName => set_webview_name(webview_name: &str);
+        // wkeSetClientHandler =>
+        // wkeSetViewSettings =>
+        // wkeSetDebugConfig =>
+        // wkeSetMemoryCacheEnable =>
+        wkeSetMouseEnabled => set_mouse_enabled(mouse_enabled: bool);
+        wkeSetTouchEnabled => set_touch_enabled(touch_enabled: bool);
+        wkeSetSystemTouchEnabled => set_system_touch_enabled(system_touch_enabled: bool);
+        wkeSetContextMenuEnabled => set_context_menu_enabled(context_menu_enabled: bool);
+        wkeSetNavigationToNewWindowEnable => set_navigation_to_new_window_enabled(navigation_to_new_window_enabled: bool);
+        wkeSetCspCheckEnable => set_csp_check_enabled(csp_check_enabled: bool);
+        wkeSetNpapiPluginsEnabled => set_npapi_plugins_enabled(npapi_plugins_enabled: bool);
+        wkeSetHeadlessEnabled => set_headless_enabled(headless_enabled: bool);
+        wkeSetDragEnable => set_drag_enabled(drag_enabled: bool);
+        wkeSetDragDropEnable => set_drag_drop_enable(drag_drop_enable: bool);
         // wkeSetContextMenuItemShow =>
-        wkeSetLanguage => language: &str;
-        // wkeSetViewNetInterface => 
+        wkeSetLanguage => set_language(language: &str);
+        // wkeSetViewNetInterface =>
         // wkeSetProxy =>
-        wkeSetViewProxy => proxy: &ProxyConfig;
-        wkeSetName => name: &str;
-        // wkeSetHandle => 
+        wkeSetViewProxy => set_proxy(proxy: &ProxyConfig);
+        wkeSetName => set_name(name: &str);
+        // wkeSetHandle =>
         // wkeSetHandleOffset =>
-        wkeSetTransparent => transparent: bool;
-        wkeSetUserAgent => user_agent: &str;
-        // wkeSetUserAgentW => 
-        // wkeSetDirty => 
-        // wkeSetCookie => cookie: &str
-        wkeSetCookieEnabled => cookie_enabled: bool;
+        wkeSetTransparent => set_transparent(transparent: bool);
+        wkeSetUserAgent => set_user_agent(user_agent: &str);
+        // wkeSetUserAgentW =>
+        // wkeSetDirty =>
+        // wkeSetCookie => set_cookie(cookie: &str)
+        wkeSetCookieEnabled => set_cookie_enabled(cookie_enabled: bool);
         // wkeSetCookieJarPath => cookie_jar_path: &str;
         // wkeSetCookieJarFullPath => cookie_jar_full_path: &str;
         // wkeSetLocalStorageFullPath => local_storage_full_path: &str;
-        wkeSetMediaVolume => media_volume: f32;
-        // wkeSetFocus => focus: bool;
-        wkeSetZoomFactor => zoom_factor: f32;
-        wkeSetEditable => editable: bool;
-        // wkeSetString => 
-        // wkeSetStringWithoutNullTermination => 
-        // wkeSetStringW => 
-        // wkeSetUserKeyValue => 
-        // wkeSetCursorInfoType => 
-        // wkeSetDragFiles => 
-        // wkeSetDeviceParameter => 
-        // wkeSetUIThreadCallback => 
-        wkeSetWindowTitle => window_title: &str
-        // wkeSetWindowTitleW => 
-        // wkeSetMediaPlayerFactory => 
+        wkeSetMediaVolume => set_media_volume(media_volume: f32);
+        wkeSetFocus => set_focus();
+        wkeSetZoomFactor => set_zoom_factor(zoom_factor: f32);
+        wkeSetEditable => set_editable(editable: bool);
+        // wkeSetString =>
+        // wkeSetStringWithoutNullTermination =>
+        // wkeSetStringW =>
+        // wkeSetUserKeyValue =>
+        // wkeSetCursorInfoType =>
+        // wkeSetDragFiles =>
+        // wkeSetDeviceParameter =>
+        // wkeSetUIThreadCallback =>
+        wkeSetWindowTitle => set_window_title(window_title: &str)
+        // wkeSetWindowTitleW =>
+        // wkeSetMediaPlayerFactory =>
+    }
+}
+
+bind_target! {
+    WebViewOperation for WebView {
+        wkeShowWindow => show_window(show: bool);
+        wkeLoadHTML => load_html(html: &str);
+        wkeLoadURL => load_url(url: &str);
+        wkeResize => resize(width: i32, height: i32)
     }
 }
