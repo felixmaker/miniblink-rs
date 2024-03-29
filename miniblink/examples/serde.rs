@@ -11,9 +11,10 @@ struct User {
 }
 
 fn main() {
+    // Require `serde` feature.
+
     app::initialize("node.dll").unwrap();
 
-    #[cfg(feature = "serde")]
     app::bind("format_user", |user: User| {
         Ok(format!("{}: {}", user.name, user.age))
     });
