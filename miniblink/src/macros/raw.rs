@@ -7,10 +7,10 @@ macro_rules! bind_target {
         );*
     }) => {
         #[allow(unused)]
-        #[doc=concat!("Wrapper to [`", stringify!($target), "`]")]
+        #[doc=concat!("See [`", stringify!($trait), "`]")]
         pub trait $trait {
             $(
-                #[doc=concat!("Wrapper to function `", stringify!($mbcallback), "`.")]
+                #[doc=concat!("See `", stringify!($mbcallback), "`.")]
                 fn $func(&self, $($param: $type,)*) $(-> $return)?;
             )*
         }
@@ -42,7 +42,7 @@ macro_rules! bind_global {
         $vis: vis $mbcallback: ident => $func: ident ($($param: ident: $type: ty),*) $(-> $return: ty)?
     );*) => {
         $(
-            #[doc=concat!("Wrapper to global function `", stringify!($mbcallback), "`.")]
+            #[doc=concat!("See `", stringify!($mbcallback), "`.")]
             $vis fn $func($($param: $type,)*) $(-> $return)? {
                 $(
                     let $param = crate::types::ToFFI::to(&$param);

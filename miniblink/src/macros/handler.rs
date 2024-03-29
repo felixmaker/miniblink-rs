@@ -7,15 +7,14 @@ macro_rules! bind_handler {
             $handler: ident ($($type: ty),*) $(-> $return: ty | $default: expr)?
         );* 
     }) => {
-        #[doc=concat!("Handlers for Webview. See [`", stringify!($trait), "`]")]
+        #[doc=concat!("See [`", stringify!($trait), "`]")]
         pub trait $trait
         {
             $(
-                #[doc=concat!("Handler ", stringify!($handler), " handler. See ", stringify!($mbcallback), ".")]
+                #[doc=concat!("See `", stringify!($mbcallback), "`.")]
                 fn $handler<F>(&self, callback: F)
                 where
-                    F: FnMut(&mut $target, $($type,)*) $(-> $return)? + 'static,;
-                    // $($type: FromFFI<$ctype>,)*;
+                    F: FnMut(&mut $target, $($type,)*) $(-> $return)? + 'static;
             )*
         }
 
