@@ -3,21 +3,21 @@
 Rust bindings to [mininlink49](https://github.com/weolar/miniblink49)
 
 ```rust
-use miniblink::{app::AppBuilder, webview::WebViewBuilder};
+use miniblink::prelude::*;
+use miniblink::{app, webview::WebView};
 
 fn main() {
-    let app = AppBuilder::default().build().unwrap();
+    app::initialize("node.dll").unwrap();
 
-    let _webview = WebViewBuilder::default()
-        .with_window_title("Hello, Miniblink")
-        .with_url("https://example.com")
-        .with_visible(true)
-        .with_on_window_closing_handler(|_| {
-            std::process::exit(0);
-        })
-        .build();
+    let wv = WebView::default();
+    wv.load_url("https://example.com");
+    wv.show_window(true);
 
-    app.run_message_loop();
+    wv.on_window_closing(|_| {
+        std::process::exit(0);
+    });
+
+    app::run_message_loop();
 }
 ```
 
