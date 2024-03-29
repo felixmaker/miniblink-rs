@@ -1,8 +1,5 @@
-use miniblink::{app::AppBuilder, webview::WebViewBuilder};
+use miniblink::{app, webview::WebViewBuilder};
 use serde_derive::{Deserialize, Serialize};
-
-#[cfg(feature = "serde")]
-use miniblink::app::AppExt;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct User {
@@ -11,10 +8,10 @@ struct User {
 }
 
 fn main() {
-    let app = AppBuilder::default().build().unwrap();
+    app::initialize("node.dll").unwrap();
 
     #[cfg(feature = "serde")]
-    app.bind("format_user", |user: User| {
+    app::bind("format_user", |user: User| {
         Ok(format!("{}: {}", user.name, user.age))
     });
 
@@ -46,5 +43,5 @@ fn main() {
         })
         .build();
 
-    app.run_message_loop();
+    app::run_message_loop();
 }

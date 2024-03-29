@@ -1,12 +1,9 @@
-use miniblink::{app::{AppBuilder, AppExt}, webview::WebViewBuilder};
+use miniblink::{app, webview::WebViewBuilder};
 
 fn main() {
-    let app = AppBuilder::default()
-        .with_lib_path("node.dll")
-        .build()
-        .expect("Failed to initialize miniblink!");
+    app::initialize("node.dll").unwrap();
 
-    app.bind("hello", |x: String| {
+    app::bind("hello", |x: String| {
         Ok(format!("hello {x}"))
     });
 
@@ -39,5 +36,5 @@ fn main() {
         })
         .build();
 
-    app.run_message_loop();
+    app::run_message_loop();
 }

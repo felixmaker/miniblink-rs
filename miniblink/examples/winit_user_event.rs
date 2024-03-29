@@ -1,4 +1,4 @@
-use miniblink::{app::AppBuilder, webview::WebViewBuilder};
+use miniblink::{app, webview::{WebViewBuilder, WebViewOperation}};
 use raw_window_handle::HasWindowHandle;
 use winit::{
     dpi::LogicalSize,
@@ -13,10 +13,8 @@ enum UserEvent {
 }
 
 fn main() {
-    let _app = AppBuilder::default()
-        .with_dpi_support(true)
-        .build()
-        .unwrap();
+    app::initialize("node.dll").unwrap();
+    app::enable_high_dpi_support();
 
     let event_loop: EventLoop<UserEvent> = EventLoopBuilder::with_user_event().build().unwrap();
     let event_proxy = event_loop.create_proxy();
@@ -47,7 +45,7 @@ fn main() {
                 event,
             } => match event {
                 WindowEvent::CloseRequested => flow.exit(),
-                WindowEvent::Resized(size) => webview.set_size(size.width, size.height),
+                WindowEvent::Resized(size) => webview.resize(size.width as i32, size.height as i32),
                 _ => {}
             },
             Event::UserEvent(event) => match event {
