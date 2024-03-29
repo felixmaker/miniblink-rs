@@ -2,7 +2,7 @@ use std::ffi::CString;
 
 use miniblink_sys::{wkeNavigationType, wkeString, wkeWindowType, HWND};
 
-use crate::error::{MBError, MBResult};
+use crate::error::MBResult;
 use crate::types::{CCStr, JsExecState, JsValue, MBExecStateValue, NavigationType, ProxyConfig};
 use crate::types::{FromFFI, ToFFI};
 use crate::util::SafeCString;
@@ -23,7 +23,7 @@ impl Default for WebView {
 }
 
 impl WebView {
-    /// Create window with popup type.
+    /// Create a popup type window.
     ///
     /// Notes: This method creates real window.
     pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
@@ -31,7 +31,7 @@ impl WebView {
     }
 
     #[cfg(feature = "rwh_06")]
-    /// Create window with control type.
+    /// Create a control type window.
     ///
     /// Notes: This method creates window as child window.
     pub fn new_as_child<H>(hwnd: H, x: i32, y: i32, width: i32, height: i32) -> MBResult<Self>
@@ -48,11 +48,14 @@ impl WebView {
                     height,
                 ))
             }
-            _ => Err(MBError::UnsupportedPlatform),
+            _ => Err(crate::error::MBError::UnsupportedPlatform),
         }
     }
 
-    fn create_popup_window(x: i32, y: i32, width: i32, height: i32) -> Self {
+    /// Create a popup type window
+    /// 
+    /// Notes: This method creates real window.
+    pub fn create_popup_window(x: i32, y: i32, width: i32, height: i32) -> Self {
         let window = unsafe {
             call_api_or_panic().wkeCreateWebWindow(
                 wkeWindowType::WKE_WINDOW_TYPE_POPUP,
@@ -66,7 +69,10 @@ impl WebView {
         Self { webview: window }
     }
 
-    fn create_control_window(parent: HWND, x: i32, y: i32, width: i32, height: i32) -> Self {
+    /// Create a control type window
+    /// 
+    /// Notes: This method creates window as child window.
+    pub fn create_control_window(parent: HWND, x: i32, y: i32, width: i32, height: i32) -> Self {
         let window = unsafe {
             call_api_or_panic().wkeCreateWebWindow(
                 wkeWindowType::WKE_WINDOW_TYPE_CONTROL,
