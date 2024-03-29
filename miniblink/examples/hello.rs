@@ -1,16 +1,15 @@
-use miniblink::{app, webview::WebViewBuilder};
+use miniblink::prelude::*;
+use miniblink::{app, webview::WebView};
 
 fn main() {
     app::initialize("node.dll").unwrap();
 
-    app::bind("hello", |x: String| {
-        Ok(format!("hello {x}"))
-    });
+    app::bind("hello", |x: String| Ok(format!("hello {x}")));
 
-    let _ = WebViewBuilder::default()
-        .with_window_title("Hello, Miniblink")
-        .with_html(
-            r#"
+    let wv = WebView::default();
+    wv.set_window_title("Hello, Miniblink");
+    wv.load_html(
+        r#"
         <html>
         <head>
         <title>Hello, world!</title>        
@@ -29,12 +28,12 @@ fn main() {
         </body>
         </html>        
         "#,
-        )
-        .with_visible(true)
-        .with_on_window_closing_handler(|_| {
-            std::process::exit(0);
-        })
-        .build();
+    );
 
+    wv.on_window_closing(|_| {
+        std::process::exit(0);
+    });
+
+    wv.show_window(true);
     app::run_message_loop();
 }

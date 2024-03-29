@@ -1,27 +1,3 @@
-/// A rectangular region.
-#[derive(Clone, Copy, Debug)]
-pub struct Rect {
-    /// x coordinate of top left corner
-    pub x: i32,
-    /// y coordinate of top left corner
-    pub y: i32,
-    /// width
-    pub width: i32,
-    /// height
-    pub height: i32,
-}
-
-impl Default for Rect {
-    fn default() -> Self {
-        Self {
-            x: 0,
-            y: 0,
-            width: 200,
-            height: 200,
-        }
-    }
-}
-
 /// Navigation Type. See `wkeNavigationType`.
 #[allow(missing_docs)]
 pub enum NavigationType {

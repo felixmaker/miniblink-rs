@@ -4,187 +4,11 @@ use miniblink_sys::{wkeNavigationType, wkeString, wkeWindowType, HWND};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
 use crate::error::{MBError, MBResult};
-use crate::types::{
-    CCStr, JsExecState, JsValue, MBExecStateValue, NavigationType, ProxyConfig, Rect,
-};
+use crate::types::{CCStr, JsExecState, JsValue, MBExecStateValue, NavigationType, ProxyConfig};
 use crate::types::{FromFFI, ToFFI};
 use crate::util::SafeCString;
 
-use crate::{bind_handler, bind_target, call_api, call_api_or_panic};
-
-#[allow(missing_docs)]
-/// WebView Attributes
-pub struct WebViewAttributes {
-    pub visible: bool,
-    pub user_agent: Option<String>,
-    pub bounds: Option<Rect>,
-    pub proxy_config: Option<ProxyConfig>,
-    pub url: Option<String>,
-    pub html: Option<String>,
-
-    pub on_navigation_handler: Option<Box<dyn FnMut(&mut WebView, NavigationType, String) -> bool>>,
-    pub on_download_handler: Option<Box<dyn FnMut(&mut WebView, String) -> bool>>,
-    pub on_title_changed_handler: Option<Box<dyn FnMut(&mut WebView, String)>>,
-    pub on_document_ready_handler: Option<Box<dyn FnMut(&mut WebView)>>,
-
-    // Window params
-    pub window_title: Option<String>,
-    pub on_window_closing_handler: Option<Box<dyn FnMut(&mut WebView) -> bool>>,
-}
-
-impl Default for WebViewAttributes {
-    fn default() -> Self {
-        Self {
-            visible: true,
-            user_agent: None,
-            proxy_config: None,
-            bounds: Some(Rect::default()),
-            url: None,
-            html: None,
-            on_navigation_handler: None,
-            on_download_handler: None,
-            on_title_changed_handler: None,
-            on_document_ready_handler: None,
-
-            window_title: None,
-            on_window_closing_handler: None,
-        }
-    }
-}
-
-/// Builder used to build [`WebView`]
-#[allow(missing_docs)]
-#[derive(Default)]
-pub struct WebViewBuilder<'a> {
-    pub attrs: WebViewAttributes,
-    hwnd: Option<&'a dyn HasWindowHandle>,
-}
-
-impl<'a> WebViewBuilder<'a> {
-    /// Create [`WebViewBuilder`] as a child window inside the provided [`HasWindowHandle`]
-    pub fn with_parent<H>(mut self, parent: &'a H) -> Self
-    where
-        H: HasWindowHandle,
-    {
-        self.hwnd = Some(parent);
-        self
-    }
-
-    /// Set a custom [user-agent](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent) for the WebView.
-    pub fn with_user_agent<S>(mut self, user_agent: S) -> Self
-    where
-        S: Into<String>,
-    {
-        self.attrs.user_agent = Some(user_agent.into());
-        self
-    }
-
-    /// Sets whether the WebView should be visible or not.
-    pub fn with_visible(mut self, visible: bool) -> Self {
-        self.attrs.visible = visible;
-        self
-    }
-
-    /// Set a proxy configuration for the webview. Supports HTTP CONNECT and SOCKSv4, SOCKSv4A, SOCKSv5, SOCKSv5HOSTNAME proxies
-    pub fn with_proxy_config(mut self, configuration: ProxyConfig) -> Self {
-        self.attrs.proxy_config = Some(configuration);
-        self
-    }
-
-    /// Specify the webview position relative to its parent. Defaults to `x: 0, y: 0, width: 200, height: 200`.
-    pub fn with_bounds(mut self, bounds: Rect) -> Self {
-        self.attrs.bounds.replace(bounds);
-        self
-    }
-
-    /// Load the provided URL when the builder calling [`WebViewBuilder::build`] to create the [`WebView`].
-    /// The provided URL must be valid.
-    pub fn with_url<S>(mut self, url: S) -> Self
-    where
-        S: Into<String>,
-    {
-        self.attrs.url = Some(url.into());
-        self
-    }
-
-    /// Load the provided HTML string when the builder calling [`WebViewBuilder::build`] to create the [`WebView`].
-    /// This will be ignored if `url` is provided.
-    pub fn with_html<S>(mut self, html: S) -> Self
-    where
-        S: Into<String>,
-    {
-        self.attrs.html = Some(html.into());
-        self
-    }
-
-    /// Set a navigation handler to decide if incoming url is allowed to navigate.
-    ///
-    /// The closure take a `String` parameter as url and returns a `bool` to determine whether the navigation should happen.
-    /// `true` allows to navigate and `false` does not.
-    pub fn with_on_navigation_handler<F>(mut self, callback: F) -> Self
-    where
-        F: FnMut(&mut WebView, NavigationType, String) -> bool + 'static,
-    {
-        self.attrs.on_navigation_handler = Some(Box::new(callback));
-        self
-    }
-
-    /// Set a download started handler to manage incoming downloads.
-    ///
-    /// The closure takes a `String` as the url being downloaded from and  returns a `bool` to allow or deny the download.
-    pub fn with_on_download_handler<F>(mut self, callback: F) -> Self
-    where
-        F: FnMut(&mut WebView, String) -> bool + 'static,
-    {
-        self.attrs.on_download_handler = Some(Box::new(callback));
-        self
-    }
-
-    /// Set a handler closure to process the change of the webview's document title.
-    pub fn with_on_title_changed_handler<F>(mut self, callback: F) -> Self
-    where
-        F: FnMut(&mut WebView, String) + 'static,
-    {
-        self.attrs.on_title_changed_handler = Some(Box::new(callback));
-        self
-    }
-
-    /// Set a handler closure on document ready.
-    pub fn with_on_document_ready_handler<F>(mut self, callback: F) -> Self
-    where
-        F: FnMut(&mut WebView) + 'static,
-    {
-        self.attrs.on_document_ready_handler = Some(Box::new(callback));
-        self
-    }
-
-    /// Set a handler closure on window closing.
-    pub fn with_on_window_closing_handler<F>(mut self, callback: F) -> Self
-    where
-        F: FnMut(&mut WebView) -> bool + 'static,
-    {
-        self.attrs.on_window_closing_handler = Some(Box::new(callback));
-        self
-    }
-
-    /// Set the title of native window.
-    pub fn with_window_title<S>(mut self, title: S) -> Self
-    where
-        S: Into<String>,
-    {
-        self.attrs.window_title = Some(title.into());
-        self
-    }
-
-    /// Consume the builder and create the [`WebView`].
-    pub fn build(self) -> MBResult<WebView> {
-        if let Some(hwnd) = &self.hwnd {
-            WebView::new_as_child(hwnd, self.attrs)
-        } else {
-            WebView::new(self.attrs)
-        }
-    }
-}
+use crate::{bind_handler, bind_target, call_api_or_panic};
 
 type InnerWebView = miniblink_sys::wkeWebView;
 
@@ -193,104 +17,69 @@ pub struct WebView {
     pub(crate) webview: InnerWebView,
 }
 
+impl Default for WebView {
+    fn default() -> Self {
+        Self::new(0, 0, 200, 200)
+    }
+}
+
 impl WebView {
-    fn new(attributes: WebViewAttributes) -> MBResult<Self> {
-        let bounds = attributes.bounds.unwrap_or(Rect::default());
-        let webview = WebView::create_popup_window(bounds)?;
-
-        webview.apply_attributes(attributes);
-        Ok(webview)
+    /// Create window with popup type.
+    ///
+    /// Notes: This method creates real window.
+    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+        Self::create_popup_window(x, y, width, height)
     }
 
-    fn new_as_child(hwnd: &impl HasWindowHandle, attributes: WebViewAttributes) -> MBResult<Self> {
-        let bounds = attributes.bounds.unwrap_or(Rect::default());
-
-        let webview = {
-            match hwnd.window_handle().map(|x| x.as_raw()) {
-                Ok(RawWindowHandle::Win32(handle)) => {
-                    WebView::create_control_window(isize::from(handle.hwnd) as HWND, bounds)
-                }
-                _ => Err(MBError::UnsupportedPlatform),
-            }
-        }?;
-
-        webview.apply_attributes(attributes);
-
-        Ok(webview)
+    /// Create window with control type.
+    ///
+    /// Notes: This method creates window as child window.
+    pub fn new_as_child(
+        hwnd: &impl HasWindowHandle,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+    ) -> MBResult<Self> {
+        match hwnd.window_handle().map(|x| x.as_raw()) {
+            Ok(RawWindowHandle::Win32(handle)) => Ok(WebView::create_control_window(
+                isize::from(handle.hwnd) as HWND,
+                x,
+                y,
+                width,
+                height,
+            )),
+            _ => Err(MBError::UnsupportedPlatform),
+        }
     }
 
-    fn apply_attributes(&self, attributes: WebViewAttributes) {
-        if let Some(proxy_config) = attributes.proxy_config {
-            self.set_proxy(&proxy_config);
-        }
-
-        if let Some(window_title) = attributes.window_title {
-            self.set_window_title(&window_title);
-        }
-
-        if let Some(user_agent) = attributes.user_agent {
-            self.set_user_agent(user_agent.as_str());
-        }
-
-        if let Some(html) = attributes.html {
-            self.load_html(html.as_str());
-        }
-
-        if let Some(url) = attributes.url {
-            self.load_url(url.as_str());
-        }
-
-        if let Some(on_navigation_handler) = attributes.on_navigation_handler {
-            self.on_navigation(on_navigation_handler);
-        }
-
-        if let Some(on_title_changed_handler) = attributes.on_title_changed_handler {
-            self.on_title_changed(on_title_changed_handler);
-        }
-
-        if let Some(on_window_closing_handler) = attributes.on_window_closing_handler {
-            self.on_window_closing(on_window_closing_handler);
-        }
-
-        if let Some(on_download_handler) = attributes.on_download_handler {
-            self.on_download(on_download_handler);
-        }
-
-        if let Some(on_document_ready_handler) = attributes.on_document_ready_handler {
-            self.on_document_ready(on_document_ready_handler);
-        }
-
-        self.show_window(attributes.visible);
-    }
-
-    fn create_popup_window(bounds: Rect) -> MBResult<Self> {
+    fn create_popup_window(x: i32, y: i32, width: i32, height: i32) -> Self {
         let window = unsafe {
-            call_api()?.wkeCreateWebWindow(
+            call_api_or_panic().wkeCreateWebWindow(
                 wkeWindowType::WKE_WINDOW_TYPE_POPUP,
                 std::ptr::null_mut(),
-                bounds.x,
-                bounds.y,
-                bounds.width,
-                bounds.height,
+                x,
+                y,
+                width,
+                height,
             )
         };
-
-        Ok(Self { webview: window })
+        Self { webview: window }
     }
 
-    fn create_control_window(parent: HWND, bounds: Rect) -> MBResult<Self> {
+    fn create_control_window(parent: HWND, x: i32, y: i32, width: i32, height: i32) -> Self {
         let window = unsafe {
-            call_api()?.wkeCreateWebWindow(
+            call_api_or_panic().wkeCreateWebWindow(
                 wkeWindowType::WKE_WINDOW_TYPE_CONTROL,
                 parent,
-                bounds.x,
-                bounds.y,
-                bounds.width,
-                bounds.height,
+                x,
+                y,
+                width,
+                height,
             )
         };
 
-        Ok(Self { webview: window })
+        Self { webview: window }
     }
 
     /// Run the provided script. See `wkeRunJS`.
@@ -415,7 +204,7 @@ bind_target! {
         // wkeSetContextMenuItemShow =>
         wkeSetLanguage => set_language(language: &str);
         // wkeSetViewNetInterface =>
-        // wkeSetProxy => 
+        // wkeSetProxy =>
         wkeSetViewProxy => set_proxy(proxy: &ProxyConfig);
         wkeSetName => set_name(name: &str);
         // wkeSetHandle =>

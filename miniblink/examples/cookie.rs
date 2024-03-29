@@ -1,24 +1,26 @@
-use miniblink::{app, webview::{WebViewBuilder, WebViewGetter}};
+use miniblink::prelude::*;
+use miniblink::{app, webview::WebView};
 
 fn main() {
     app::initialize("node.dll").unwrap();
 
-    let _ = WebViewBuilder::default()
-        .with_window_title("Hello, Miniblink")
-        .with_url("https://u.4399.com/login.html")
-        .with_visible(true)
-        .with_on_window_closing_handler(|_| {
-            std::process::exit(0);
-        })
-        .with_on_document_ready_handler(|wv| {
-            let cookie = wv.get_cookie();
-            if cookie.contains("Uauth=") {
-                println!("User logined!");
-                println!("{}", cookie);
-                // do something...
-            }
-        })
-        .build();
+    let wv = WebView::new(0, 0, 800, 600);
+    wv.set_window_title("Hello, Miniblink");
+    wv.load_url("https://u.4399.com/login.html");
+    wv.show_window(true);
+
+    wv.on_window_closing(|_| {
+        std::process::exit(0);
+    });
+
+    wv.on_document_ready(|wv| {
+        let cookie = wv.get_cookie();
+        if cookie.contains("Uauth=") {
+            println!("User logined!");
+            println!("{}", cookie);
+            // do something...
+        }
+    });
 
     app::run_message_loop();
 }
