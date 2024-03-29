@@ -7,6 +7,7 @@ use crate::{
     wstr::WkeStr,
 };
 
+#[allow(unused)]
 pub(crate) unsafe extern "C" fn navigation_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
@@ -28,6 +29,7 @@ where
     result.unwrap_or(false)
 }
 
+#[allow(unused)]
 pub(crate) unsafe extern "C" fn title_changed_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
@@ -43,6 +45,7 @@ pub(crate) unsafe extern "C" fn title_changed_handler<F>(
     let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut webview, title)));
 }
 
+#[allow(unused)]
 pub(crate) unsafe extern "C" fn window_closing_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
@@ -58,6 +61,7 @@ where
     r.unwrap_or(false)
 }
 
+#[allow(unused)]
 pub(crate) unsafe extern "C" fn document_ready_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,
@@ -71,6 +75,7 @@ pub(crate) unsafe extern "C" fn document_ready_handler<F>(
     let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut webview)));
 }
 
+#[allow(unused)]
 pub(crate) unsafe extern "C" fn download_handler<F>(
     webview: miniblink_sys::wkeWebView,
     param: *mut ::std::os::raw::c_void,

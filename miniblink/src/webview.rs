@@ -4,11 +4,13 @@ use miniblink_sys::{wkeWindowType, HWND};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
 use crate::error::{MBError, MBResult};
+use crate::macros::handler::{FromFFI, ToFFI};
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
 use crate::value::{JsExecState, JsValue, MBExecStateValue};
 
-use crate::{call_api, call_api_or_panic, handler};
+use crate::wstr::WkeStr;
+use crate::{bind_handler, call_api, call_api_or_panic};
 
 /// A rectangular region.
 #[derive(Clone, Copy, Debug)]
@@ -407,76 +409,6 @@ impl WebView {
             call_api_or_panic().wkeSetCookie(self.webview, url.as_ptr(), cookie.as_ptr());
         }
     }
-
-    fn on_navigation<F>(&self, callback: F)
-    where
-        F: FnMut(&mut WebView, NavigationType, String) -> bool,
-    {
-        let callback: *mut F = Box::into_raw(Box::new(callback));
-        unsafe {
-            call_api_or_panic().wkeOnNavigation(
-                self.webview,
-                Some(handler::navigation_handler::<F>),
-                callback as _,
-            );
-        }
-    }
-
-    fn on_title_changed<F>(&self, callback: F)
-    where
-        F: FnMut(&mut WebView, String),
-    {
-        let callback: *mut F = Box::into_raw(Box::new(callback));
-        unsafe {
-            call_api_or_panic().wkeOnTitleChanged(
-                self.webview,
-                Some(handler::title_changed_handler::<F>),
-                callback as *mut _,
-            );
-        }
-    }
-
-    fn on_download<F>(&self, callback: F)
-    where
-        F: FnMut(&mut WebView, String) -> bool,
-    {
-        let callback: *mut F = Box::into_raw(Box::new(callback));
-        unsafe {
-            call_api_or_panic().wkeOnDownload(
-                self.webview,
-                Some(handler::download_handler::<F>),
-                callback as *mut _,
-            );
-        }
-    }
-
-    fn on_document_ready<F>(&self, callback: F)
-    where
-        F: FnMut(&mut WebView),
-    {
-        let callback: *mut F = Box::into_raw(Box::new(callback));
-        unsafe {
-            call_api_or_panic().wkeOnDocumentReady(
-                self.webview,
-                Some(handler::document_ready_handler::<F>),
-                callback as *mut _,
-            );
-        }
-    }
-
-    fn on_window_closing<F>(&self, callback: F)
-    where
-        F: FnMut(&mut WebView) -> bool + 'static,
-    {
-        let callback: *mut F = Box::into_raw(Box::new(callback));
-        unsafe {
-            call_api_or_panic().wkeOnWindowClosing(
-                self.webview,
-                Some(handler::window_closing_handler::<F>),
-                callback as _,
-            );
-        }
-    }
 }
 
 /// Navigation Type. See wkeNavigationType.
@@ -508,5 +440,79 @@ impl From<miniblink_sys::wkeNavigationType> for NavigationType {
             }
             _ => NavigationType::Other,
         }
+    }
+}
+
+impl FromFFI<miniblink_sys::wkeNavigationType> for NavigationType {
+    fn from(value: miniblink_sys::wkeNavigationType) -> Self {
+        From::from(value)
+    }
+}
+
+pub(crate) type CCStr = *const ::std::os::raw::c_char;
+
+impl FromFFI<CCStr> for String {
+    fn from(value: CCStr) -> Self {
+        let cstr = unsafe { CStr::from_ptr(value) };
+        cstr.to_string_lossy().to_string()
+    }
+}
+
+use miniblink_sys::{wkeNavigationType, wkeString, wkeWebView};
+impl FromFFI<wkeString> for String {
+    fn from(value: wkeString) -> Self {
+        let wke_str = WkeStr::from_ptr(value);
+        wke_str.to_string()
+    }
+}
+
+impl FromFFI<wkeWebView> for WebView {
+    fn from(value: wkeWebView) -> Self {
+        WebView { webview: value }
+    }
+}
+
+impl ToFFI<wkeWebView> for WebView {
+    fn to(&self) -> wkeWebView {
+        self.webview
+    }
+}
+
+bind_handler! {
+    WebViewHandler for WebView {
+        // wkeOnCaretChanged => on_caret_changed
+        wkeOnMouseOverUrlChanged => on_mouse_over_url_changed: (title: wkeString => String);
+        wkeOnTitleChanged => on_title_changed: (title: wkeString => String);
+        wkeOnURLChanged => on_url_changed: (url: wkeString => String);
+        // wkeOnURLChanged2 => on_url_changed2
+        // wkeOnPaintUpdated => on_paint_updated
+        // wkeOnPaintBitUpdated => on_paint_bit_updated
+        wkeOnAlertBox => on_alert_box: (msg: wkeString => String);
+        wkeOnConfirmBox => on_confirm_box: (msg: wkeString => String) -> bool => bool | false;
+        wkeOnPromptBox => on_prompt_box: (msg: wkeString => String, default_result: wkeString => String, result: wkeString => String) -> bool => bool | false;
+        wkeOnNavigation => on_navigation: (navigation_type: wkeNavigationType => NavigationType, url: wkeString => String) -> bool => bool | false;
+        // wkeOnCreateView => on_create_view
+        wkeOnDocumentReady => on_document_ready: ();
+        // wkeOnDocumentReady2 => on_document_ready2
+        // wkeOnLoadingFinish => on_loading_finish
+        wkeOnDownload => on_download: (url: CCStr => String) -> bool => bool | false;
+        // wkeOnDownload2 => on_download2
+        // wkeOnConsole => on_console
+        // wkeOnLoadUrlBegin => on_load_url_begin
+        // wkeOnLoadUrlEnd => on_load_url_end
+        // wkeOnLoadUrlHeadersReceived => on_load_url_headers_received
+        // wkeOnLoadUrlFinish => on_load_url_finish
+        // wkeOnLoadUrlFail => on_load_url_fail
+        // wkeOnDidCreateScriptContext => on_did_create_script_context
+        // wkeOnWillReleaseScriptContext => on_will_release_script_context
+        wkeOnWindowClosing => on_window_closing: () -> bool => bool | false;
+        wkeOnWindowDestroy => on_window_destroy: ()
+        // wkeOnDraggableRegionsChanged => on_draggable_regions_changed
+        // wkeOnWillMediaLoad => on_will_media_load
+        // wkeOnStartDragging => on_start_dragging
+        // wkeOnPrint => on_print
+        // wkeScreenshot => screenshot
+        // wkeOnOtherLoad => on_other_load
+        // wkeOnContextMenuItemClick => on_context_menu_item_click
     }
 }

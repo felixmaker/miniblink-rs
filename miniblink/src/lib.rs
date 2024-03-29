@@ -4,6 +4,7 @@
 mod handler;
 mod util;
 mod wstr;
+pub(crate) mod macros;
 
 /// Wrapper to wke global function, like wkeInitialize.
 pub mod app;
