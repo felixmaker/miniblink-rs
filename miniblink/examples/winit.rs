@@ -14,6 +14,7 @@ enum UserEvent {
 }
 
 fn main() {
+    // Require `rwh_06`` feature.
     app::initialize("node.dll").unwrap();
     app::enable_high_dpi_support();
 

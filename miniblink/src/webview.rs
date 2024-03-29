@@ -1,7 +1,6 @@
 use std::ffi::CString;
 
 use miniblink_sys::{wkeNavigationType, wkeString, wkeWindowType, HWND};
-use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
 use crate::error::{MBError, MBResult};
 use crate::types::{CCStr, JsExecState, JsValue, MBExecStateValue, NavigationType, ProxyConfig};
@@ -31,24 +30,24 @@ impl WebView {
         Self::create_popup_window(x, y, width, height)
     }
 
+    #[cfg(feature = "rwh_06")]
     /// Create window with control type.
     ///
     /// Notes: This method creates window as child window.
-    pub fn new_as_child(
-        hwnd: &impl HasWindowHandle,
-        x: i32,
-        y: i32,
-        width: i32,
-        height: i32,
-    ) -> MBResult<Self> {
+    pub fn new_as_child<H>(hwnd: H, x: i32, y: i32, width: i32, height: i32) -> MBResult<Self>
+    where
+        H: raw_window_handle::HasWindowHandle,
+    {
         match hwnd.window_handle().map(|x| x.as_raw()) {
-            Ok(RawWindowHandle::Win32(handle)) => Ok(WebView::create_control_window(
-                isize::from(handle.hwnd) as HWND,
-                x,
-                y,
-                width,
-                height,
-            )),
+            Ok(raw_window_handle::RawWindowHandle::Win32(handle)) => {
+                Ok(WebView::create_control_window(
+                    isize::from(handle.hwnd) as HWND,
+                    x,
+                    y,
+                    width,
+                    height,
+                ))
+            }
             _ => Err(MBError::UnsupportedPlatform),
         }
     }
