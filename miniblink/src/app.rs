@@ -19,10 +19,15 @@ pub fn initialize<P>(path: P) -> MBResult<&'static Library>
 where
     P: AsRef<OsStr>,
 {
-    let lib = unsafe { Library::new(path) }.map_err(|e| MBError::LibraryUnloaded(e.to_string()))?;
-    let lib = LIB.get_or_init(|| lib);
-    _initialize();
-    Ok(lib)
+    if let Some(lib) = LIB.get() {
+        Ok(lib)
+    } else {
+        let lib =
+            unsafe { Library::new(path) }.map_err(|e| MBError::LibraryUnloaded(e.to_string()))?;
+        let lib = LIB.get_or_init(|| lib);
+        _initialize();
+        Ok(lib)
+    }
 }
 
 /// Bind function to global `window` object. See `wkeJsBindFunction`.
