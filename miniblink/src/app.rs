@@ -85,7 +85,7 @@ impl App {
         Ok(app)
     }
 
-    /// Initialize miniblink from `path`. Panic if failed to initialize. See wkeInitialize.
+    /// Initialize miniblink from `path`. Panic if failed to initialize. See `wkeInitialize`.
     pub fn init<P>(path: P) -> MBResult<Self>
     where
         P: AsRef<OsStr>,
@@ -97,14 +97,14 @@ impl App {
         Ok(Self {})
     }
 
-    /// Run the miniblink message loop. See wkeRunMessageLoop.
+    /// Run the miniblink message loop. See `wkeRunMessageLoop`.
     pub fn run_message_loop(&self) {
         unsafe {
             call_api_or_panic().wkeRunMessageLoop();
         }
     }
 
-    /// Bind function to global `window` object. See wkeJsBindFunction.
+    /// Bind function to global `window` object. See `wkeJsBindFunction`.
     pub fn js_bind_function<F>(&self, name: &str, func: F, arg_count: u32)
     where
         F: Fn(JsExecState) -> MBResult<JsValue> + 'static,
@@ -122,12 +122,12 @@ impl App {
         }
     }
 
-    /// Set the global proxy. See wkeSetProxy.
+    /// Set the global proxy. See `wkeSetProxy`.
     pub fn set_proxy(&self, config: &ProxyConfig) {
         unsafe { call_api_or_panic().wkeSetProxy(&config.to_wke_proxy()) }
     }
 
-    /// Enable high DPI support. See wkeEnableHighDPISupport.
+    /// Enable high DPI support. See `wkeEnableHighDPISupport`.
     pub fn enable_dpi_support(&self) {
         unsafe { call_api_or_panic().wkeEnableHighDPISupport() }
     }

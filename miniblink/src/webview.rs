@@ -302,7 +302,7 @@ impl WebView {
         Ok(Self { webview: window })
     }
 
-    /// Set the visibility. See wkeShowWindow.
+    /// Set the visibility. See `wkeShowWindow`.
     pub fn set_visible(&self, visible: bool) {
         unsafe {
             call_api_or_panic().wkeShowWindow(self.webview, visible);
@@ -324,7 +324,7 @@ impl WebView {
         Ok(Self { webview: window })
     }
 
-    /// Load the provided HTML. See wkeLoadHTML.
+    /// Load the provided HTML. See `wkeLoadHTML`.
     pub fn load_html(&self, html: &str) {
         let html = CString::safe_new(html);
         unsafe {
@@ -332,14 +332,14 @@ impl WebView {
         }
     }
 
-    /// Set the size. See wkeResize.
+    /// Set the size. See `wkeResize`.
     pub fn set_size(&self, width: u32, height: u32) {
         unsafe {
             call_api_or_panic().wkeResize(self.webview, width as i32, height as i32);
         }
     }
 
-    /// Load the provided URL. See wkeLoadURL.
+    /// Load the provided URL. See `wkeLoadURL`.
     pub fn load_url(&self, url: &str) {
         let url = CString::safe_new(url);
         unsafe {
@@ -347,7 +347,7 @@ impl WebView {
         }
     }
 
-    /// Run the provided script. See wkeRunJS.
+    /// Run the provided script. See `wkeRunJS`.
     pub fn run_js<T>(&self, script: &str) -> MBResult<T>
     where
         JsExecState: MBExecStateValue<T>,
@@ -360,13 +360,13 @@ impl WebView {
         es.value(js_value)
     }
 
-    /// Get JsExecState. See wkeGlobalExec.
+    /// Get JsExecState. See `wkeGlobalExec`.
     pub fn global_exec(&self) -> JsExecState {
         JsExecState::from_ptr(unsafe { call_api_or_panic().wkeGlobalExec(self.webview) })
     }
 }
 
-/// Navigation Type. See wkeNavigationType.
+/// Navigation Type. See `wkeNavigationType`.
 #[allow(missing_docs)]
 pub enum NavigationType {
     LinkClick,

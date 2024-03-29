@@ -4,7 +4,7 @@ use miniblink_sys::wkeString;
 
 use crate::call_api_or_panic;
 
-/// A wrapper to wkeString. See wkeString.
+/// A wrapper to wkeString. See `wkeString`.
 pub(crate) struct WkeStr {
     inner: wkeString,
 }

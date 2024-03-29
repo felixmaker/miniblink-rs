@@ -6,7 +6,7 @@ macro_rules! bind_props_get {
         pub trait $trait {
             $(
                 paste::paste! {
-                    #[doc=concat!("Get the ", stringify!($prop), " of [`", stringify!($target) , "`]. See ", stringify!($mbcallback), ".")]
+                    #[doc=concat!("Get the ", stringify!($prop), " of [`", stringify!($target) , "`]. See `", stringify!($mbcallback), "`.")]
                     fn [<get_ $prop>](&self) -> $return;
                 }
             )*
@@ -35,7 +35,7 @@ macro_rules! bind_props_set {
         pub trait $trait {
             $(
                 paste::paste! {
-                    #[doc=concat!("Get the ", stringify!($handler), " of [`", stringify!($target) , "`]. See ", stringify!($mbcallback), ".")]
+                    #[doc=concat!("Get the ", stringify!($prop), " of [`", stringify!($target) , "`]. See `", stringify!($mbcallback), "`.")]
                     fn [<set_ $prop>](&self, $prop: $prop_type);
                 }
             )*
