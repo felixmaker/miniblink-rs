@@ -5,7 +5,7 @@ use serde::{
 
 use crate::{
     error::{MBError, MBResult},
-    value::{JsExecState, JsType, JsValue},
+    types::{JsExecState, JsType, JsValue},
 };
 
 /// Convert [`JsValue`] to `T` using serde.
@@ -37,7 +37,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
     where
         V: Visitor<'de>,
     {
-        use crate::value::JsType::*;
+        use crate::types::JsType::*;
         match self.value.get_type() {
             Number => visitor.visit_i32(self.es.to_int(self.value)?),
             String => visitor.visit_string(self.es.to_string(self.value)?),
@@ -116,7 +116,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
     where
         V: Visitor<'de>,
     {
-        use crate::value::JsType::*;
+        use crate::types::JsType::*;
         match self.value.get_type() {
             Array => {
                 let len = self.es.get_length(self.value);

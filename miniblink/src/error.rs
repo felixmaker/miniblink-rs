@@ -1,4 +1,4 @@
-use crate::value::JsType;
+use crate::types::JsType;
 
 /// Convenient type alias of Result type for miniblink.
 pub type MBResult<T> = std::result::Result<T, MBError>;

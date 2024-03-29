@@ -45,14 +45,14 @@ macro_rules! bind_global {
             #[doc=concat!("Wrapper to global function `", stringify!($mbcallback), "`.")]
             $vis fn $func($($param: $type,)*) $(-> $return)? {
                 $(
-                    let $param = crate::macros::ToFFI::to(&$param);
+                    let $param = crate::types::ToFFI::to(&$param);
                 )*
                 #[allow(unused)]
                 let r = unsafe {
                     call_api_or_panic().$mbcallback($($param,)*)
                 };
                 $(
-                    let r: $return = crate::macros::FromFFI::from(r);
+                    let r: $return = crate::types::FromFFI::from(r);
                     r
                 )?
             }

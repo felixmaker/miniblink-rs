@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::{
     error::{MBError, MBResult},
-    value::{JsExecState, JsValue},
+    types::{JsExecState, JsValue},
 };
 
 /// Serializer for [`JsValue`]

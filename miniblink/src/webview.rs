@@ -1,40 +1,16 @@
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 
-use miniblink_sys::{wkeWindowType, HWND};
+use miniblink_sys::{wkeNavigationType, wkeString, wkeWindowType, HWND};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
 use crate::error::{MBError, MBResult};
-use crate::macros::{FromFFI, ToFFI};
-use crate::proxy::ProxyConfig;
+use crate::types::{
+    CCStr, JsExecState, JsValue, MBExecStateValue, NavigationType, ProxyConfig, Rect,
+};
+use crate::types::{FromFFI, ToFFI};
 use crate::util::SafeCString;
-use crate::value::{JsExecState, JsValue, MBExecStateValue};
 
-use crate::wstr::WkeStr;
 use crate::{bind_handler, bind_target, call_api, call_api_or_panic};
-
-/// A rectangular region.
-#[derive(Clone, Copy, Debug)]
-pub struct Rect {
-    /// x coordinate of top left corner
-    pub x: i32,
-    /// y coordinate of top left corner
-    pub y: i32,
-    /// width
-    pub width: i32,
-    /// height
-    pub height: i32,
-}
-
-impl Default for Rect {
-    fn default() -> Self {
-        Self {
-            x: 0,
-            y: 0,
-            width: 200,
-            height: 200,
-        }
-    }
-}
 
 #[allow(missing_docs)]
 /// WebView Attributes
@@ -333,116 +309,6 @@ impl WebView {
     /// Get JsExecState. See `wkeGlobalExec`.
     pub fn global_exec(&self) -> JsExecState {
         JsExecState::from_ptr(unsafe { call_api_or_panic().wkeGlobalExec(self.webview) })
-    }
-}
-
-/// Navigation Type. See `wkeNavigationType`.
-#[allow(missing_docs)]
-pub enum NavigationType {
-    LinkClick,
-    FormSubmitte,
-    BackForward,
-    Reload,
-    FormResubmit,
-    Other,
-}
-
-impl From<miniblink_sys::wkeNavigationType> for NavigationType {
-    fn from(value: miniblink_sys::wkeNavigationType) -> Self {
-        match value {
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_LINKCLICK => {
-                NavigationType::LinkClick
-            }
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_FORMRESUBMITT => {
-                NavigationType::FormSubmitte
-            }
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_BACKFORWARD => {
-                NavigationType::BackForward
-            }
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_RELOAD => NavigationType::Reload,
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_FORMSUBMITTE => {
-                NavigationType::FormResubmit
-            }
-            _ => NavigationType::Other,
-        }
-    }
-}
-
-impl FromFFI<miniblink_sys::wkeNavigationType> for NavigationType {
-    fn from(value: miniblink_sys::wkeNavigationType) -> Self {
-        From::from(value)
-    }
-}
-
-pub(crate) type CCStr = *const ::std::os::raw::c_char;
-
-impl FromFFI<CCStr> for String {
-    fn from(value: CCStr) -> Self {
-        let cstr = unsafe { CStr::from_ptr(value) };
-        cstr.to_string_lossy().to_string()
-    }
-}
-
-impl FromFFI<::std::os::raw::c_int> for i32 {
-    fn from(value: ::std::os::raw::c_int) -> Self {
-        From::from(value)
-    }
-}
-
-impl ToFFI<::std::os::raw::c_int> for i32 {
-    fn to(&self) -> ::std::os::raw::c_int {
-        *self
-    }
-}
-
-use miniblink_sys::{wkeNavigationType, wkeProxy, wkeString, wkeWebView};
-impl FromFFI<wkeString> for String {
-    fn from(value: wkeString) -> Self {
-        let wke_str = WkeStr::from_ptr(value);
-        wke_str.to_string()
-    }
-}
-
-impl ToFFI<CCStr> for &str {
-    fn to(&self) -> CCStr {
-        let cstring = CString::safe_new(&self);
-        cstring.into_raw()
-    }
-}
-
-impl ToFFI<bool> for bool {
-    fn to(&self) -> bool {
-        *self
-    }
-}
-
-impl FromFFI<f32> for f32 {
-    fn from(value: f32) -> Self {
-        value
-    }
-}
-
-impl ToFFI<f32> for f32 {
-    fn to(&self) -> Self {
-        *self
-    }
-}
-
-impl FromFFI<wkeWebView> for WebView {
-    fn from(value: wkeWebView) -> Self {
-        WebView { webview: value }
-    }
-}
-
-impl ToFFI<wkeWebView> for WebView {
-    fn to(&self) -> wkeWebView {
-        self.webview
-    }
-}
-
-impl ToFFI<*mut wkeProxy> for &ProxyConfig {
-    fn to(&self) -> *mut wkeProxy {
-        &mut self.to_wke_proxy()
     }
 }
 

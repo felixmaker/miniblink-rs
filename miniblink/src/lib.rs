@@ -2,19 +2,16 @@
 #![warn(missing_docs)]
 
 mod util;
-mod wstr;
 pub(crate) mod macros;
 
 /// Wrapper to wke global function, like wkeInitialize.
 pub mod app;
 /// Error in miniblink (this crate). See [`MBResult`] and [`MBError`].
 pub mod error;
-/// Wapper to proxy structs, See [`proxy::ProxyConfig`].
-pub mod proxy;
-/// Wapper to jsValue. See [`value::JsValue`].
-pub mod value;
 /// Wapper to wkeWebView. See [`webview::WebView`].
 pub mod webview;
+/// Wapper to minibink types. See [`webview::WebView`].
+pub mod types;
 
 /// Support for serde. Ensure to enable `serde` feature.
 #[cfg(feature = "serde")]

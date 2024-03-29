@@ -6,9 +6,8 @@ use crate::{
     bind_global, call_api_or_panic,
     error::{MBError, MBResult},
     js_bind_function_ext,
-    proxy::ProxyConfig,
+    types::{JsExecState, JsValue, MBExecStateValue, ProxyConfig},
     util::SafeCString,
-    value::{JsExecState, JsValue, MBExecStateValue},
     LIB,
 };
 
@@ -45,7 +44,7 @@ where
         let es = JsExecState::from_ptr(es);
         let cb = param as *mut F;
         let f = &mut *cb;
-    
+
         if let Ok(Ok(r)) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(es))) {
             r.as_ptr()
         } else {
@@ -57,12 +56,7 @@ where
     let param: *mut F = Box::into_raw(Box::new(func));
 
     unsafe {
-        call_api_or_panic().wkeJsBindFunction(
-            name.as_ptr(),
-            Some(shim::<F>),
-            param as _,
-            arg_count,
-        )
+        call_api_or_panic().wkeJsBindFunction(name.as_ptr(), Some(shim::<F>), param as _, arg_count)
     }
 }
 
