@@ -15,6 +15,7 @@ exclude = ["./examples"]
 miniblink-sys = { path = "../miniblink-sys", version = ">=0.1.1" }
 raw-window-handle = "0.6"
 serde = {version = "1", optional = true}
+paste = "1"
 
 [dev-dependencies]
 winit = "0.29"

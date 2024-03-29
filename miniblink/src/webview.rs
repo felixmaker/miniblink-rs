@@ -4,13 +4,13 @@ use miniblink_sys::{wkeWindowType, HWND};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 
 use crate::error::{MBError, MBResult};
-use crate::macros::handler::{FromFFI, ToFFI};
+use crate::macros::{FromFFI, ToFFI};
 use crate::proxy::ProxyConfig;
 use crate::util::SafeCString;
 use crate::value::{JsExecState, JsValue, MBExecStateValue};
 
 use crate::wstr::WkeStr;
-use crate::{bind_handler, call_api, call_api_or_panic};
+use crate::{bind_handler, bind_props_get, bind_props_set, call_api, call_api_or_panic};
 
 /// A rectangular region.
 #[derive(Clone, Copy, Debug)]
@@ -302,6 +302,13 @@ impl WebView {
         Ok(Self { webview: window })
     }
 
+    /// Set the visibility. See wkeShowWindow.
+    pub fn set_visible(&self, visible: bool) {
+        unsafe {
+            call_api_or_panic().wkeShowWindow(self.webview, visible);
+        }
+    }
+
     fn create_control_window(parent: HWND, bounds: Rect) -> MBResult<Self> {
         let window = unsafe {
             call_api()?.wkeCreateWebWindow(
@@ -315,37 +322,6 @@ impl WebView {
         };
 
         Ok(Self { webview: window })
-    }
-
-    /// Set the title of native window. See wkeSetWindowTitle.
-    pub fn set_window_title(&self, title: &str) {
-        let title = CString::safe_new(title);
-        unsafe {
-            call_api_or_panic().wkeSetWindowTitle(self.webview, title.as_ptr());
-        }
-    }
-
-    /// Set the user agent. See wkeSetUserAgent.
-    pub fn set_user_agent(&self, user_agent: &str) {
-        let user_agent = CString::safe_new(user_agent);
-        unsafe {
-            call_api_or_panic().wkeSetUserAgent(self.webview, user_agent.as_ptr());
-        }
-    }
-
-    /// Set the visibility. See wkeShowWindow.
-    pub fn set_visible(&self, visible: bool) {
-        unsafe {
-            call_api_or_panic().wkeShowWindow(self.webview, visible);
-        }
-    }
-
-    /// Set the proxy of current webview. Use `app::set_proxy`` to set global proxy. See wkeSetViewProxy.
-    pub fn set_proxy(&self, proxy: &ProxyConfig) {
-        unsafe {
-            call_api_or_panic()
-                .wkeSetViewProxy(self.webview, Box::into_raw(Box::new(proxy.to_wke_proxy())));
-        }
     }
 
     /// Load the provided HTML. See wkeLoadHTML.
@@ -387,27 +363,6 @@ impl WebView {
     /// Get JsExecState. See wkeGlobalExec.
     pub fn global_exec(&self) -> JsExecState {
         JsExecState::from_ptr(unsafe { call_api_or_panic().wkeGlobalExec(self.webview) })
-    }
-
-    /// Get the cookie from web page. See wkeGetCookie.
-    pub fn get_cookie(&self) -> String {
-        let cstr = unsafe {
-            let cstr = call_api_or_panic().wkeGetCookie(self.webview);
-            let cstr = CStr::from_ptr(cstr);
-            cstr
-        };
-        cstr.to_string_lossy().to_string()
-    }
-
-    /// Set the cookie to url. See wkeSetCookie.
-    ///
-    /// Cookie is a curl cookie, like "PERSONALIZE=123;expires=Monday, 13-Jun-2022 03:04:55 GMT; domain=.fidelity.com; path=/; secure"
-    pub fn set_cookie(&self, url: &str, cookie: &str) {
-        let url = CString::safe_new(url);
-        let cookie = CString::safe_new(cookie);
-        unsafe {
-            call_api_or_panic().wkeSetCookie(self.webview, url.as_ptr(), cookie.as_ptr());
-        }
     }
 }
 
@@ -458,11 +413,48 @@ impl FromFFI<CCStr> for String {
     }
 }
 
-use miniblink_sys::{wkeNavigationType, wkeString, wkeWebView};
+impl FromFFI<::std::os::raw::c_int> for i32 {
+    fn from(value: ::std::os::raw::c_int) -> Self {
+        From::from(value)
+    }
+}
+
+impl ToFFI<::std::os::raw::c_int> for i32 {
+    fn to(&self) -> ::std::os::raw::c_int {
+        *self
+    }
+}
+
+use miniblink_sys::{wkeNavigationType, wkeString, wkeWebView, wkeProxy};
 impl FromFFI<wkeString> for String {
     fn from(value: wkeString) -> Self {
         let wke_str = WkeStr::from_ptr(value);
         wke_str.to_string()
+    }
+}
+
+impl ToFFI<CCStr> for &str {
+    fn to(&self) -> CCStr {
+        let cstring = CString::safe_new(&self);
+        cstring.as_ptr()
+    }
+}
+
+impl ToFFI<bool> for bool {
+    fn to(&self) -> bool {
+        *self
+    }
+}
+
+impl FromFFI<f32> for f32 {
+    fn from(value: f32) -> Self {
+        value
+    }
+}
+
+impl ToFFI<f32> for f32 {
+    fn to(&self) -> Self {
+        *self
     }
 }
 
@@ -475,6 +467,12 @@ impl FromFFI<wkeWebView> for WebView {
 impl ToFFI<wkeWebView> for WebView {
     fn to(&self) -> wkeWebView {
         self.webview
+    }
+}
+
+impl ToFFI<*mut wkeProxy> for &ProxyConfig {
+    fn to(&self) -> *mut wkeProxy {
+        &mut self.to_wke_proxy()
     }
 }
 
@@ -514,5 +512,102 @@ bind_handler! {
         // wkeScreenshot => screenshot
         // wkeOnOtherLoad => on_other_load
         // wkeOnContextMenuItemClick => on_context_menu_item_click
+    }
+}
+
+bind_props_get! {
+    WebViewGetter for WebView {
+        wkeGetSource => source: String;
+        // wkeGetCaret =>
+        // wkeGetClientHandler =>
+        // wkeGetDebugConfig =>
+        wkeGetName => name: String;
+        wkeGetUserAgent => user_agent: String;
+        wkeGetURL => url: String;
+        // wkeGetFrameUrl =>
+        wkeGetWebviewId => webview_id: i32;
+        // wkeGetDocumentCompleteURL =>
+        wkeGetTitle => title: String;
+        // wkeGetTitleW =>
+        wkeGetWidth => width: i32;
+        wkeGetHeight => height: i32;
+        wkeGetContentWidth => content_width: i32;
+        wkeGetContentHeight => content_height: i32;
+        // wkeGetViewDC =>
+        // wkeGetHostHWND =>
+        wkeGetNavigateIndex => navigate_index: i32;
+        // wkeGetCookieW =>
+        wkeGetCookie => cookie: String;
+        // wkeGetMediaVolume =>
+        // wkeGetCaretRect =>
+        // wkeGetCaretRect2 =>
+        // wkeGetGlobalExecByFrame =>
+        wkeGetZoomFactor => zoom_factor: f32
+        // wkeGetString =>
+        // wkeGetStringW =>
+        // wkeGetStringLen =>
+        // wkeGetWebViewForCurrentContext => 
+        // wkeGetUserKeyValue =>
+        // wkeGetCursorInfoType =>
+        // wkeGetTempCallbackInfo =>
+        // wkeGetBlinkMainThreadIsolate =>
+        // wkeGetWindowHandle =>
+        // wkeGetWebViewByNData =>
+        // wkeGetContentAsMarkup =>
+    }
+}
+
+
+bind_props_set! {
+    WebViewSetter for WebView {
+        wkeSetResourceGc => resource_gc: i32;
+        // wkeSetFileSystem => 
+        wkeSetWebViewName => webview_name: &str;
+        // wkeSetClientHandler => 
+        // wkeSetViewSettings => 
+        // wkeSetDebugConfig => 
+        // wkeSetMemoryCacheEnable => 
+        wkeSetMouseEnabled => mouse_enabled: bool;
+        wkeSetTouchEnabled => touch_enabled: bool;
+        wkeSetSystemTouchEnabled => system_touch_enabled: bool;
+        wkeSetContextMenuEnabled => context_menu_enabled: bool;
+        wkeSetNavigationToNewWindowEnable => navigation_to_new_window_enabled: bool;
+        wkeSetCspCheckEnable => csp_check_enabled: bool;
+        wkeSetNpapiPluginsEnabled => npapi_plugins_enabled: bool;
+        wkeSetHeadlessEnabled => headless_enabled: bool;
+        wkeSetDragEnable => drag_enabled: bool;
+        wkeSetDragDropEnable => drag_drop_enable: bool;
+        // wkeSetContextMenuItemShow =>
+        wkeSetLanguage => language: &str;
+        // wkeSetViewNetInterface => 
+        // wkeSetProxy =>
+        wkeSetViewProxy => proxy: &ProxyConfig;
+        wkeSetName => name: &str;
+        // wkeSetHandle => 
+        // wkeSetHandleOffset =>
+        wkeSetTransparent => transparent: bool;
+        wkeSetUserAgent => user_agent: &str;
+        // wkeSetUserAgentW => 
+        // wkeSetDirty => 
+        // wkeSetCookie => cookie: &str
+        wkeSetCookieEnabled => cookie_enabled: bool;
+        // wkeSetCookieJarPath => cookie_jar_path: &str;
+        // wkeSetCookieJarFullPath => cookie_jar_full_path: &str;
+        // wkeSetLocalStorageFullPath => local_storage_full_path: &str;
+        wkeSetMediaVolume => media_volume: f32;
+        // wkeSetFocus => focus: bool;
+        wkeSetZoomFactor => zoom_factor: f32;
+        wkeSetEditable => editable: bool;
+        // wkeSetString => 
+        // wkeSetStringWithoutNullTermination => 
+        // wkeSetStringW => 
+        // wkeSetUserKeyValue => 
+        // wkeSetCursorInfoType => 
+        // wkeSetDragFiles => 
+        // wkeSetDeviceParameter => 
+        // wkeSetUIThreadCallback => 
+        wkeSetWindowTitle => window_title: &str
+        // wkeSetWindowTitleW => 
+        // wkeSetMediaPlayerFactory => 
     }
 }

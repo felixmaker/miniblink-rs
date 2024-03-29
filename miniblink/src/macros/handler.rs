@@ -1,11 +1,3 @@
-pub trait FromFFI<T> {
-    fn from(value: T) -> Self;
-}
-
-pub trait ToFFI<T> {
-    fn to(&self) -> T;
-}
-
 #[doc(hidden)]
 #[macro_export]
 macro_rules! bind_handler {
