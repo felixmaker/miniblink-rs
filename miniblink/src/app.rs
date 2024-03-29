@@ -35,13 +35,31 @@ pub fn js_bind_function<F>(name: &str, func: F, arg_count: u32)
 where
     F: Fn(JsExecState) -> MBResult<JsValue> + 'static,
 {
+    unsafe extern "C" fn shim<F>(
+        es: miniblink_sys::jsExecState,
+        param: *mut std::os::raw::c_void,
+    ) -> miniblink_sys::jsValue
+    where
+        F: Fn(JsExecState) -> MBResult<JsValue>,
+    {
+        let es = JsExecState::from_ptr(es);
+        let cb = param as *mut F;
+        let f = &mut *cb;
+    
+        if let Ok(Ok(r)) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(es))) {
+            r.as_ptr()
+        } else {
+            es.null().as_ptr()
+        }
+    }
+
     let name = CString::safe_new(name);
     let param: *mut F = Box::into_raw(Box::new(func));
 
     unsafe {
         call_api_or_panic().wkeJsBindFunction(
             name.as_ptr(),
-            Some(handler::js_native_function_handler::<F>),
+            Some(shim::<F>),
             param as _,
             arg_count,
         )
