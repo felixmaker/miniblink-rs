@@ -1,10 +1,10 @@
 use std::ffi::CString;
 
-use miniblink_sys::{wkeViewSettings, wkeWebView};
+use miniblink_sys::{wkeViewSettings, wkeWebView, POINT};
 
 use crate::error::MBResult;
 use crate::types::{
-    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy, ViewSettings, WindowType, HWND
+    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Point, Proxy, ViewSettings, WindowType, HWND
 };
 use crate::util::SafeCString;
 
@@ -116,39 +116,34 @@ bind_target! {
     WebViewGetter for WebView {
         wkeGetSource => get_source() -> String;
         // wkeGetCaret =>
-        // wkeGetClientHandler =>
-        // wkeGetDebugConfig =>
+        // wkeGetClientHandler => get_client_handler();
+        // wkeGetDebugConfig => get_debug_config(debug_string: &str) -> String;
         wkeGetName => get_name() -> String;
         wkeGetUserAgent => get_user_agent() -> String;
         wkeGetURL => get_url() -> String;
-        // wkeGetFrameUrl =>
+        // wkeGetFrameUrl => get_frame_url();
         wkeGetWebviewId => get_webview_id() -> i32;
-        // wkeGetDocumentCompleteURL =>
+        // wkeGetDocumentCompleteURL => get_document_complete_url();
         wkeGetTitle => get_title() -> String;
-        // wkeGetTitleW =>
         wkeGetWidth => get_width() -> i32;
         wkeGetHeight => get_height() -> i32;
         wkeGetContentWidth => get_content_width() -> i32;
         wkeGetContentHeight => get_content_height() -> i32;
         // wkeGetViewDC =>
-        // wkeGetHostHWND =>
+        wkeGetHostHWND => get_host_hwnd() -> HWND;
         wkeGetNavigateIndex => get_navigate_index() -> i32;
-        // wkeGetCookieW =>
         wkeGetCookie => get_cookie() -> String;
         // wkeGetMediaVolume =>
         // wkeGetCaretRect =>
         // wkeGetCaretRect2 =>
         // wkeGetGlobalExecByFrame =>
         wkeGetZoomFactor => get_zoom_factor() -> f32;
-        // wkeGetString =>
-        // wkeGetStringW =>
-        // wkeGetStringLen =>
         // wkeGetWebViewForCurrentContext =>
         // wkeGetUserKeyValue =>
         // wkeGetCursorInfoType =>
         // wkeGetTempCallbackInfo =>
         // wkeGetBlinkMainThreadIsolate =>
-        // wkeGetWindowHandle =>
+        wkeGetWindowHandle => get_window_handle() -> HWND;
         // wkeGetWebViewByNData =>
         // wkeGetContentAsMarkup =>
         wkeGlobalExec => global_exec() -> JsExecState
@@ -158,7 +153,6 @@ bind_target! {
 bind_target! {
     WebViewSetter for WebView {
         wkeSetResourceGc => set_resource_gc(resource_gc: i32);
-        // wkeSetFileSystem => set_file_system(...);
         wkeSetWebViewName => set_webview_name(webview_name: &str as CString);
         wkeSetViewSettings => set_view_settings(settings: &ViewSettings as wkeViewSettings);
         wkeSetDebugConfig => set_debug_config(debug_string: &str as CString, param: &str as CString);
@@ -193,7 +187,7 @@ bind_target! {
         wkeSetEditable => set_editable(editable: bool);
         // wkeSetUserKeyValue =>
         wkeSetCursorInfoType => set_cursor_info_type(cursor_info_type: i32);
-        // wkeSetDragFiles => set_drag_files();
+        // wkeSetDragFiles => set_drag_files(clint_pos: &Point as POINT, screen_pos: *const POINT, files: &[&str], files_count: i32);
         wkeSetDeviceParameter => set_device_parameter(device: &str as CString, param_str: &str as CString, param_int: i32, param_float: f32);
         wkeSetWindowTitle => set_window_title(window_title: &str as CString);
         wkeEnableWindow => enable_window(enable: bool)
