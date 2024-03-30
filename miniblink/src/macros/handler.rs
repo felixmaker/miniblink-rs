@@ -3,9 +3,9 @@
 macro_rules! bind_handler {
     ($trait: ident for $target: ident {
         $(
-            $mbcallback: ident ($($param: ident: $ctype: ty),*) $(-> $creturn: ty)? => 
+            $mbcallback: ident ($($param: ident: $ctype: ty),*) $(-> $creturn: ty)? =>
             $handler: ident ($($type: ty),*) $(-> $return: ty | $default: expr)?
-        );* 
+        );*
     }) => {
         #[doc=concat!("See [`", stringify!($trait), "`]")]
         pub trait $trait
@@ -23,10 +23,11 @@ macro_rules! bind_handler {
             fn $handler<F>(&self, callback: F)
             where
                 F: FnMut(&mut $target, $($type,)*) $(-> $return)? + 'static,
-                // $($type: FromFFI<$ctype>,)*
             {
+                use miniblink_sys::*;
+                use crate::types::*;
                 unsafe extern "C" fn shim<F>(
-                    wv_ptr: miniblink_sys::wkeWebView,
+                    wv_ptr: wkeWebView,
                     c_ptr: *mut ::std::os::raw::c_void,
                     $($param: $ctype,)*
                 ) $(-> $creturn)?

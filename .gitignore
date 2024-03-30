@@ -1,3 +1,4 @@
 /target
 node.dll
 Cargo.lock
+/test*

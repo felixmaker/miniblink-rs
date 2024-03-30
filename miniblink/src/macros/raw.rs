@@ -3,7 +3,7 @@
 macro_rules! bind_target {
     ($trait: ident for $target: ident {
         $(
-            $mbcallback: ident => $func: ident ($($param: ident: $type: ty),*) $(-> $return: ty)?
+            $mbcallback: ident => $func: ident ($($param: ident: $type: ty $(as $cross_type: ty)?),*) $(-> $return: ty)?
         );*
     }) => {
         #[allow(unused)]
@@ -18,12 +18,14 @@ macro_rules! bind_target {
         impl $trait for $target {
             $(
                 fn $func(&self, $($param: $type,)*) $(-> $return)? {
+                    use crate::types::*;
                     $(
-                        let $param = ToFFI::to(&$param);
+                        $(let $param: $cross_type = $param.prepare();)?
+                        let $param = $param.to();
                     )*
                     #[allow(unused)]
                     let r = unsafe {
-                        call_api_or_panic().$mbcallback(ToFFI::to(self), $($param,)*)
+                        call_api_or_panic().$mbcallback(self.to(), $($param,)*)
                     };
                     $(
                         let r: $return = FromFFI::from(r);
@@ -39,20 +41,23 @@ macro_rules! bind_target {
 #[macro_export]
 macro_rules! bind_global {
     ($(
-        $vis: vis $mbcallback: ident => $func: ident ($($param: ident: $type: ty),*) $(-> $return: ty)?
+        $vis: vis $mbcallback: ident => $func: ident ($($param: ident: $type: ty $(as $cross_type: ty)?),*) $(-> $return: ty)?
     );*) => {
         $(
             #[doc=concat!("See `", stringify!($mbcallback), "`.")]
             $vis fn $func($($param: $type,)*) $(-> $return)? {
+                #[allow(unused)]
+                use crate::types::*;
                 $(
-                    let $param = crate::types::ToFFI::to(&$param);
+                    $(let $param: $cross_type = $param.prepare();)?
+                    let $param = $param.to();
                 )*
                 #[allow(unused)]
                 let r = unsafe {
                     call_api_or_panic().$mbcallback($($param,)*)
                 };
                 $(
-                    let r: $return = crate::types::FromFFI::from(r);
+                    let r: $return = FromFFI::from(r);
                     r
                 )?
             }

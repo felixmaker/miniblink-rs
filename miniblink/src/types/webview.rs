@@ -9,23 +9,20 @@ pub enum NavigationType {
     Other,
 }
 
-impl From<miniblink_sys::wkeNavigationType> for NavigationType {
-    fn from(value: miniblink_sys::wkeNavigationType) -> Self {
-        match value {
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_LINKCLICK => {
-                NavigationType::LinkClick
-            }
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_FORMRESUBMITT => {
-                NavigationType::FormSubmitte
-            }
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_BACKFORWARD => {
-                NavigationType::BackForward
-            }
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_RELOAD => NavigationType::Reload,
-            miniblink_sys::wkeNavigationType::WKE_NAVIGATION_TYPE_FORMSUBMITTE => {
-                NavigationType::FormResubmit
-            }
-            _ => NavigationType::Other,
-        }
+/// Navigation Type. See `wkeWindowType`.
+#[allow(missing_docs)]
+pub enum WindowType {
+    Control,
+    Popup,
+    Transparent,
+}
+
+/// Represent a Windows HWND
+pub struct HWND(pub isize);
+
+impl HWND {
+    /// Handle NULL
+    pub fn null() -> Self {
+        HWND(0)
     }
 }

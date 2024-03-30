@@ -1,9 +1,8 @@
 use std::ffi::CString;
 
-
 #[doc(hidden)]
 /// A helper trait to get CStrings from Strings without panicking
-/// 
+///
 /// https://github.com/fltk-rs/fltk-rs/blob/b43f8889c82c419deb3cd909e202d04b4c51f34f/fltk/src/utils/mod.rs#L13
 pub trait SafeCString {
     /// Get CStrings from Strings without panicking
@@ -20,4 +19,15 @@ impl SafeCString for CString {
             }
         }
     }
+}
+
+pub fn string_to_slice<const N: usize>(s: &str) -> [i8; N] {
+    let mut vec = vec![0; N];
+    let bytes = CString::safe_new(s).into_bytes_with_nul();
+    for i in 0..bytes.len() {
+        if i < N {
+            vec[i] = bytes[i] as i8
+        }
+    }
+    vec.try_into().unwrap()
 }

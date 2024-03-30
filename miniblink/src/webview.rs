@@ -1,19 +1,18 @@
 use std::ffi::CString;
 
-use miniblink_sys::{wkeNavigationType, wkeString, wkeWindowType, HWND};
+use miniblink_sys::wkeWebView;
 
 use crate::error::MBResult;
-use crate::types::{CCStr, JsExecState, JsValue, MBExecStateValue, NavigationType, ProxyConfig};
-use crate::types::{FromFFI, ToFFI};
+use crate::types::{
+    JsExecState, JsValue, MBExecStateValue, NavigationType, Proxy, WindowType, HWND,
+};
 use crate::util::SafeCString;
 
-use crate::{bind_handler, bind_target, call_api_or_panic};
-
-type InnerWebView = miniblink_sys::wkeWebView;
+use crate::{app, bind_handler, bind_target, call_api_or_panic};
 
 /// Wrapper to [`miniblink_sys::wkeWebView`]
 pub struct WebView {
-    pub(crate) webview: InnerWebView,
+    pub(crate) webview: wkeWebView,
 }
 
 impl Default for WebView {
@@ -39,52 +38,25 @@ impl WebView {
         H: raw_window_handle::HasWindowHandle,
     {
         match hwnd.window_handle().map(|x| x.as_raw()) {
-            Ok(raw_window_handle::RawWindowHandle::Win32(handle)) => {
-                Ok(WebView::create_control_window(
-                    isize::from(handle.hwnd) as HWND,
-                    x,
-                    y,
-                    width,
-                    height,
-                ))
-            }
+            Ok(raw_window_handle::RawWindowHandle::Win32(handle)) => Ok(
+                WebView::create_control_window(HWND(isize::from(handle.hwnd)), x, y, width, height),
+            ),
             _ => Err(crate::error::MBError::UnsupportedPlatform),
         }
     }
 
     /// Create a popup type window
-    /// 
+    ///
     /// Notes: This method creates real window.
     pub fn create_popup_window(x: i32, y: i32, width: i32, height: i32) -> Self {
-        let window = unsafe {
-            call_api_or_panic().wkeCreateWebWindow(
-                wkeWindowType::WKE_WINDOW_TYPE_POPUP,
-                std::ptr::null_mut(),
-                x,
-                y,
-                width,
-                height,
-            )
-        };
-        Self { webview: window }
+        app::create_web_window(WindowType::Popup, HWND::null(), x, y, width, height)
     }
 
     /// Create a control type window
-    /// 
+    ///
     /// Notes: This method creates window as child window.
     pub fn create_control_window(parent: HWND, x: i32, y: i32, width: i32, height: i32) -> Self {
-        let window = unsafe {
-            call_api_or_panic().wkeCreateWebWindow(
-                wkeWindowType::WKE_WINDOW_TYPE_CONTROL,
-                parent,
-                x,
-                y,
-                width,
-                height,
-            )
-        };
-
-        Self { webview: window }
+        app::create_web_window(WindowType::Control, parent, x, y, width, height)
     }
 
     /// Run the provided script. See `wkeRunJS`.
@@ -98,11 +70,6 @@ impl WebView {
         });
         let es = self.global_exec();
         es.value(js_value)
-    }
-
-    /// Get JsExecState. See `wkeGlobalExec`.
-    pub fn global_exec(&self) -> JsExecState {
-        JsExecState::from_ptr(unsafe { call_api_or_panic().wkeGlobalExec(self.webview) })
     }
 }
 
@@ -123,7 +90,7 @@ bind_handler! {
         wkeOnDocumentReady() => on_document_ready();
         // wkeOnDocumentReady2 => on_document_ready2
         // wkeOnLoadingFinish => on_loading_finish
-        wkeOnDownload(url: CCStr) -> bool => on_download(String) -> bool | false;
+        wkeOnDownload(url: *const i8) -> bool => on_download(String) -> bool | false;
         // wkeOnDownload2 => on_download2
         // wkeOnConsole => on_console
         // wkeOnLoadUrlBegin => on_load_url_begin
@@ -172,7 +139,7 @@ bind_target! {
         // wkeGetCaretRect =>
         // wkeGetCaretRect2 =>
         // wkeGetGlobalExecByFrame =>
-        wkeGetZoomFactor => get_zoom_factor() -> f32
+        wkeGetZoomFactor => get_zoom_factor() -> f32;
         // wkeGetString =>
         // wkeGetStringW =>
         // wkeGetStringLen =>
@@ -184,6 +151,7 @@ bind_target! {
         // wkeGetWindowHandle =>
         // wkeGetWebViewByNData =>
         // wkeGetContentAsMarkup =>
+        wkeGlobalExec => global_exec() -> JsExecState
     }
 }
 
@@ -191,7 +159,7 @@ bind_target! {
     WebViewSetter for WebView {
         wkeSetResourceGc => set_resource_gc(resource_gc: i32);
         // wkeSetFileSystem => set_file_system(...);
-        wkeSetWebViewName => set_webview_name(webview_name: &str);
+        wkeSetWebViewName => set_webview_name(webview_name: &str as CString);
         // wkeSetClientHandler =>
         // wkeSetViewSettings =>
         // wkeSetDebugConfig =>
@@ -207,18 +175,18 @@ bind_target! {
         wkeSetDragEnable => set_drag_enabled(drag_enabled: bool);
         wkeSetDragDropEnable => set_drag_drop_enable(drag_drop_enable: bool);
         // wkeSetContextMenuItemShow =>
-        wkeSetLanguage => set_language(language: &str);
+        wkeSetLanguage => set_language(language: &str as CString);
         // wkeSetViewNetInterface =>
         // wkeSetProxy =>
-        wkeSetViewProxy => set_proxy(proxy: &ProxyConfig);
-        wkeSetName => set_name(name: &str);
+        wkeSetViewProxy => set_proxy(proxy: &Proxy as CProxy);
+        wkeSetName => set_name(name: &str as CString);
         // wkeSetHandle =>
         // wkeSetHandleOffset =>
         wkeSetTransparent => set_transparent(transparent: bool);
-        wkeSetUserAgent => set_user_agent(user_agent: &str);
+        wkeSetUserAgent => set_user_agent(user_agent: &str as CString);
         // wkeSetUserAgentW =>
         // wkeSetDirty =>
-        wkeSetCookie => set_cookie(url: &str, cookie: &str);
+        wkeSetCookie => set_cookie(url: &str as CString, cookie: &str as CString);
         wkeSetCookieEnabled => set_cookie_enabled(cookie_enabled: bool);
         // wkeSetCookieJarPath => cookie_jar_path: &str;
         // wkeSetCookieJarFullPath => cookie_jar_full_path: &str;
@@ -235,7 +203,7 @@ bind_target! {
         // wkeSetDragFiles =>
         // wkeSetDeviceParameter =>
         // wkeSetUIThreadCallback =>
-        wkeSetWindowTitle => set_window_title(window_title: &str);
+        wkeSetWindowTitle => set_window_title(window_title: &str as CString);
         // wkeSetWindowTitleW =>
         // wkeSetMediaPlayerFactory =>
         wkeEnableWindow => enable_window(enable: bool)
@@ -245,8 +213,8 @@ bind_target! {
 bind_target! {
     WebViewOperation for WebView {
         wkeShowWindow => show_window(show: bool);
-        wkeLoadHTML => load_html(html: &str);
-        wkeLoadURL => load_url(url: &str);
+        wkeLoadHTML => load_html(html: &str as CString);
+        wkeLoadURL => load_url(url: &str as CString);
         wkeResize => resize(width: i32, height: i32);
         wkeMoveWindow => move_window(x: i32, y: i32, width: i32, height: i32);
         wkeMoveToCenter => move_to_center()
