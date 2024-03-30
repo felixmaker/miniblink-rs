@@ -194,12 +194,9 @@ bind_target! {
         wkeSetEditable => set_editable(editable: bool);
         // wkeSetUserKeyValue =>
         wkeSetCursorInfoType => set_cursor_info_type(cursor_info_type: i32);
-        // wkeSetDragFiles =>
-        // wkeSetDeviceParameter =>
-        // wkeSetUIThreadCallback =>
+        // wkeSetDragFiles => set_drag_files();
+        wkeSetDeviceParameter => set_device_parameter(device: &str as CString, param_str: &str as CString, param_int: i32, param_float: f32);
         wkeSetWindowTitle => set_window_title(window_title: &str as CString);
-        // wkeSetWindowTitleW =>
-        // wkeSetMediaPlayerFactory =>
         wkeEnableWindow => enable_window(enable: bool)
     }
 }
