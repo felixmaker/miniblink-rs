@@ -54,6 +54,7 @@ impl FromFFI<c_int> for i32 {
 
 impl FromFFI<wkeWebView> for WebView {
     fn from(value: wkeWebView) -> Self {
+        assert!(!value.is_null());
         WebView { webview: value }
     }
 }
