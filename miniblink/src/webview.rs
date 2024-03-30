@@ -1,10 +1,10 @@
 use std::ffi::CString;
 
-use miniblink_sys::wkeWebView;
+use miniblink_sys::{wkeViewSettings, wkeWebView};
 
 use crate::error::MBResult;
 use crate::types::{
-    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy, WindowType, HWND,
+    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy, ViewSettings, WindowType, HWND
 };
 use crate::util::SafeCString;
 
@@ -160,8 +160,7 @@ bind_target! {
         wkeSetResourceGc => set_resource_gc(resource_gc: i32);
         // wkeSetFileSystem => set_file_system(...);
         wkeSetWebViewName => set_webview_name(webview_name: &str as CString);
-        // wkeSetClientHandler =>
-        // wkeSetViewSettings =>
+        wkeSetViewSettings => set_view_settings(settings: &ViewSettings as wkeViewSettings);
         wkeSetDebugConfig => set_debug_config(debug_string: &str as CString, param: &str as CString);
         wkeSetMemoryCacheEnable => set_memory_cache_enable(memory_cache_enable: bool);
         wkeSetMouseEnabled => set_mouse_enabled(mouse_enabled: bool);

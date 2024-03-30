@@ -1,16 +1,10 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int};
 
-use miniblink_sys::{
-    jsExecState, wchar_t, wkeMenuItemId, wkeNavigationType, wkeProxy, wkeString, wkeWebView,
-    wkeWindowType,
-};
+use super::*;
+use miniblink_sys::*;
 
 use crate::{util::SafeCString, webview::WebView};
-
-use super::{
-    CProxy, JsExecState, MenuItemId, NavigationType, Proxy, WindowType, WkeStr, WkeString,
-};
 
 pub trait PrepareFFI<T> {
     fn prepare(&self) -> T;
@@ -189,5 +183,20 @@ impl ToFFI<wkeMenuItemId> for MenuItemId {
             MenuItemId::MenuReloadId => wkeMenuItemId::kWkeMenuReloadId,
             MenuItemId::MenuSaveImageId => wkeMenuItemId::kWkeMenuSaveImageId,
         }
+    }
+}
+
+impl PrepareFFI<wkeViewSettings> for ViewSettings {
+    fn prepare(&self) -> wkeViewSettings {
+        wkeViewSettings {
+            size: self.size,
+            bgColor: self.backgroud_color,
+        }
+    }
+}
+
+impl ToFFI<*const wkeViewSettings> for wkeViewSettings {
+    fn to(&self) -> *const wkeViewSettings {
+        &*self
     }
 }

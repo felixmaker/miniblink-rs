@@ -41,3 +41,8 @@ pub enum MenuItemId {
     MenuReloadId,
     MenuSaveImageId,
 }
+
+pub struct ViewSettings {
+    pub size: i32,
+    pub backgroud_color: u32,
+}
