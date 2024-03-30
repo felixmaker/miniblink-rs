@@ -26,3 +26,18 @@ impl HWND {
         HWND(0)
     }
 }
+
+pub enum MenuItemId {
+    MenuSelectedAllId,
+    MenuSelectedTextId,
+    MenuUndoId,
+    MenuCopyImageId,
+    MenuInspectElementAtId,
+    MenuCutId,
+    MenuPasteId,
+    MenuPrintId,
+    MenuGoForwardId,
+    MenuGoBackId,
+    MenuReloadId,
+    MenuSaveImageId,
+}

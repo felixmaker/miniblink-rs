@@ -2,12 +2,15 @@ use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int};
 
 use miniblink_sys::{
-    jsExecState, wchar_t, wkeNavigationType, wkeProxy, wkeString, wkeWebView, wkeWindowType,
+    jsExecState, wchar_t, wkeMenuItemId, wkeNavigationType, wkeProxy, wkeString, wkeWebView,
+    wkeWindowType,
 };
 
 use crate::{util::SafeCString, webview::WebView};
 
-use super::{CProxy, JsExecState, NavigationType, Proxy, WindowType, WkeStr, WkeString};
+use super::{
+    CProxy, JsExecState, MenuItemId, NavigationType, Proxy, WindowType, WkeStr, WkeString,
+};
 
 pub trait PrepareFFI<T> {
     fn prepare(&self) -> T;
@@ -166,6 +169,25 @@ impl ToFFI<wkeWindowType> for WindowType {
             WindowType::Control => wkeWindowType::WKE_WINDOW_TYPE_CONTROL,
             WindowType::Popup => wkeWindowType::WKE_WINDOW_TYPE_POPUP,
             WindowType::Transparent => wkeWindowType::WKE_WINDOW_TYPE_TRANSPARENT,
+        }
+    }
+}
+
+impl ToFFI<wkeMenuItemId> for MenuItemId {
+    fn to(&self) -> wkeMenuItemId {
+        match self {
+            MenuItemId::MenuSelectedAllId => wkeMenuItemId::kWkeMenuSelectedAllId,
+            MenuItemId::MenuSelectedTextId => wkeMenuItemId::kWkeMenuSelectedTextId,
+            MenuItemId::MenuUndoId => wkeMenuItemId::kWkeMenuUndoId,
+            MenuItemId::MenuCopyImageId => wkeMenuItemId::kWkeMenuCopyImageId,
+            MenuItemId::MenuInspectElementAtId => wkeMenuItemId::kWkeMenuInspectElementAtId,
+            MenuItemId::MenuCutId => wkeMenuItemId::kWkeMenuCutId,
+            MenuItemId::MenuPasteId => wkeMenuItemId::kWkeMenuPasteId,
+            MenuItemId::MenuPrintId => wkeMenuItemId::kWkeMenuPrintId,
+            MenuItemId::MenuGoForwardId => wkeMenuItemId::kWkeMenuGoForwardId,
+            MenuItemId::MenuGoBackId => wkeMenuItemId::kWkeMenuGoBackId,
+            MenuItemId::MenuReloadId => wkeMenuItemId::kWkeMenuReloadId,
+            MenuItemId::MenuSaveImageId => wkeMenuItemId::kWkeMenuSaveImageId,
         }
     }
 }

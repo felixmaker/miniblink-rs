@@ -4,7 +4,7 @@ use miniblink_sys::wkeWebView;
 
 use crate::error::MBResult;
 use crate::types::{
-    JsExecState, JsValue, MBExecStateValue, NavigationType, Proxy, WindowType, HWND,
+    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy, WindowType, HWND
 };
 use crate::util::SafeCString;
 
@@ -163,18 +163,18 @@ bind_target! {
         // wkeSetClientHandler =>
         // wkeSetViewSettings =>
         // wkeSetDebugConfig =>
-        // wkeSetMemoryCacheEnable =>
+        wkeSetMemoryCacheEnable => set_memory_cache_enable(memory_cache_enable: bool);
         wkeSetMouseEnabled => set_mouse_enabled(mouse_enabled: bool);
         wkeSetTouchEnabled => set_touch_enabled(touch_enabled: bool);
         wkeSetSystemTouchEnabled => set_system_touch_enabled(system_touch_enabled: bool);
         wkeSetContextMenuEnabled => set_context_menu_enabled(context_menu_enabled: bool);
         wkeSetNavigationToNewWindowEnable => set_navigation_to_new_window_enabled(navigation_to_new_window_enabled: bool);
-        wkeSetCspCheckEnable => set_csp_check_enabled(csp_check_enabled: bool);
+        wkeSetCspCheckEnable => set_csp_check_enable(csp_check_enabled: bool);
         wkeSetNpapiPluginsEnabled => set_npapi_plugins_enabled(npapi_plugins_enabled: bool);
         wkeSetHeadlessEnabled => set_headless_enabled(headless_enabled: bool);
         wkeSetDragEnable => set_drag_enabled(drag_enabled: bool);
         wkeSetDragDropEnable => set_drag_drop_enable(drag_drop_enable: bool);
-        // wkeSetContextMenuItemShow =>
+        wkeSetContextMenuItemShow => set_context_menu_item_show(item_id: MenuItemId, show: bool);
         wkeSetLanguage => set_language(language: &str as CString);
         // wkeSetViewNetInterface =>
         // wkeSetProxy =>
