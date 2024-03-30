@@ -4,7 +4,7 @@ use miniblink_sys::wkeWebView;
 
 use crate::error::MBResult;
 use crate::types::{
-    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy, WindowType, HWND
+    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy, WindowType, HWND,
 };
 use crate::util::SafeCString;
 
@@ -180,8 +180,8 @@ bind_target! {
         // wkeSetProxy =>
         wkeSetViewProxy => set_proxy(proxy: &Proxy as CProxy);
         wkeSetName => set_name(name: &str as CString);
-        // wkeSetHandle =>
-        // wkeSetHandleOffset =>
+        wkeSetHandle => set_handle(hwnd: HWND);
+        wkeSetHandleOffset => set_handle_offset(x: i32, y: i32);
         wkeSetTransparent => set_transparent(transparent: bool);
         wkeSetUserAgent => set_user_agent(user_agent: &str as CString);
         // wkeSetUserAgentW =>
