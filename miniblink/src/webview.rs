@@ -162,7 +162,7 @@ bind_target! {
         wkeSetWebViewName => set_webview_name(webview_name: &str as CString);
         // wkeSetClientHandler =>
         // wkeSetViewSettings =>
-        // wkeSetDebugConfig =>
+        wkeSetDebugConfig => set_debug_config(debug_string: &str as CString, param: &str as CString);
         wkeSetMemoryCacheEnable => set_memory_cache_enable(memory_cache_enable: bool);
         wkeSetMouseEnabled => set_mouse_enabled(mouse_enabled: bool);
         wkeSetTouchEnabled => set_touch_enabled(touch_enabled: bool);
@@ -176,7 +176,7 @@ bind_target! {
         wkeSetDragDropEnable => set_drag_drop_enable(drag_drop_enable: bool);
         wkeSetContextMenuItemShow => set_context_menu_item_show(item_id: MenuItemId, show: bool);
         wkeSetLanguage => set_language(language: &str as CString);
-        // wkeSetViewNetInterface =>
+        wkeSetViewNetInterface => set_view_net_interface(net_interface: &str as CString);
         // wkeSetProxy =>
         wkeSetViewProxy => set_proxy(proxy: &Proxy as CProxy);
         wkeSetName => set_name(name: &str as CString);
