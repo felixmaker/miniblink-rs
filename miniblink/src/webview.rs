@@ -188,9 +188,9 @@ bind_target! {
         // wkeSetDirty =>
         wkeSetCookie => set_cookie(url: &str as CString, cookie: &str as CString);
         wkeSetCookieEnabled => set_cookie_enabled(cookie_enabled: bool);
-        // wkeSetCookieJarPath => cookie_jar_path: &str;
-        // wkeSetCookieJarFullPath => cookie_jar_full_path: &str;
-        // wkeSetLocalStorageFullPath => local_storage_full_path: &str;
+        wkeSetCookieJarPath => set_cookie_jar_path(path: &str as WkeString);
+        wkeSetCookieJarFullPath => set_cookie_jar_full_path(path: &str as WkeString);
+        wkeSetLocalStorageFullPath => set_local_storage_full_path(path: &str as WkeString);
         wkeSetMediaVolume => set_media_volume(media_volume: f32);
         wkeSetFocus => set_focus();
         wkeSetZoomFactor => set_zoom_factor(zoom_factor: f32);
