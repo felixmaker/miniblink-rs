@@ -27,13 +27,11 @@ See [examples](./miniblink/examples) for basic usage
 
 This project is now under development, not ready for production.
 
-The api in rust safe wrapper `./miniblink` may changed in the future.
-
 The crate `./miniblink-sys` is generated using `bindgen`.
 
-The rust safe wrapper is not aimed to provide a complete API set. But if you need to wrap a specified API, create an issue or pull a request.
+The rust safe wrapper `./miniblink` is aimed to provide a complete API set.
 
-Thank you!
+For now, the basic api in rust safe wrapper `./miniblink` is more stable than the earlier version, but still may get changed in the future. There are still a lot of api unwrappered. It takes time, and PR is welcomed! :D
 
 # Credits
 
