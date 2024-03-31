@@ -44,7 +44,7 @@ macro_rules! bind_target {
         $vis: vis $mbcallback: ident => $func: ident ($($param: ident: $type: ty $(as $cross_type: ty)?),*) $(-> $return: ty)?
     );*$(;)?) => {
         $(
-            #[doc=concat!("See [`", stringify!($mbcallback), "`]")]
+            #[doc=concat!("See `", stringify!($mbcallback), "`")]
             $vis fn $func(&self, $($param: $type,)*) $(-> $return)? {
                 use crate::types::*;
                 $(
@@ -71,7 +71,7 @@ macro_rules! bind_target_global {
         $vis: vis $mbcallback: ident => $func: ident ($($param: ident: $type: ty $(as $cross_type: ty)?),*) $(-> $return: ty)?
     );*$(;)?) => {
         $(
-            #[doc=concat!("See [`", stringify!($mbcallback), "`]")]
+            #[doc=concat!("See `", stringify!($mbcallback), "`")]
             $vis fn $func(&self, $($param: $type,)*) $(-> $return)? {
                 use crate::types::*;
                 $(
@@ -98,7 +98,7 @@ macro_rules! bind_global {
         $vis: vis $mbcallback: ident => $func: ident ($($param: ident: $type: ty $(as $cross_type: ty)?),*) $(-> $return: ty)?
     );*$(;)?) => {
         $(
-            #[doc=concat!("See [`", stringify!($mbcallback), "`]")]
+            #[doc=concat!("See `", stringify!($mbcallback), "`")]
             $vis fn $func($($param: $type,)*) $(-> $return)? {
                 #[allow(unused)]
                 use crate::types::*;
