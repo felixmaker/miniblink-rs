@@ -68,7 +68,7 @@ impl JsExecState {
         pub(crate) jsInt => int(value: i32) -> JsValue;
         pub(crate) jsDouble => double(value: f64) -> JsValue;
         pub(crate) jsBoolean => boolean(value: bool) -> JsValue;
-        // pub(crate) jsUndefined => undefined() -> JsValue;
+        pub(crate) jsUndefined => undefined() -> JsValue;
         pub(crate) jsNull => null() -> JsValue
     }
 
@@ -317,7 +317,7 @@ impl MBExecStateValue<()> for JsExecState {
     }
 
     fn value(&self, value: JsValue) -> MBResult<()> {
-        match value.get_type() {
+        match value.type_of_() {
             JsType::Undefined => Ok(()),
             other => Err(MBError::UnsupportedType(JsType::Undefined, other)),
         }
