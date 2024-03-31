@@ -1,3 +1,5 @@
+use miniblink_sys::HWND;
+
 /// Navigation Type. See `wkeNavigationType`.
 #[allow(missing_docs)]
 pub enum NavigationType {
@@ -18,12 +20,16 @@ pub enum WindowType {
 }
 
 /// Represent a Windows HWND
-pub struct HWND(pub isize);
+pub struct Handle(pub isize);
 
-impl HWND {
+impl Handle {
     /// Handle NULL
     pub fn null() -> Self {
-        HWND(0)
+        Handle(0)
+    }
+
+    pub fn from_hwnd(hwnd: HWND) -> Self {
+        Self(hwnd as isize)
     }
 }
 
@@ -45,4 +51,9 @@ pub enum MenuItemId {
 pub struct ViewSettings {
     pub size: i32,
     pub backgroud_color: u32,
+}
+
+pub struct Point {
+    pub x: i32,
+    pub y: i32,
 }

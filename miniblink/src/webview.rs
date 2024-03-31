@@ -1,10 +1,10 @@
 use std::ffi::CString;
 
-use miniblink_sys::{wkeViewSettings, wkeWebView, POINT};
+use miniblink_sys::{wkeViewSettings, wkeWebView};
 
 use crate::error::MBResult;
 use crate::types::{
-    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Point, Proxy, ViewSettings, WindowType, HWND
+    JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy, ViewSettings, WindowType, Handle
 };
 use crate::util::SafeCString;
 
@@ -39,7 +39,7 @@ impl WebView {
     {
         match hwnd.window_handle().map(|x| x.as_raw()) {
             Ok(raw_window_handle::RawWindowHandle::Win32(handle)) => Ok(
-                WebView::create_control_window(HWND(isize::from(handle.hwnd)), x, y, width, height),
+                WebView::create_control_window(Handle(isize::from(handle.hwnd)), x, y, width, height),
             ),
             _ => Err(crate::error::MBError::UnsupportedPlatform),
         }
@@ -49,13 +49,13 @@ impl WebView {
     ///
     /// Notes: This method creates real window.
     pub fn create_popup_window(x: i32, y: i32, width: i32, height: i32) -> Self {
-        app::create_web_window(WindowType::Popup, HWND::null(), x, y, width, height)
+        app::create_web_window(WindowType::Popup, Handle::null(), x, y, width, height)
     }
 
     /// Create a control type window
     ///
     /// Notes: This method creates window as child window.
-    pub fn create_control_window(parent: HWND, x: i32, y: i32, width: i32, height: i32) -> Self {
+    pub fn create_control_window(parent: Handle, x: i32, y: i32, width: i32, height: i32) -> Self {
         app::create_web_window(WindowType::Control, parent, x, y, width, height)
     }
 
@@ -130,7 +130,7 @@ bind_target! {
         wkeGetContentWidth => get_content_width() -> i32;
         wkeGetContentHeight => get_content_height() -> i32;
         // wkeGetViewDC =>
-        wkeGetHostHWND => get_host_hwnd() -> HWND;
+        wkeGetHostHWND => get_host_hwnd() -> Handle;
         wkeGetNavigateIndex => get_navigate_index() -> i32;
         wkeGetCookie => get_cookie() -> String;
         // wkeGetMediaVolume =>
@@ -143,7 +143,7 @@ bind_target! {
         // wkeGetCursorInfoType =>
         // wkeGetTempCallbackInfo =>
         // wkeGetBlinkMainThreadIsolate =>
-        wkeGetWindowHandle => get_window_handle() -> HWND;
+        wkeGetWindowHandle => get_window_handle() -> Handle;
         // wkeGetWebViewByNData =>
         // wkeGetContentAsMarkup =>
         wkeGlobalExec => global_exec() -> JsExecState
@@ -172,7 +172,7 @@ bind_target! {
         wkeSetViewNetInterface => set_view_net_interface(net_interface: &str as CString);
         wkeSetViewProxy => set_proxy(proxy: &Proxy as CProxy);
         wkeSetName => set_name(name: &str as CString);
-        wkeSetHandle => set_handle(hwnd: HWND);
+        wkeSetHandle => set_handle(hwnd: Handle);
         wkeSetHandleOffset => set_handle_offset(x: i32, y: i32);
         wkeSetTransparent => set_transparent(transparent: bool);
         wkeSetUserAgent => set_user_agent(user_agent: &str as CString);
