@@ -29,9 +29,11 @@ This project is now under development, not ready for production.
 
 The crate `./miniblink-sys` is generated using `bindgen`.
 
-The rust safe wrapper `./miniblink` is aimed to provide a complete API set.
+The rust safe wrapper `./miniblink` is not aimed to provide a complete API set.
 
-For now, the basic api in rust safe wrapper `./miniblink` is more stable than the earlier version, but still may get changed in the future. There are still a lot of api unwrappered. It takes time, and PR is welcomed! :D
+For now, the basic api in rust safe wrapper `./miniblink` is more stable than the earlier version, but still, may change in the future.
+
+It takes time to wrapper all api, so PRs are welcomed! :D
 
 # Credits
 
