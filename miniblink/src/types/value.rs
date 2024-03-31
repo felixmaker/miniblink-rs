@@ -153,30 +153,21 @@ impl ToValue for JsExecState {
 
 /// Extra api for JsExecState
 pub trait JsExecStateExt {
-    /// Get arg from execution state. See jsArg.
-    fn get_arg(&self, index: i32) -> Option<JsValue>;
-
     /// Get arg value from execution state. Helper function.
-    fn get_arg_value<T>(&self, index: i32) -> MBResult<T>
+    fn arg_value<T>(&self, index: i32) -> MBResult<T>
     where
         Self: MBExecStateValue<T>;
 }
 
 impl JsExecStateExt for JsExecState {
-    fn get_arg(&self, index: i32) -> Option<JsValue> {
-        if index < self.arg_count() {
-            Some(self.arg(index))
-        } else {
-            None
-        }
-    }
-
-    fn get_arg_value<T>(&self, index: i32) -> MBResult<T>
+    fn arg_value<T>(&self, index: i32) -> MBResult<T>
     where
         Self: MBExecStateValue<T>,
     {
-        if let Some(value) = self.get_arg(index) {
-            self.value(value).map_err(|e| match e {
+        if index >= self.arg_count() {
+            Err(MBError::ArgNotMatch(format!("arg index out of range")))
+        } else {
+            self.value(self.arg(index)).map_err(|e| match e {
                 #[cfg(feature = "serde")]
                 MBError::SerdeMessage(msg) => {
                     MBError::ArgNotMatch(format!("not match at arg index {index}, {msg}"))
@@ -186,8 +177,6 @@ impl JsExecStateExt for JsExecState {
                 )),
                 _ => MBError::ArgNotMatch(format!("not match at arg index {index}")),
             })
-        } else {
-            Err(MBError::ArgNotMatch(format!("arg index out of range")))
         }
     }
 }

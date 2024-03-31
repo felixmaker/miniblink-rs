@@ -17,8 +17,9 @@ pub mod ffi;
 
 /// Prelude to use some useful functions and traits.
 pub mod prelude {
-    pub use super::webview::WebViewExt;
-    pub use super::webview::WebViewHandler;
+    pub use super::webview::{WebViewExt, WebViewHandler};
+    pub use super::types::{JsExecStateExt, JsValueExt, MBExecStateValue};
+    pub use super::error::{MBError, MBResult};
 }
 
 /// Support for serde. Ensure to enable `serde` feature.

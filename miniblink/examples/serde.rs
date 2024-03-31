@@ -1,5 +1,6 @@
 use miniblink::{
     app,
+    app::app_ext,
     webview::{WebView, WebViewHandler},
 };
 use serde_derive::{Deserialize, Serialize};
@@ -15,7 +16,7 @@ fn main() {
 
     app::initialize("node.dll").unwrap();
 
-    app::bind("format_user", |user: User| {
+    app_ext::bind("format_user", |user: User| {
         Ok(format!("{}: {}", user.name, user.age))
     });
 

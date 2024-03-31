@@ -1,10 +1,15 @@
 use miniblink::prelude::*;
+use miniblink::types::{JsExecState, JsValue};
 use miniblink::{app, webview::WebView};
 
 fn main() {
     app::initialize("node.dll").unwrap();
 
-    app::bind("hello", |x: String| Ok(format!("hello {x}")));
+    app::js_bind_function("hello", |es: JsExecState| -> MBResult<JsValue> {
+        let arg1: String = es.arg_value(0)?;
+        let result = format!("Hello, {}!", arg1);
+        es.js_value(result)
+    }, 1);
 
     let wv = WebView::default();
     wv.set_window_title("Hello, Miniblink");
