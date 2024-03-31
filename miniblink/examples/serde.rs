@@ -1,6 +1,6 @@
 use miniblink::{
     app,
-    webview::{WebView, WebViewHandler, WebViewOperation},
+    webview::{WebView, WebViewHandler},
 };
 use serde_derive::{Deserialize, Serialize};
 

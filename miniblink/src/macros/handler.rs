@@ -1,6 +1,6 @@
 #[doc(hidden)]
 #[macro_export]
-macro_rules! bind_handler {
+macro_rules! impl_handler {
     ($trait: ident for $target: ident {
         $(
             $mbcallback: ident ($($param: ident: $ctype: ty),*) $(-> $creturn: ty)? =>

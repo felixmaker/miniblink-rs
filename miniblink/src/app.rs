@@ -6,9 +6,8 @@ use crate::{
     bind_global, call_api_or_panic,
     error::{MBError, MBResult},
     js_bind_function_ext,
-    types::{JsExecState, JsValue, MBExecStateValue, Proxy, WindowType, HWND},
+    types::{JsExecState, JsValue, JsValueExt, MBExecStateValue, Proxy},
     util::SafeCString,
-    webview::WebView,
     LIB,
 };
 
@@ -17,7 +16,6 @@ bind_global! {
     pub wkeSetProxy => set_proxy(config: &Proxy as CProxy);
     pub wkeEnableHighDPISupport => enable_high_dpi_support();
     pub wkeRunMessageLoop => run_message_loop();
-    pub wkeCreateWebWindow => create_web_window(window_type: WindowType, handle: HWND, x: i32, y: i32, width: i32, height: i32) -> WebView
 }
 
 // const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";

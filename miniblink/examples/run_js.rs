@@ -8,7 +8,7 @@ fn main() {
 
     wv.load_html("<html></html>");
     wv.on_document_ready(|wv| {
-        let result = wv.run_js::<i32>("{return 1}");
+        let result = wv.eval::<i32>("{return 1}");
         println!("{:?}", result);
     });
 

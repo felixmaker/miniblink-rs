@@ -5,7 +5,7 @@ use serde::{
 
 use crate::{
     error::{MBError, MBResult},
-    types::{JsExecState, JsType, JsValue},
+    types::{JsExecState, JsType, JsValue, ToValue},
 };
 
 /// Convert [`JsValue`] to `T` using serde.
@@ -38,7 +38,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
         V: Visitor<'de>,
     {
         use crate::types::JsType::*;
-        match self.value.get_type() {
+        match self.value.type_of_() {
             Number => visitor.visit_i32(self.es.to_int(self.value)?),
             String => visitor.visit_string(self.es.to_string(self.value)?),
             Boolean => visitor.visit_bool(self.es.to_boolean(self.value)?),
@@ -64,7 +64,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
     where
         V: Visitor<'de>,
     {
-        match self.value.get_type() {
+        match self.value.type_of_() {
             JsType::Boolean => visitor.visit_bool(self.es.to_boolean(self.value)?),
             other => Err(MBError::UnsupportedType(JsType::Object, other)),
         }
@@ -74,7 +74,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
     where
         V: Visitor<'de>,
     {
-        match self.value.get_type() {
+        match self.value.type_of_() {
             JsType::Null | JsType::Undefined => visitor.visit_none(),
             _ => visitor.visit_some(self),
         }
@@ -84,7 +84,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
     where
         V: Visitor<'de>,
     {
-        match self.value.get_type() {
+        match self.value.type_of_() {
             JsType::Null | JsType::Undefined => visitor.visit_unit(),
             other => Err(MBError::UnsupportedType(JsType::Object, other)),
         }
@@ -117,7 +117,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
         V: Visitor<'de>,
     {
         use crate::types::JsType::*;
-        match self.value.get_type() {
+        match self.value.type_of_() {
             Array => {
                 let len = self.es.get_length(self.value);
                 let value = visitor.visit_seq(MBSeqAccess::new(self, len))?;
@@ -150,7 +150,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
     where
         V: Visitor<'de>,
     {
-        match self.value.get_type() {
+        match self.value.type_of_() {
             JsType::Object => {
                 let keys = self.es.get_keys(self.value);
                 let value = visitor.visit_map(MBMapAccess::new(self, keys.get_keys()))?;
@@ -188,7 +188,7 @@ impl<'de, 'a> serde::Deserializer<'de> for &'a mut Deserializer {
     where
         V: Visitor<'de>,
     {
-        match self.value.get_type() {
+        match self.value.type_of_() {
             JsType::Object => {
                 let keys = self.es.get_keys(self.value).get_keys();
                 let value = visitor.visit_enum(MBEnumAccess::new(self, keys[0].clone()))?;

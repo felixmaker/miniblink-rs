@@ -19,12 +19,14 @@ macro_rules! js_bind_function_ext {
                 F: Fn($($param,)*) -> MBResult<T> + 'static,
                 JsExecState: $(MBExecStateValue<$param> +)* MBExecStateValue<T>,
             {
+                #[allow(unused)]
+                use crate::types::JsExecStateExt;
                 js_bind_function(
                     name,
                     move |es| {
                         $(
                             #[allow(non_snake_case)]
-                            let $param = es.arg_value(0).unwrap();
+                            let $param = es.get_arg_value(0).unwrap();
                         )*
                         es.js_value(func($($param,)*)?)
                     },

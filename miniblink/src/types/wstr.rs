@@ -1,17 +1,21 @@
-use std::ffi::{c_char, CStr, CString};
+use std::{
+    ffi::{c_char, CStr, CString},
+    mem::ManuallyDrop,
+};
 
 use miniblink_sys::{wchar_t, wkeString};
 
 use crate::{call_api_or_panic, util::SafeCString};
 
 /// A wrapper to wkeString. See `wkeString`.
+#[repr(transparent)]
 pub(crate) struct WkeStr {
     inner: wkeString,
 }
 
 impl WkeStr {
-    pub(crate) fn from_ptr(ptr: wkeString) -> Self {
-        Self { inner: ptr }
+    pub(crate) unsafe fn from_ptr<'a>(ptr: wkeString) -> &'a Self {
+        unsafe { &*(&ptr as *const wkeString as *const WkeStr) }
     }
 
     pub(crate) fn to_string(&self) -> String {
@@ -32,6 +36,7 @@ impl WkeStr {
 }
 
 /// Owned wkeString
+#[repr(transparent)]
 pub(crate) struct WkeString {
     inner: wkeString,
 }
@@ -53,15 +58,34 @@ impl WkeString {
         Self { inner }
     }
 
-    pub(crate) fn as_wkestr(&self) -> WkeStr {
-        WkeStr::from_ptr(self.inner)
+    #[allow(unused)]
+    pub(crate) fn into_raw(self) -> wkeString {
+        let ptr = self.inner;
+        let _ = ManuallyDrop::new(self);
+        ptr
     }
+}
 
-    pub(crate) fn as_wcstr_ptr(&self) -> *const wchar_t {
-        self.as_wkestr().as_wcstr_ptr()
+impl std::ops::Deref for WkeString {
+    type Target = WkeStr;
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*(&self.inner as *const wkeString as *const WkeStr) }
     }
+}
 
-    pub(crate) fn as_cstr_ptr(&self) -> *const c_char {
-        self.as_wkestr().as_cstr_ptr()
+mod tests {
+
+    #[test]
+    fn test_wkestring() {
+        use super::WkeString;
+        use crate::app;
+        use std::ffi::CStr;
+
+        app::initialize("node.dll").unwrap();
+        let wke_string = WkeString::new("Hello");
+        let wke_str = &wke_string;
+        let cstr = unsafe { CStr::from_ptr(wke_str.as_cstr_ptr()) };
+        let cstr = cstr.to_string_lossy().to_string();
+        assert_eq!(cstr, "Hello");
     }
 }

@@ -18,6 +18,48 @@ pub trait ToFFI<T> {
     fn to(&self) -> T;
 }
 
+macro_rules! from_ffi_based_on_from {
+    ($(
+        $ctype: ty => $rstype: ty
+    );*$(;)?) => {
+        $(
+            impl FromFFI<$ctype> for $rstype {
+                fn from(value: $ctype) -> Self {
+                    From::from(value)
+                }
+            }
+        )*
+    };
+}
+
+macro_rules! to_ffi_based_on_from {
+    ($(
+        $rstype: ty => $ctype: ty
+    );*$(;)?) => {
+        $(
+            impl ToFFI<$ctype> for $rstype {
+                fn to(&self) -> $ctype {
+                    From::from(*self)
+                }
+            }
+        )*
+    };
+}
+
+from_ffi_based_on_from! {
+    c_int => i32;
+    f32 => f32;
+    f64 => f64;
+    HWND => Handle;
+    wkeNavigationType => NavigationType;
+    jsType => JsType
+}
+
+to_ffi_based_on_from! {
+    i32 => c_int;
+    f64 => f64
+}
+
 impl PrepareFFI<CString> for &str {
     fn prepare(&self) -> CString {
         CString::safe_new(&self)
@@ -43,9 +85,18 @@ impl FromFFI<*const c_char> for String {
     }
 }
 
-impl FromFFI<c_int> for i32 {
-    fn from(value: c_int) -> Self {
-        value
+impl FromFFI<wkeString> for String {
+    fn from(value: wkeString) -> Self {
+        assert!(!value.is_null());
+        let wke_str = unsafe { WkeStr::from_ptr(value) };
+        wke_str.to_string()
+    }
+}
+
+impl FromFFI<jsExecState> for JsExecState {
+    fn from(value: jsExecState) -> Self {
+        assert!(!value.is_null());
+        unsafe { Self::from_ptr(value) }
     }
 }
 
@@ -53,44 +104,6 @@ impl FromFFI<wkeWebView> for WebView {
     fn from(value: wkeWebView) -> Self {
         assert!(!value.is_null());
         WebView { webview: value }
-    }
-}
-
-impl FromFFI<wkeNavigationType> for NavigationType {
-    fn from(value: wkeNavigationType) -> Self {
-        match value {
-            wkeNavigationType::WKE_NAVIGATION_TYPE_LINKCLICK => Self::LinkClick,
-            wkeNavigationType::WKE_NAVIGATION_TYPE_FORMRESUBMITT => Self::FormSubmitte,
-            wkeNavigationType::WKE_NAVIGATION_TYPE_BACKFORWARD => Self::BackForward,
-            wkeNavigationType::WKE_NAVIGATION_TYPE_RELOAD => Self::Reload,
-            wkeNavigationType::WKE_NAVIGATION_TYPE_FORMSUBMITTE => Self::FormResubmit,
-            _ => Self::Other,
-        }
-    }
-}
-
-impl FromFFI<wkeString> for String {
-    fn from(value: wkeString) -> Self {
-        let wke_str = WkeStr::from_ptr(value);
-        wke_str.to_string()
-    }
-}
-
-impl FromFFI<jsExecState> for JsExecState {
-    fn from(value: jsExecState) -> Self {
-        Self::from_ptr(value)
-    }
-}
-
-impl FromFFI<f32> for f32 {
-    fn from(value: f32) -> Self {
-        value
-    }
-}
-
-impl ToFFI<c_int> for i32 {
-    fn to(&self) -> c_int {
-        *self
     }
 }
 
@@ -151,7 +164,7 @@ impl ToFFI<*mut wkeProxy> for CProxy {
     }
 }
 
-impl ToFFI<miniblink_sys::HWND> for super::HWND {
+impl ToFFI<HWND> for super::Handle {
     fn to(&self) -> miniblink_sys::HWND {
         self.0 as _
     }
@@ -198,5 +211,52 @@ impl PrepareFFI<wkeViewSettings> for ViewSettings {
 impl ToFFI<*const wkeViewSettings> for wkeViewSettings {
     fn to(&self) -> *const wkeViewSettings {
         &*self
+    }
+}
+
+impl PrepareFFI<POINT> for Point {
+    fn prepare(&self) -> POINT {
+        POINT {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+
+impl ToFFI<*const POINT> for POINT {
+    fn to(&self) -> *const POINT {
+        &*self
+    }
+}
+
+impl ToFFI<jsExecState> for JsExecState {
+    fn to(&self) -> jsExecState {
+        self.as_ptr()
+    }
+}
+
+impl ToFFI<jsValue> for JsValue {
+    fn to(&self) -> jsValue {
+        self.as_ptr()
+    }
+}
+
+impl FromFFI<jsValue> for JsValue {
+    fn from(value: jsValue) -> Self {
+        assert!(value != 0);
+        unsafe { JsValue::from_ptr(value) }
+    }
+}
+
+impl FromFFI<*mut jsKeys> for JsKeys {
+    fn from(value: *mut jsKeys) -> Self {
+        assert!(!value.is_null());
+        unsafe { JsKeys::from_ptr(value) }
+    }
+}
+
+impl FromFFI<c_int> for bool {
+    fn from(value: c_int) -> Self {
+        value != 0
     }
 }
