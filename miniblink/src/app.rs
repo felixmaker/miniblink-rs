@@ -5,7 +5,7 @@ use miniblink_sys::Library;
 use crate::{
     bind_global, call_api_or_panic,
     error::{MBError, MBResult},
-    types::{JsExecState, JsValue, JsValueExt, MBExecStateValue, Proxy},
+    types::{CProxy, JsExecState, JsValue, JsValueExt, MBExecStateValue, Proxy},
     util::SafeCString,
     LIB,
 };

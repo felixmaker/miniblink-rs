@@ -1,35 +1,13 @@
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::os::raw::{c_char, c_int};
 
-use super::*;
+use crate::types::*;
 use miniblink_sys::*;
 
 use crate::{util::SafeCString, webview::WebView};
 
-pub trait PrepareFFI<T> {
-    fn prepare(&self) -> T;
-}
-
-pub trait FromFFI<T> {
-    fn from(value: T) -> Self;
-}
-
 pub trait ToFFI<T> {
     fn to(&self) -> T;
-}
-
-macro_rules! from_ffi_based_on_from {
-    ($(
-        $ctype: ty => $rstype: ty
-    );*$(;)?) => {
-        $(
-            impl FromFFI<$ctype> for $rstype {
-                fn from(value: $ctype) -> Self {
-                    From::from(value)
-                }
-            }
-        )*
-    };
 }
 
 macro_rules! to_ffi_based_on_from {
@@ -46,65 +24,9 @@ macro_rules! to_ffi_based_on_from {
     };
 }
 
-from_ffi_based_on_from! {
-    c_int => i32;
-    f32 => f32;
-    f64 => f64;
-    HWND => Handle;
-    wkeNavigationType => NavigationType;
-    jsType => JsType
-}
-
 to_ffi_based_on_from! {
     i32 => c_int;
     f64 => f64
-}
-
-impl PrepareFFI<CString> for &str {
-    fn prepare(&self) -> CString {
-        CString::safe_new(&self)
-    }
-}
-
-impl PrepareFFI<WkeString> for &str {
-    fn prepare(&self) -> WkeString {
-        WkeString::new(&self)
-    }
-}
-
-impl PrepareFFI<CProxy> for Proxy {
-    fn prepare(&self) -> CProxy {
-        CProxy::new(&self)
-    }
-}
-
-impl FromFFI<*const c_char> for String {
-    fn from(value: *const c_char) -> Self {
-        let cstr = unsafe { CStr::from_ptr(value) };
-        cstr.to_string_lossy().to_string()
-    }
-}
-
-impl FromFFI<wkeString> for String {
-    fn from(value: wkeString) -> Self {
-        assert!(!value.is_null());
-        let wke_str = unsafe { WkeStr::from_ptr(value) };
-        wke_str.to_string()
-    }
-}
-
-impl FromFFI<jsExecState> for JsExecState {
-    fn from(value: jsExecState) -> Self {
-        assert!(!value.is_null());
-        unsafe { Self::from_ptr(value) }
-    }
-}
-
-impl FromFFI<wkeWebView> for WebView {
-    fn from(value: wkeWebView) -> Self {
-        assert!(!value.is_null());
-        WebView { webview: value }
-    }
 }
 
 impl ToFFI<*const c_char> for CString {
@@ -164,7 +86,7 @@ impl ToFFI<*mut wkeProxy> for CProxy {
     }
 }
 
-impl ToFFI<HWND> for super::Handle {
+impl ToFFI<HWND> for Handle {
     fn to(&self) -> miniblink_sys::HWND {
         self.0 as _
     }
@@ -199,27 +121,9 @@ impl ToFFI<wkeMenuItemId> for MenuItemId {
     }
 }
 
-impl PrepareFFI<wkeViewSettings> for ViewSettings {
-    fn prepare(&self) -> wkeViewSettings {
-        wkeViewSettings {
-            size: self.size,
-            bgColor: self.backgroud_color,
-        }
-    }
-}
-
 impl ToFFI<*const wkeViewSettings> for wkeViewSettings {
     fn to(&self) -> *const wkeViewSettings {
         &*self
-    }
-}
-
-impl PrepareFFI<POINT> for Point {
-    fn prepare(&self) -> POINT {
-        POINT {
-            x: self.x,
-            y: self.y,
-        }
     }
 }
 
@@ -238,25 +142,5 @@ impl ToFFI<jsExecState> for JsExecState {
 impl ToFFI<jsValue> for JsValue {
     fn to(&self) -> jsValue {
         self.as_ptr()
-    }
-}
-
-impl FromFFI<jsValue> for JsValue {
-    fn from(value: jsValue) -> Self {
-        assert!(value != 0);
-        unsafe { JsValue::from_ptr(value) }
-    }
-}
-
-impl FromFFI<*mut jsKeys> for JsKeys {
-    fn from(value: *mut jsKeys) -> Self {
-        assert!(!value.is_null());
-        unsafe { JsKeys::from_ptr(value) }
-    }
-}
-
-impl FromFFI<c_int> for bool {
-    fn from(value: c_int) -> Self {
-        value != 0
     }
 }

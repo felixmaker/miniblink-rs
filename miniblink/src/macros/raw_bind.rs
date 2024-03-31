@@ -46,7 +46,7 @@ macro_rules! bind_target {
         $(
             #[doc=concat!("See `", stringify!($mbcallback), "`")]
             $vis fn $func(&self, $($param: $type,)*) $(-> $return)? {
-                use crate::types::*;
+                use crate::ffi::*;
                 $(
                     $(let $param: $cross_type = $param.prepare();)?
                     let $param = ToFFI::to(&$param);
@@ -73,7 +73,7 @@ macro_rules! bind_target_global {
         $(
             #[doc=concat!("See `", stringify!($mbcallback), "`")]
             $vis fn $func(&self, $($param: $type,)*) $(-> $return)? {
-                use crate::types::*;
+                use crate::ffi::*;
                 $(
                     $(let $param: $cross_type = $param.prepare();)?
                     let $param = ToFFI::to(&$param);
@@ -101,7 +101,7 @@ macro_rules! bind_global {
             #[doc=concat!("See `", stringify!($mbcallback), "`")]
             $vis fn $func($($param: $type,)*) $(-> $return)? {
                 #[allow(unused)]
-                use crate::types::*;
+                use crate::ffi::*;
                 $(
                     $(let $param: $cross_type = $param.prepare();)?
                     let $param = $param.to();

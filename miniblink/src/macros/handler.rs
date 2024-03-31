@@ -24,10 +24,9 @@ macro_rules! impl_handler {
             where
                 F: FnMut(&mut $target, $($type,)*) $(-> $return)? + 'static,
             {
-                use miniblink_sys::*;
-                use crate::types::*;
+                use crate::ffi::*;
                 unsafe extern "C" fn shim<F>(
-                    wv_ptr: wkeWebView,
+                    wv_ptr: miniblink_sys::wkeWebView,
                     c_ptr: *mut ::std::os::raw::c_void,
                     $($param: $ctype,)*
                 ) $(-> $creturn)?

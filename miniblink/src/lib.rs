@@ -12,6 +12,8 @@ pub mod error;
 pub mod types;
 /// Wapper to wkeWebView. See [`webview::WebView`].
 pub mod webview;
+/// Define how object should act when crossing FFI
+pub mod ffi;
 
 /// Prelude to use some useful functions and traits.
 pub mod prelude {

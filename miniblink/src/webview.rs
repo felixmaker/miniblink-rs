@@ -1,11 +1,11 @@
 use std::ffi::CString;
 
-use miniblink_sys::{wkeViewSettings, wkeWebView};
+use miniblink_sys::{wkeNavigationType, wkeString, wkeViewSettings, wkeWebView};
 
 use crate::error::MBResult;
 use crate::types::{
-    Handle, JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy,
-    ViewSettings, WindowType,
+    CProxy, Handle, JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy,
+    ViewSettings, WindowType, WkeString,
 };
 
 use crate::{bind_global, bind_target, impl_handler};
