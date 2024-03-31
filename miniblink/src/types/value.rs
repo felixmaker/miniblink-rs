@@ -4,7 +4,7 @@ use crate::call_api_or_panic;
 use crate::error::{MBError, MBResult};
 use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue};
 
-/// Types in JavaScript, see [`jsType`].
+/// See [`jsType`].
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsType {
@@ -57,7 +57,7 @@ impl std::fmt::Display for JsType {
 
 use crate::{bind_target, bind_target_global};
 
-/// A type used in miniblink. See jsExecState.
+/// See `jsExecState`.
 #[derive(Clone, Copy)]
 pub struct JsExecState {
     pub(crate) inner: jsExecState,
@@ -217,7 +217,7 @@ impl JsKeys {
 //     }
 // }
 
-/// A type used in miniblink. See jsValue.
+/// See `jsValue`.
 #[derive(Debug, Clone, Copy)]
 pub struct JsValue {
     pub(crate) inner: jsValue,

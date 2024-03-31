@@ -13,7 +13,7 @@ pub enum ProxyType {
     Socks5Hostname,
 }
 
-/// A proxy config struct
+/// see `wkeProxy`.
 pub struct Proxy {
     type_: ProxyType,
     hostname: String,

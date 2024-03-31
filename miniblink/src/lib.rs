@@ -13,7 +13,7 @@ pub mod types;
 /// Wapper to wkeWebView. See [`webview::WebView`].
 pub mod webview;
 /// Define how object should act when crossing FFI
-pub mod ffi;
+pub(crate) mod ffi;
 
 /// Prelude to use some useful functions and traits.
 pub mod prelude {
@@ -22,7 +22,7 @@ pub mod prelude {
     pub use super::error::{MBError, MBResult};
 }
 
-/// Support for serde. Ensure to enable `serde` feature.
+/// Support for serde. Require `serde` feature.
 #[cfg(feature = "serde")]
 pub mod serde;
 

@@ -48,6 +48,7 @@ impl From<HWND> for Handle {
     }
 }
 
+/// See `wkeMenuItemId`
 #[allow(missing_docs)]
 pub enum MenuItemId {
     MenuSelectedAllId,
@@ -64,12 +65,14 @@ pub enum MenuItemId {
     MenuSaveImageId,
 }
 
+/// see `wkeViewSettings`
 #[allow(missing_docs)]
 pub struct ViewSettings {
     pub size: i32,
     pub backgroud_color: u32,
 }
 
+/// see `POINT`
 #[allow(missing_docs)]
 pub struct Point {
     pub x: i32,
