@@ -20,10 +20,71 @@ impl WebView {
         pub wkeShowWindow => show_window(show: bool);
         pub wkeLoadHTML => load_html(html: &str as CString);
         pub wkeLoadURL => load_url(url: &str as CString);
+        pub wkeLoadFile => load_file(file: &str as CString);
         pub wkeResize => resize(width: i32, height: i32);
         pub wkeMoveWindow => move_window(x: i32, y: i32, width: i32, height: i32);
         pub wkeMoveToCenter => move_to_center();
-        pub wkeRunJS => run_js(script: &str as CString) -> JsValue
+        pub wkeResizeWindow => resize_window(width: i32, height: i32);
+        pub wkeRunJS => run_js(script: &str as CString) -> JsValue;
+        pub wkeStopLoading => stop_loading();
+        pub wkeReload => reload() -> bool;
+        // wkeVisitAllCookie
+        // wkePerformCookieCommand
+        pub wkeClearCookie => clear_cookie();
+        pub wkeSetFocus => set_focus();
+        pub wkeKillFocus => kill_focus();
+        // pub wkeSleep => sleep();
+        pub wkeWake => wake();
+        // pub wkeRunJsByFrame =>
+        // pub(crate) wkeDestroyWebView => destroy_webview();
+        pub wkeEnableWindow => enable_window(enable: bool);
+        // pub wkeConfigure => configure();
+    }
+
+    bind_target! {
+        pub wkeCanGoBack => can_go_back() -> bool;
+        pub wkeCanGoForward => can_go_forward() -> bool;
+        pub wkeIsDocumentReady => is_document_ready() -> bool;
+        pub wkeIsAwake => is_awake() -> bool;
+        // pub wkeIsMainFrame
+        pub wkeIsTransparent => is_transparent() -> bool;
+    }
+
+    bind_target! {
+        pub wkeGoBack => go_back();
+        pub wkeEditorSelectAll => editor_select_all();
+        pub wkeEditorUnSelect => editor_unselect();
+        pub wkeEditorCopy => editor_copy();
+        pub wkeEditorCut => editor_cut();
+        pub wkeEditorDelete => editor_delete();
+        pub wkeEditorUndo => editor_undo();
+        pub wkeEditorRedo => editor_redo();
+    }
+
+    bind_target! {
+        // wkeFireMouseEvent
+        // wkeFireContextMenuEvent
+        // wkeFireMouseWheelEvent
+        // wkeFireKeyUpEvent
+        // wkeFireKeyDownEvent
+        // wkeFireKeyPressEvent
+        // wkeFireWindowsMessage
+    }
+
+    bind_target! {
+        // pub wkeNetSetHTTPHeaderField
+        // pub wkeNetGetRawHttpHead
+        // pub wkeNetSetMIMEType
+        // pub wkeNetGetMIMEType
+        // pub wkeNetSetData
+        // pub wkeNetCancelRequest
+        // pub wkeNetHoldJobToAsynCommit
+        // pub wkeNetGetRequestMethod
+        // pub wkeNetGetPostBody
+        // wkeNetCreatePostBodyElements =>
+        // wkeNetFreePostBodyElements
+        // wkeNetCreatePostBodyElement => 
+        // wkeNetFreePostBodyElement
     }
 
     bind_target! {
@@ -92,14 +153,13 @@ impl WebView {
         pub wkeSetCookieJarPath => set_cookie_jar_path(path: &str as WkeString);
         pub wkeSetCookieJarFullPath => set_cookie_jar_full_path(path: &str as WkeString);
         pub wkeSetLocalStorageFullPath => set_local_storage_full_path(path: &str as WkeString);
-        pub wkeSetMediaVolume => set_media_volume(media_volume: f32);
-        pub wkeSetFocus => set_focus();
+        // pub wkeSetMediaVolume => set_media_volume(media_volume: f32);
         pub wkeSetZoomFactor => set_zoom_factor(zoom_factor: f32);
         pub wkeSetEditable => set_editable(editable: bool);
         // wkeSetUserKeyValue =>
         pub wkeSetCursorInfoType => set_cursor_info_type(cursor_info_type: i32);
         // wkeSetDragFiles => set_drag_files(clint_pos: &Point as POINT, screen_pos: *const POINT, files: &[&str], files_count: i32);
-        pub wkeSetDeviceParameter => set_device_parameter(device: &str as CString, param_str: &str as CString, param_int: i32, param_float: f32);
+        // pub wkeSetDeviceParameter => set_device_parameter(device: &str as CString, param_str: &str as CString, param_int: i32, param_float: f32);
         pub wkeSetWindowTitle => set_window_title(window_title: &str as CString);
         pub wkeEnableWindow => enable_window(enable: bool)
     }
@@ -145,6 +205,7 @@ impl_handler! {
         // wkeScreenshot => screenshot
         // wkeOnOtherLoad => on_other_load
         // wkeOnContextMenuItemClick => on_context_menu_item_click
+        // pub wkeNetGetFavicon =>
     }
 }
 

@@ -15,6 +15,9 @@ bind_global! {
     pub wkeSetProxy => set_proxy(config: &Proxy as CProxy);
     pub wkeEnableHighDPISupport => enable_high_dpi_support();
     pub wkeRunMessageLoop => run_message_loop();
+    // pub jsGC => gc();
+    // pub jsBindGetter => 
+    // pub jsBindSetter
 }
 
 // const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";

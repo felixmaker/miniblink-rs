@@ -2,6 +2,8 @@ use std::ffi::{CStr, CString};
 
 use crate::call_api_or_panic;
 use crate::error::{MBError, MBResult};
+use crate::types::WkeString;
+use crate::webview::WebView;
 use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue};
 
 /// See [`jsType`].
@@ -65,26 +67,85 @@ pub struct JsExecState {
 
 impl JsExecState {
     bind_target_global! {
-        pub(crate) jsInt => int(value: i32) -> JsValue;
-        pub(crate) jsDouble => double(value: f64) -> JsValue;
-        pub(crate) jsBoolean => boolean(value: bool) -> JsValue;
-        pub(crate) jsUndefined => undefined() -> JsValue;
-        pub(crate) jsNull => null() -> JsValue
+        pub jsInt => int(value: i32) -> JsValue;
+        pub jsDouble => double(value: f64) -> JsValue;
+        pub jsBoolean => boolean(value: bool) -> JsValue;
+        pub jsUndefined => undefined() -> JsValue;
+        pub jsNull => null() -> JsValue
     }
 
     bind_target! {
-        pub(crate) jsArg => arg(index: i32) -> JsValue;
-        pub(crate) jsArgCount => arg_count() -> i32;
-        pub(crate) jsEmptyArray => empty_array() -> JsValue;
-        pub(crate) jsEmptyObject => empty_object() -> JsValue;
-        pub(crate) jsString => string(value: &str as CString) -> JsValue;
-        pub(crate) jsGetAt => get_at(js_array: JsValue, index: i32) -> JsValue;
-        pub(crate) jsSetAt => set_at(js_array: JsValue, index: i32, js_value: JsValue);
-        pub(crate) jsGetLength => get_length(js_array: JsValue) -> i32;
-        pub(crate) jsSetLength => set_length(js_array: JsValue, length: i32);
-        pub(crate) jsGet => get(js_object: JsValue, prop: &str as CString) -> JsValue;
-        pub(crate) jsSet => set(js_object: JsValue, prop: &str, value: JsValue);
+        pub jsArg => arg(index: i32) -> JsValue;
+        pub jsArgCount => arg_count() -> i32;
+        pub jsEmptyArray => empty_array() -> JsValue;
+        pub jsEmptyObject => empty_object() -> JsValue;
+        pub jsString => string(value: &str as CString) -> JsValue;
+        pub jsGetAt => get_at(js_array: JsValue, index: i32) -> JsValue;
+        pub jsSetAt => set_at(js_array: JsValue, index: i32, js_value: JsValue);
+        pub jsGetLength => get_length(js_array: JsValue) -> i32;
+        pub jsSetLength => set_length(js_array: JsValue, length: i32);
+        pub jsGet => get(js_object: JsValue, prop: &str as CString) -> JsValue;
+        pub jsSet => set(js_object: JsValue, prop: &str as CString, value: JsValue);
         pub(crate) jsGetKeys => get_keys(js_object: JsValue) -> JsKeys;
+        pub jsGetGlobal => get_global(prop: &str as CString) -> JsValue;
+        pub jsSetGlobal => set_global(prop: &str as CString, value: JsValue);
+        pub jsGetWebView => get_webview() -> WebView;
+        // pub jsGetData => 
+        // pub jsGetLastErrorIfException => get_last_error_if_exception() -> ;
+        // pub jsFunction
+        // pub jsObject
+    }
+
+    bind_target! {
+        pub jsEvalW => eval(script: &str as WkeString) -> JsValue;
+        pub jsEvalExW => eval_ex(script: &str as WkeString, is_in_closure: bool) -> JsValue;
+        // pub jsCall => call(func: JsValue, this_value: JsValue, args: jsValue* , int arg_count);
+        // pub jsCallGlobal => call(func: JsValue, args: jsValue* , int arg_count);
+    }
+
+    bind_target! {
+        jsToInt => _to_int(value: JsValue) -> i32;
+        jsToDouble => _to_double(value: JsValue) -> f64;
+        jsToTempString => _to_string(value: JsValue) -> String;
+        jsToBoolean => _to_boolean(value: JsValue) -> bool;
+    }
+
+    /// See `jsToInt`.
+    pub fn to_int(&self, value: JsValue) -> MBResult<i32> {
+        match value.type_of_() {
+            JsType::Number => Ok(self._to_int(value)),
+            other => Err(MBError::UnsupportedType(JsType::Number, other)),
+        }
+    }
+
+    /// See `jsToDouble`.
+    pub fn to_double(&self, value: JsValue) -> MBResult<f64> {
+        match value.type_of_() {
+            JsType::Number => Ok(self._to_double(value)),
+            other => Err(MBError::UnsupportedType(JsType::Number, other)),
+        }
+    }
+
+    /// See `jsToBoolean`.
+    pub fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
+        match value.type_of_() {
+            JsType::Boolean => Ok(self._to_boolean(value)),
+            other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
+        }
+    }
+
+    /// See `jsToTempString`.
+    pub fn to_string(&self, value: JsValue) -> MBResult<String> {
+        unsafe {
+            match value.type_of_() {
+                JsType::Boolean
+                | JsType::Null
+                | JsType::Number
+                | JsType::String
+                | JsType::Undefined => Ok(self._to_string(value)),
+                other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
+            }
+        }
     }
 
     /// Get inner ptr of [`JsExecState`]. See [`jsExecState`].
@@ -95,59 +156,6 @@ impl JsExecState {
     /// Create [`JsExecState`] from ptr.
     pub unsafe fn from_ptr(ptr: jsExecState) -> Self {
         Self { inner: ptr }
-    }
-}
-
-pub(crate) trait ToValue {
-    fn to_int(&self, value: JsValue) -> MBResult<i32>;
-    fn to_double(&self, value: JsValue) -> MBResult<f64>;
-    fn to_boolean(&self, value: JsValue) -> MBResult<bool>;
-    fn to_string(&self, value: JsValue) -> MBResult<String>;
-}
-
-impl ToValue for JsExecState {
-    fn to_int(&self, value: JsValue) -> MBResult<i32> {
-        unsafe {
-            match value.type_of_() {
-                JsType::Number => Ok(call_api_or_panic().jsToInt(self.inner, value.inner)),
-                other => Err(MBError::UnsupportedType(JsType::Number, other)),
-            }
-        }
-    }
-
-    fn to_double(&self, value: JsValue) -> MBResult<f64> {
-        match value.type_of_() {
-            JsType::Number => {
-                Ok(unsafe { call_api_or_panic().jsToDouble(self.inner, value.inner) })
-            }
-            other => Err(MBError::UnsupportedType(JsType::Number, other)),
-        }
-    }
-
-    fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
-        match value.type_of_() {
-            JsType::Boolean => {
-                Ok(unsafe { call_api_or_panic().jsToBoolean(self.inner, value.inner) != 0 })
-            }
-            other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
-        }
-    }
-
-    fn to_string(&self, value: JsValue) -> MBResult<String> {
-        unsafe {
-            match value.type_of_() {
-                JsType::Boolean
-                | JsType::Null
-                | JsType::Number
-                | JsType::String
-                | JsType::Undefined => {
-                    let cstr = call_api_or_panic().jsToTempString(self.inner, value.inner);
-                    let cstr = CStr::from_ptr(cstr);
-                    Ok(cstr.to_string_lossy().to_string())
-                }
-                other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
-            }
-        }
     }
 }
 
