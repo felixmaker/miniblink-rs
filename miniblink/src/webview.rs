@@ -95,7 +95,7 @@ impl WebView {
         pub wkeGetName => get_name() -> String;
         pub wkeGetUserAgent => get_user_agent() -> String;
         pub wkeGetURL => get_url() -> String;
-        wkeGetFrameUrl => get_frame_url(frame_id: WebFrameHandle) -> String;
+        pub wkeGetFrameUrl => get_frame_url(frame_id: WebFrameHandle) -> String;
         pub wkeGetWebviewId => get_webview_id() -> i32;
         // wkeGetDocumentCompleteURL => get_document_complete_url();
         pub wkeGetTitle => get_title() -> String;
