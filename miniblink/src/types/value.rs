@@ -136,15 +136,13 @@ impl JsExecState {
 
     /// See `jsToTempString`.
     pub fn to_string(&self, value: JsValue) -> MBResult<String> {
-        unsafe {
-            match value.type_of_() {
-                JsType::Boolean
-                | JsType::Null
-                | JsType::Number
-                | JsType::String
-                | JsType::Undefined => Ok(self._to_string(value)),
-                other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
-            }
+        match value.type_of_() {
+            JsType::Boolean
+            | JsType::Null
+            | JsType::Number
+            | JsType::String
+            | JsType::Undefined => Ok(self._to_string(value)),
+            other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
         }
     }
 
@@ -245,23 +243,14 @@ impl JsValue {
         pub jsIsTrue => is_true() -> bool;
         pub jsIsFalse => is_false() -> bool;
     }
-}
 
-/// Extra api for [`JsValue`]
-pub trait JsValueExt {
     /// Get the inner ptr of [`JsValue`]. See [`jsValue`].
-    fn as_ptr(&self) -> jsValue;
-
-    /// Create [`JsValue`] from ptr.
-    unsafe fn from_ptr(ptr: jsValue) -> Self;
-}
-
-impl JsValueExt for JsValue {
-    fn as_ptr(&self) -> jsValue {
+    pub fn as_ptr(&self) -> jsValue {
         self.inner
     }
 
-    unsafe fn from_ptr(ptr: jsValue) -> Self {
+    /// Create [`JsValue`] from ptr.
+    pub unsafe fn from_ptr(ptr: jsValue) -> Self {
         Self { inner: ptr }
     }
 }

@@ -18,7 +18,7 @@ pub(crate) mod ffi;
 /// Prelude to use some useful functions and traits.
 pub mod prelude {
     pub use super::webview::{WebViewExt, WebViewHandler};
-    pub use super::types::{JsExecStateExt, JsValueExt, MBExecStateValue};
+    pub use super::types::{JsExecStateExt, MBExecStateValue};
     pub use super::error::{MBError, MBResult};
 }
 
