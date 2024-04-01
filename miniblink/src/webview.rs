@@ -5,7 +5,7 @@ use miniblink_sys::{wkeNavigationType, wkeString, wkeViewSettings, wkeWebView};
 use crate::error::MBResult;
 use crate::types::{
     CProxy, Handle, JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy,
-    ViewSettings, WindowType, WkeString,
+    ViewSettings, WebFrameHandle, WindowType, WkeString,
 };
 
 use crate::{bind_global, bind_target, impl_handler};
@@ -35,7 +35,7 @@ impl WebView {
         pub wkeKillFocus => kill_focus();
         // pub wkeSleep => sleep();
         pub wkeWake => wake();
-        // pub wkeRunJsByFrame =>
+        pub wkeRunJsByFrame => run_js_by_frame(frame_id: WebFrameHandle, script: &str as CString, is_in_closure: bool);
         // pub(crate) wkeDestroyWebView => destroy_webview();
         pub wkeEnableWindow => enable_window(enable: bool);
         // pub wkeConfigure => configure();
@@ -83,7 +83,7 @@ impl WebView {
         // pub wkeNetGetPostBody
         // wkeNetCreatePostBodyElements =>
         // wkeNetFreePostBodyElements
-        // wkeNetCreatePostBodyElement => 
+        // wkeNetCreatePostBodyElement =>
         // wkeNetFreePostBodyElement
     }
 
@@ -95,7 +95,7 @@ impl WebView {
         pub wkeGetName => get_name() -> String;
         pub wkeGetUserAgent => get_user_agent() -> String;
         pub wkeGetURL => get_url() -> String;
-        // wkeGetFrameUrl => get_frame_url();
+        wkeGetFrameUrl => get_frame_url(frame_id: WebFrameHandle) -> String;
         pub wkeGetWebviewId => get_webview_id() -> i32;
         // wkeGetDocumentCompleteURL => get_document_complete_url();
         pub wkeGetTitle => get_title() -> String;
@@ -120,7 +120,8 @@ impl WebView {
         pub wkeGetWindowHandle => get_window_handle() -> Handle;
         // wkeGetWebViewByNData =>
         // wkeGetContentAsMarkup =>
-        pub wkeGlobalExec => global_exec() -> JsExecState
+        pub wkeGlobalExec => global_exec() -> JsExecState;
+        pub wkeWebFrameGetMainFrame => get_main_frame() -> WebFrameHandle;
     }
 
     bind_target! {

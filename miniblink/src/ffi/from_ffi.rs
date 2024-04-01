@@ -81,3 +81,10 @@ impl FromFFI<c_int> for bool {
         value != 0
     }
 }
+
+impl FromFFI<wkeWebFrameHandle> for WebFrameHandle {
+    fn from(value: wkeWebFrameHandle) -> Self {
+        assert!(!value.is_null());
+        unsafe { WebFrameHandle::from_ptr(value) }
+    }
+}

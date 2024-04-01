@@ -1,4 +1,4 @@
-use miniblink_sys::{wkeNavigationType, HWND};
+use miniblink_sys::{wkeNavigationType, wkeWebFrameHandle, HWND};
 
 /// Navigation Type. See `wkeNavigationType`.
 #[allow(missing_docs)]
@@ -32,6 +32,7 @@ pub enum WindowType {
     Transparent,
 }
 
+#[repr(transparent)]
 /// Represent a Windows HWND
 pub struct Handle(pub isize);
 
@@ -77,4 +78,17 @@ pub struct ViewSettings {
 pub struct Point {
     pub x: i32,
     pub y: i32,
+}
+
+#[repr(transparent)]
+/// see `wkeWebFrameHandle`
+pub struct WebFrameHandle {
+    frame: wkeWebFrameHandle,
+}
+
+impl WebFrameHandle {
+    /// from wkeWebFrameHandle to WebFrameHandle
+    pub unsafe fn from_ptr(ptr: wkeWebFrameHandle) -> Self {
+        Self { frame: ptr }
+    }
 }
