@@ -84,6 +84,79 @@ pub struct _wkePoint {
     pub y: ::std::os::raw::c_int,
 }
 pub type wkePoint = _wkePoint;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _wkeSize {
+    pub w: ::std::os::raw::c_int,
+    pub h: ::std::os::raw::c_int,
+}
+pub type wkeSize = _wkeSize;
+impl _wkeMouseFlags {
+    pub const WKE_LBUTTON: _wkeMouseFlags = _wkeMouseFlags(1);
+}
+impl _wkeMouseFlags {
+    pub const WKE_RBUTTON: _wkeMouseFlags = _wkeMouseFlags(2);
+}
+impl _wkeMouseFlags {
+    pub const WKE_SHIFT: _wkeMouseFlags = _wkeMouseFlags(4);
+}
+impl _wkeMouseFlags {
+    pub const WKE_CONTROL: _wkeMouseFlags = _wkeMouseFlags(8);
+}
+impl _wkeMouseFlags {
+    pub const WKE_MBUTTON: _wkeMouseFlags = _wkeMouseFlags(16);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeMouseFlags(pub ::std::os::raw::c_int);
+pub use self::_wkeMouseFlags as wkeMouseFlags;
+impl _wkeKeyFlags {
+    pub const WKE_EXTENDED: _wkeKeyFlags = _wkeKeyFlags(256);
+}
+impl _wkeKeyFlags {
+    pub const WKE_REPEAT: _wkeKeyFlags = _wkeKeyFlags(16384);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeKeyFlags(pub ::std::os::raw::c_int);
+pub use self::_wkeKeyFlags as wkeKeyFlags;
+impl _wkeMouseMsg {
+    pub const WKE_MSG_MOUSEMOVE: _wkeMouseMsg = _wkeMouseMsg(512);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_LBUTTONDOWN: _wkeMouseMsg = _wkeMouseMsg(513);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_LBUTTONUP: _wkeMouseMsg = _wkeMouseMsg(514);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_LBUTTONDBLCLK: _wkeMouseMsg = _wkeMouseMsg(515);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_RBUTTONDOWN: _wkeMouseMsg = _wkeMouseMsg(516);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_RBUTTONUP: _wkeMouseMsg = _wkeMouseMsg(517);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_RBUTTONDBLCLK: _wkeMouseMsg = _wkeMouseMsg(518);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_MBUTTONDOWN: _wkeMouseMsg = _wkeMouseMsg(519);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_MBUTTONUP: _wkeMouseMsg = _wkeMouseMsg(520);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_MBUTTONDBLCLK: _wkeMouseMsg = _wkeMouseMsg(521);
+}
+impl _wkeMouseMsg {
+    pub const WKE_MSG_MOUSEWHEEL: _wkeMouseMsg = _wkeMouseMsg(522);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeMouseMsg(pub ::std::os::raw::c_int);
+pub use self::_wkeMouseMsg as wkeMouseMsg;
 pub type utf8 = ::std::os::raw::c_char;
 pub type jsExecState = *mut ::std::os::raw::c_void;
 pub type jsValue = ::std::os::raw::c_longlong;
@@ -149,6 +222,16 @@ pub struct _wkeProxy {
     pub password: [::std::os::raw::c_char; 50usize],
 }
 pub type wkeProxy = _wkeProxy;
+impl _wkeSettingMask {
+    pub const WKE_SETTING_PROXY: _wkeSettingMask = _wkeSettingMask(1);
+}
+impl _wkeSettingMask {
+    pub const WKE_SETTING_EXTENSION: _wkeSettingMask = _wkeSettingMask(4);
+}
+#[repr(transparent)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct _wkeSettingMask(pub ::std::os::raw::c_int);
+pub use self::_wkeSettingMask as wkeSettingMask;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _wkeSettings {
@@ -165,6 +248,23 @@ pub struct _wkeViewSettings {
 }
 pub type wkeViewSettings = _wkeViewSettings;
 pub type wkeWebFrameHandle = *mut ::std::os::raw::c_void;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _wkeGeolocationPosition {
+    pub timestamp: f64,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub accuracy: f64,
+    pub providesAltitude: bool,
+    pub altitude: f64,
+    pub providesAltitudeAccuracy: bool,
+    pub altitudeAccuracy: f64,
+    pub providesHeading: bool,
+    pub heading: f64,
+    pub providesSpeed: bool,
+    pub speed: f64,
+}
+pub type wkeGeolocationPosition = _wkeGeolocationPosition;
 impl _wkeMenuItemId {
     pub const kWkeMenuSelectedAllId: _wkeMenuItemId = _wkeMenuItemId(2);
 }
@@ -681,6 +781,14 @@ pub type wkeOnScreenshot = ::std::option::Option<
         size: usize,
     ),
 >;
+pub type wkeImageBufferToDataURL = ::std::option::Option<
+    unsafe extern "C" fn(
+        webView: wkeWebView,
+        param: *mut ::std::os::raw::c_void,
+        data: *const ::std::os::raw::c_char,
+        size: usize,
+    ) -> wkeString,
+>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _wkeMediaLoadInfo {
@@ -891,6 +999,18 @@ pub struct _wkeDialogOptions {
     pub securityScopedBookmarks: BOOL,
 }
 pub type wkeDialogOptions = _wkeDialogOptions;
+pub type wkeDownloadInBlinkThreadCallback = ::std::option::Option<
+    unsafe extern "C" fn(
+        webView: wkeWebView,
+        param: *mut ::std::os::raw::c_void,
+        expectedContentLength: usize,
+        url: *const ::std::os::raw::c_char,
+        mime: *const ::std::os::raw::c_char,
+        disposition: *const ::std::os::raw::c_char,
+        job: wkeNetJob,
+        dataBind: *mut wkeNetJobDataBind,
+    ) -> wkeDownloadOpt,
+>;
 pub type wkeLoadingFinishCallback = ::std::option::Option<
     unsafe extern "C" fn(
         webView: wkeWebView,
@@ -1146,6 +1266,21 @@ pub struct _wkeWindowCreateInfo {
     pub color: COLORREF,
 }
 pub type wkeWindowCreateInfo = _wkeWindowCreateInfo;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _wkeDefaultPrinterSettings {
+    pub structSize: ::std::os::raw::c_int,
+    pub isLandscape: BOOL,
+    pub isPrintHeadFooter: BOOL,
+    pub isPrintBackgroud: BOOL,
+    pub edgeDistanceLeft: ::std::os::raw::c_int,
+    pub edgeDistanceTop: ::std::os::raw::c_int,
+    pub edgeDistanceRight: ::std::os::raw::c_int,
+    pub edgeDistanceBottom: ::std::os::raw::c_int,
+    pub copies: ::std::os::raw::c_int,
+    pub paperType: ::std::os::raw::c_int,
+}
+pub type wkeDefaultPrinterSettings = _wkeDefaultPrinterSettings;
 pub type wkeWindowClosingCallback = ::std::option::Option<
     unsafe extern "C" fn(webWindow: wkeWebView, param: *mut ::std::os::raw::c_void) -> bool,
 >;
