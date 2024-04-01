@@ -27,7 +27,7 @@ impl WebView {
         pub wkeResizeWindow => resize_window(width: i32, height: i32);
         pub wkeRunJS => run_js(script: &str as CString) -> JsValue;
         pub wkeStopLoading => stop_loading();
-        pub wkeReload => reload() -> bool;
+        pub wkeReload => reload();
         // wkeVisitAllCookie
         // wkePerformCookieCommand
         pub wkeClearCookie => clear_cookie();
@@ -161,7 +161,6 @@ impl WebView {
         // wkeSetDragFiles => set_drag_files(clint_pos: &Point as POINT, screen_pos: *const POINT, files: &[&str], files_count: i32);
         // pub wkeSetDeviceParameter => set_device_parameter(device: &str as CString, param_str: &str as CString, param_int: i32, param_float: f32);
         pub wkeSetWindowTitle => set_window_title(window_title: &str as CString);
-        pub wkeEnableWindow => enable_window(enable: bool)
     }
 
     bind_global! {

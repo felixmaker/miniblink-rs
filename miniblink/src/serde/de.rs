@@ -5,7 +5,7 @@ use serde::{
 
 use crate::{
     error::{MBError, MBResult},
-    types::{JsExecState, JsType, JsValue, ToValue},
+    types::{JsExecState, JsType, JsValue},
 };
 
 /// Convert [`JsValue`] to `T` using serde.
