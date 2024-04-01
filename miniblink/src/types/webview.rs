@@ -87,8 +87,13 @@ pub struct WebFrameHandle {
 }
 
 impl WebFrameHandle {
-    /// from wkeWebFrameHandle to WebFrameHandle
+    /// Create from wkeWebFrameHandle to WebFrameHandle
     pub unsafe fn from_ptr(ptr: wkeWebFrameHandle) -> Self {
         Self { frame: ptr }
+    }
+
+    /// Get the inner wkeWebFrameHandle ptr.
+    pub fn as_ptr(&self) -> wkeWebFrameHandle {
+        self.frame
     }
 }

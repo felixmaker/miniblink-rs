@@ -144,3 +144,9 @@ impl ToFFI<jsValue> for JsValue {
         self.as_ptr()
     }
 }
+
+impl ToFFI<wkeWebFrameHandle> for WebFrameHandle {
+    fn to(&self) -> wkeWebFrameHandle {
+        self.as_ptr()
+    }
+}
