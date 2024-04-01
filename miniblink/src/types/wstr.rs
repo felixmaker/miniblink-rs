@@ -14,8 +14,8 @@ pub(crate) struct WkeStr {
 }
 
 impl WkeStr {
-    pub(crate) unsafe fn from_ptr<'a>(ptr: wkeString) -> &'a Self {
-        unsafe { &*(&ptr as *const wkeString as *const WkeStr) }
+    pub(crate) unsafe fn from_ptr<'a>(ptr: &wkeString) -> &'a Self {
+        unsafe { &*(ptr as *const wkeString as *const WkeStr) }
     }
 
     pub(crate) fn to_string(&self) -> String {

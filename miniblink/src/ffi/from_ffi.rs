@@ -43,7 +43,7 @@ from_ffi_based_on_from! {
 impl FromFFI<wkeString> for String {
     fn from(value: wkeString) -> Self {
         assert!(!value.is_null());
-        let wke_str = unsafe { WkeStr::from_ptr(value) };
+        let wke_str = unsafe { WkeStr::from_ptr(&value) };
         wke_str.to_string()
     }
 }
