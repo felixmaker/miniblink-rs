@@ -8,7 +8,7 @@ use miniblink_sys::{wchar_t, wkeString};
 use crate::{call_api_or_panic, util::SafeCString};
 
 #[derive(Debug)]
-/// A wrapper to wkeString. See `wkeString`.
+/// Raw wraps to wkeString. See `wkeString`.
 #[repr(transparent)]
 pub struct WkeStr {
     inner: wkeString,
@@ -42,7 +42,7 @@ impl WkeStr {
     }
 }
 
-/// Owned wkeString
+/// Wraps to wkeString. Auto drop the inner wkeString. 
 pub struct WkeString {
     inner: wkeString,
 }
