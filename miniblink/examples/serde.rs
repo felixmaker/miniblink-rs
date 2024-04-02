@@ -1,8 +1,4 @@
-use miniblink::{
-    app,
-    app::app_ext,
-    webview::{WebView, WebViewHandler},
-};
+use miniblink::{app, app::app_ext, webview::WebView};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

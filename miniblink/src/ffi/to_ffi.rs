@@ -4,7 +4,7 @@ use std::os::raw::{c_char, c_int};
 use crate::types::*;
 use miniblink_sys::*;
 
-use crate::{util::SafeCString, webview::WebView};
+use crate::{util::SafeCString, webview::MBWebView};
 
 pub trait ToFFI<T> {
     fn to(&self) -> T;
@@ -67,9 +67,9 @@ impl ToFFI<f32> for f32 {
     }
 }
 
-impl ToFFI<wkeWebView> for WebView {
+impl ToFFI<wkeWebView> for MBWebView {
     fn to(&self) -> wkeWebView {
-        self.webview
+        self.as_ptr()
     }
 }
 
