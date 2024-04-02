@@ -6,4 +6,4 @@ mod webview;
 pub use proxy::*;
 pub use value::*;
 pub use webview::*;
-pub(crate) use wstr::*;
+pub use wstr::*;
