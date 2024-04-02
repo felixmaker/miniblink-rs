@@ -1,4 +1,3 @@
-use miniblink::prelude::*;
 use miniblink::{app, webview::WebView};
 use raw_window_handle::HasWindowHandle;
 use winit::{
