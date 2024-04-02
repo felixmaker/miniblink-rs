@@ -7,6 +7,7 @@ use miniblink_sys::{wchar_t, wkeString};
 
 use crate::{call_api_or_panic, util::SafeCString};
 
+#[derive(Debug)]
 /// A wrapper to wkeString. See `wkeString`.
 #[repr(transparent)]
 pub struct WkeStr {
@@ -15,8 +16,11 @@ pub struct WkeStr {
 
 impl WkeStr {
     /// Wraps a wkeString from pointer.
-    pub unsafe fn from_ptr<'a>(ptr: *const wkeString) -> &'a Self {
-        &*(ptr as *const WkeStr)
+    /// # Safety
+    /// The pointer must be valid.
+    pub unsafe fn from_ptr(ptr: wkeString) -> Self {
+        assert!(!ptr.is_null());
+        Self { inner: ptr }
     }
 
     pub(crate) fn to_string(&self) -> String {

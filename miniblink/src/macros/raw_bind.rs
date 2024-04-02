@@ -1,41 +1,41 @@
-#[doc(hidden)]
-#[macro_export]
-macro_rules! impl_target {
-    ($trait: ident for $target: ident {
-        $(
-            $mbcallback: ident => $func: ident ($($param: ident: $type: ty $(as $cross_type: ty)?),*) $(-> $return: ty)?
-        );*$(;)?
-    }) => {
-        #[allow(unused)]
-        #[doc=concat!("See [`", stringify!($trait), "`]")]
-        pub trait $trait {
-            $(
-                #[doc=concat!("See `", stringify!($mbcallback), "`.")]
-                fn $func(&self, $($param: $type,)*) $(-> $return)?;
-            )*
-        }
+// #[doc(hidden)]
+// #[macro_export]
+// macro_rules! impl_target {
+//     ($trait: ident for $target: ident {
+//         $(
+//             $mbcallback: ident => $func: ident ($($param: ident: $type: ty $(as $cross_type: ty)?),*) $(-> $return: ty)?
+//         );*$(;)?
+//     }) => {
+//         #[allow(unused)]
+//         #[doc=concat!("See [`", stringify!($trait), "`]")]
+//         pub trait $trait {
+//             $(
+//                 #[doc=concat!("See `", stringify!($mbcallback), "`.")]
+//                 fn $func(&self, $($param: $type,)*) $(-> $return)?;
+//             )*
+//         }
 
-        impl $trait for $target {
-            $(
-                fn $func(&self, $($param: $type,)*) $(-> $return)? {
-                    use crate::types::*;
-                    $(
-                        $(let $param: $cross_type = $param.prepare();)?
-                        let $param = $param.to();
-                    )*
-                    #[allow(unused)]
-                    let r = unsafe {
-                        crate::call_api_or_panic().$mbcallback(self.to(), $($param,)*)
-                    };
-                    $(
-                        let r: $return = FromFFI::from(r);
-                        r
-                    )?
-                }
-            )*
-        }
-    }
-}
+//         impl $trait for $target {
+//             $(
+//                 fn $func(&self, $($param: $type,)*) $(-> $return)? {
+//                     use crate::types::*;
+//                     $(
+//                         $(let $param: $cross_type = $param.prepare();)?
+//                         let $param = $param.to();
+//                     )*
+//                     #[allow(unused)]
+//                     let r = unsafe {
+//                         crate::call_api_or_panic().$mbcallback(self.to(), $($param,)*)
+//                     };
+//                     $(
+//                         let r: $return = FromFFI::from(r);
+//                         r
+//                     )?
+//                 }
+//             )*
+//         }
+//     }
+// }
 
 #[doc(hidden)]
 #[macro_export]

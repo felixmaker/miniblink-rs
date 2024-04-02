@@ -11,21 +11,27 @@ use crate::types::{
 
 use crate::{bind_global, bind_handler, bind_target};
 
+#[derive(Clone, Copy, Debug)]
 #[repr(transparent)]
 /// Wrapper to [`miniblink_sys::wkeWebView`]
-pub struct MBWebView {
-    webview: wkeWebView,
+pub struct RawWebView {
+    inner: wkeWebView,
 }
 
-impl MBWebView {
-    /// Wraps a raw `wkeWebView`. 
-    pub unsafe fn from_ptr<'a>(ptr: *const wkeWebView) -> &'a Self {
-        &*(ptr as *const MBWebView)
+impl RawWebView {
+    /// Wraps a raw `wkeWebView`.
+    /// # Safety
+    /// The pointer must be valid.
+    pub unsafe fn from_ptr(ptr: wkeWebView) -> Self {
+        assert!(!ptr.is_null());
+        RawWebView {
+            inner: ptr,
+        }
     }
 
     /// Return the inner pointer to `wkeWebView`.
     pub fn as_ptr(&self) -> wkeWebView {
-        self.webview
+        self.inner
     }
 
     bind_target! {
@@ -215,7 +221,7 @@ impl MBWebView {
     }
 
     bind_global! {
-        pub(crate) wkeCreateWebWindow => create_web_window(window_type: WindowType, handle: Handle, x: i32, y: i32, width: i32, height: i32) -> &'static MBWebView;
+        pub(crate) wkeCreateWebWindow => create_web_window(window_type: WindowType, handle: Handle, x: i32, y: i32, width: i32, height: i32) -> RawWebView;
     }
 
     bind_target! {
@@ -231,7 +237,7 @@ pub trait MBWebViewExt {
         JsExecState: MBExecStateValue<T>;
 }
 
-impl MBWebViewExt for MBWebView {
+impl MBWebViewExt for RawWebView {
     fn eval<T>(&self, script: &str) -> MBResult<T>
     where
         JsExecState: MBExecStateValue<T>,
@@ -257,7 +263,7 @@ impl WebView {
         width: i32,
         height: i32,
     ) -> Self {
-        let webview = MBWebView::create_web_window(window_type, handle, x, y, width, height);
+        let webview = RawWebView::create_web_window(window_type, handle, x, y, width, height);
         Self {
             inner: Rc::new(webview.as_ptr()),
         }
@@ -303,9 +309,9 @@ impl Default for WebView {
 }
 
 impl std::ops::Deref for WebView {
-    type Target = MBWebView;
+    type Target = RawWebView;
 
     fn deref(&self) -> &Self::Target {
-        unsafe { &*(self.inner.as_ref() as *const wkeWebView as *const MBWebView) }
+        unsafe { &*(self.inner.as_ref() as *const wkeWebView as *const RawWebView) }
     }
 }

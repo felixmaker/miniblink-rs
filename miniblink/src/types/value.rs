@@ -3,7 +3,7 @@ use std::ffi::{CStr, CString};
 use crate::call_api_or_panic;
 use crate::error::{MBError, MBResult};
 use crate::types::WkeString;
-use crate::webview::MBWebView;
+use crate::webview::RawWebView;
 use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue};
 
 /// See [`jsType`].
@@ -89,8 +89,8 @@ impl JsExecState {
         pub(crate) jsGetKeys => get_keys(js_object: JsValue) -> JsKeys;
         pub jsGetGlobal => get_global(prop: &str as CString) -> JsValue;
         pub jsSetGlobal => set_global(prop: &str as CString, value: JsValue);
-        pub jsGetWebView => get_webview() -> &'static MBWebView;
-        // pub jsGetData => 
+        pub jsGetWebView => get_webview() -> RawWebView;
+        // pub jsGetData =>
         // pub jsGetLastErrorIfException => get_last_error_if_exception() -> ;
         // pub jsFunction
         // pub jsObject
@@ -152,7 +152,10 @@ impl JsExecState {
     }
 
     /// Create [`JsExecState`] from ptr.
+    /// # Safety
+    /// The pointer must be valid
     pub unsafe fn from_ptr(ptr: jsExecState) -> Self {
+        assert!(!ptr.is_null());
         Self { inner: ptr }
     }
 }
@@ -206,7 +209,11 @@ impl JsKeys {
         vec
     }
 
+    /// Wraps jsKeys
+    /// # Safety
+    /// The pointer must be valid
     pub unsafe fn from_ptr(ptr: *mut jsKeys) -> Self {
+        assert!(!ptr.is_null());
         Self { inner: ptr }
     }
 }
@@ -219,6 +226,7 @@ impl JsKeys {
 // impl JsArrayBuffer {
 //     #[allow(dead_code)]
 //     pub unsafe fn from_ptr(ptr: *mut wkeMemBuf) -> Self {
+//         assert!(!ptr.is_null());
 //         Self { inner: ptr }
 //     }
 // }
@@ -250,7 +258,10 @@ impl JsValue {
     }
 
     /// Create [`JsValue`] from ptr.
+    /// # Safety
+    /// Pointer must not be 0
     pub unsafe fn from_ptr(ptr: jsValue) -> Self {
+        assert!(ptr != 0);
         Self { inner: ptr }
     }
 }

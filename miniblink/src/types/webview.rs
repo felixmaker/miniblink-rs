@@ -88,7 +88,10 @@ pub struct WebFrameHandle {
 
 impl WebFrameHandle {
     /// Create from wkeWebFrameHandle to WebFrameHandle
+    /// # Safety
+    /// The pointer must be valid.
     pub unsafe fn from_ptr(ptr: wkeWebFrameHandle) -> Self {
+        assert!(!ptr.is_null());
         Self { frame: ptr }
     }
 

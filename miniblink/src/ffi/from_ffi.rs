@@ -4,7 +4,7 @@ use std::os::raw::{c_char, c_int};
 use crate::types::*;
 use miniblink_sys::*;
 
-use crate::webview::MBWebView;
+use crate::webview::RawWebView;
 
 pub trait FromFFI<T> {
     fn from(value: T) -> Self;
@@ -12,6 +12,7 @@ pub trait FromFFI<T> {
 
 impl FromFFI<*const c_char> for String {
     fn from(value: *const c_char) -> Self {
+        assert!(!value.is_null());
         let cstr = unsafe { CStr::from_ptr(value) };
         cstr.to_string_lossy().to_string()
     }
@@ -43,7 +44,7 @@ from_ffi_based_on_from! {
 impl FromFFI<wkeString> for String {
     fn from(value: wkeString) -> Self {
         assert!(!value.is_null());
-        let wke_str = unsafe { WkeStr::from_ptr(&value) };
+        let wke_str = unsafe { WkeStr::from_ptr(value) };
         wke_str.to_string()
     }
 }
@@ -55,10 +56,10 @@ impl FromFFI<jsExecState> for JsExecState {
     }
 }
 
-impl FromFFI<wkeWebView> for &MBWebView {
-    fn from(value: wkeWebView) -> Self {
+impl FromFFI<wkeWebView> for RawWebView {
+    fn from(value: wkeWebView) -> RawWebView {
         assert!(!value.is_null());
-        unsafe { MBWebView::from_ptr(&value) }
+        unsafe { RawWebView::from_ptr(value) }
     }
 }
 
