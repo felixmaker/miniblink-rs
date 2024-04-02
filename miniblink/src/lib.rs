@@ -8,18 +8,18 @@ mod util;
 pub mod app;
 /// Error in miniblink (this crate). See [`MBResult`] and [`MBError`].
 pub mod error;
+/// Define how object should act when crossing FFI
+pub(crate) mod ffi;
 /// Wapper to minibink types. See [`webview::WebView`].
 pub mod types;
 /// Wapper to wkeWebView. See [`webview::WebView`].
 pub mod webview;
-/// Define how object should act when crossing FFI
-pub(crate) mod ffi;
 
 /// Prelude to use some useful functions and traits.
 pub mod prelude {
-    pub use super::webview::{WebViewExt, WebViewHandler};
-    pub use super::types::{JsExecStateExt, MBExecStateValue};
     pub use super::error::{MBError, MBResult};
+    pub use super::types::{JsExecStateExt, MBExecStateValue};
+    pub use super::webview::MBWebViewExt;
 }
 
 /// Support for serde. Require `serde` feature.

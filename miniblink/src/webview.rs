@@ -1,4 +1,5 @@
 use std::ffi::CString;
+use std::rc::Rc;
 
 use miniblink_sys::{wkeNavigationType, wkeString, wkeViewSettings, wkeWebView};
 
@@ -8,14 +9,25 @@ use crate::types::{
     ViewSettings, WebFrameHandle, WindowType, WkeString,
 };
 
-use crate::{bind_global, bind_target, impl_handler};
+use crate::{bind_global, bind_handler, bind_target};
 
+#[repr(transparent)]
 /// Wrapper to [`miniblink_sys::wkeWebView`]
-pub struct WebView {
-    pub(crate) webview: wkeWebView,
+pub struct MBWebView {
+    webview: wkeWebView,
 }
 
-impl WebView {
+impl MBWebView {
+    /// Wraps a raw `wkeWebView`. 
+    pub unsafe fn from_ptr<'a>(ptr: *const wkeWebView) -> &'a Self {
+        &*(ptr as *const MBWebView)
+    }
+
+    /// Return the inner pointer to `wkeWebView`.
+    pub fn as_ptr(&self) -> wkeWebView {
+        self.webview
+    }
+
     bind_target! {
         pub wkeShowWindow => show_window(show: bool);
         pub wkeLoadHTML => load_html(html: &str as CString);
@@ -164,29 +176,23 @@ impl WebView {
         pub wkeSetWindowTitle => set_window_title(window_title: &str as CString);
     }
 
-    bind_global! {
-        pub wkeCreateWebWindow => create_web_window(window_type: WindowType, handle: Handle, x: i32, y: i32, width: i32, height: i32) -> WebView
-    }
-}
-
-impl_handler! {
-    WebViewHandler for WebView {
+    bind_handler! {
         // wkeOnCaretChanged => on_caret_changed
-        wkeOnMouseOverUrlChanged(title: wkeString) => on_mouse_over_url_changed(String);
-        wkeOnTitleChanged(title: wkeString) => on_title_changed(String);
-        wkeOnURLChanged(url: wkeString) => on_url_changed(String);
+        pub wkeOnMouseOverUrlChanged(title: wkeString) => on_mouse_over_url_changed(String);
+        pub wkeOnTitleChanged(title: wkeString) => on_title_changed(String);
+        pub wkeOnURLChanged(url: wkeString) => on_url_changed(String);
         // wkeOnURLChanged2 => on_url_changed2
         // wkeOnPaintUpdated => on_paint_updated
         // wkeOnPaintBitUpdated => on_paint_bit_updated
-        wkeOnAlertBox(msg: wkeString) => on_alert_box(String);
-        wkeOnConfirmBox(msg: wkeString) -> bool => on_confirm_box(String) -> bool | false;
-        wkeOnPromptBox(msg: wkeString, default_result: wkeString, result: wkeString) -> bool => on_prompt_box(String, String, String) -> bool | false;
-        wkeOnNavigation(navigation_type: wkeNavigationType, url: wkeString) -> bool => on_navigation(NavigationType, String) -> bool | false;
+        pub wkeOnAlertBox(msg: wkeString) => on_alert_box(String);
+        pub wkeOnConfirmBox(msg: wkeString) -> bool => on_confirm_box(String) -> bool | false;
+        pub wkeOnPromptBox(msg: wkeString, default_result: wkeString, result: wkeString) -> bool => on_prompt_box(String, String, String) -> bool | false;
+        pub wkeOnNavigation(navigation_type: wkeNavigationType, url: wkeString) -> bool => on_navigation(NavigationType, String) -> bool | false;
         // wkeOnCreateView => on_create_view
-        wkeOnDocumentReady() => on_document_ready();
+        pub wkeOnDocumentReady() => on_document_ready();
         // wkeOnDocumentReady2 => on_document_ready2
         // wkeOnLoadingFinish => on_loading_finish
-        wkeOnDownload(url: *const i8) -> bool => on_download(String) -> bool | false;
+        pub wkeOnDownload(url: *const i8) -> bool => on_download(String) -> bool | false;
         // wkeOnDownload2 => on_download2
         // wkeOnConsole => on_console
         // wkeOnLoadUrlBegin => on_load_url_begin
@@ -196,8 +202,8 @@ impl_handler! {
         // wkeOnLoadUrlFail => on_load_url_fail
         // wkeOnDidCreateScriptContext => on_did_create_script_context
         // wkeOnWillReleaseScriptContext => on_will_release_script_context
-        wkeOnWindowClosing() -> bool => on_window_closing() -> bool | false;
-        wkeOnWindowDestroy() => on_window_destroy()
+        pub wkeOnWindowClosing() -> bool => on_window_closing() -> bool | false;
+        pub wkeOnWindowDestroy() => on_window_destroy()
         // wkeOnDraggableRegionsChanged => on_draggable_regions_changed
         // wkeOnWillMediaLoad => on_will_media_load
         // wkeOnStartDragging => on_start_dragging
@@ -207,36 +213,64 @@ impl_handler! {
         // wkeOnContextMenuItemClick => on_context_menu_item_click
         // pub wkeNetGetFavicon =>
     }
+
+    bind_global! {
+        pub(crate) wkeCreateWebWindow => create_web_window(window_type: WindowType, handle: Handle, x: i32, y: i32, width: i32, height: i32) -> &'static MBWebView;
+    }
+
+    bind_target! {
+        pub(crate) wkeDestroyWebWindow => destroy_web_window();
+    }
 }
 
-/// Extra api for WebView
-pub trait WebViewExt: Sized {
-    /// Create a popup type window.
-    ///
-    /// Notes: This method creates real window.
-    fn new(x: i32, y: i32, width: i32, height: i32) -> Self;
-
-    #[cfg(feature = "rwh_06")]
-    /// Create a control type window.
-    ///
-    /// Notes: This method creates window as child window.
-    fn new_as_child<H>(hwnd: H, x: i32, y: i32, width: i32, height: i32) -> MBResult<Self>
-    where
-        H: raw_window_handle::HasWindowHandle;
-
-    /// Eval the script
+/// Extra API for MBWebView
+pub trait MBWebViewExt {
+    /// Eval a script on webview
     fn eval<T>(&self, script: &str) -> MBResult<T>
     where
         JsExecState: MBExecStateValue<T>;
 }
 
-impl WebViewExt for WebView {
-    fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+impl MBWebViewExt for MBWebView {
+    fn eval<T>(&self, script: &str) -> MBResult<T>
+    where
+        JsExecState: MBExecStateValue<T>,
+    {
+        let js_value = self.run_js(script);
+        let es = self.global_exec();
+        es.value(js_value)
+    }
+}
+
+/// Wrapper to WebView Handler
+pub struct WebView {
+    inner: Rc<wkeWebView>,
+}
+
+impl WebView {
+    /// See `wkeCreateWebWindow`.
+    pub fn create_web_window(
+        window_type: WindowType,
+        handle: Handle,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+    ) -> Self {
+        let webview = MBWebView::create_web_window(window_type, handle, x, y, width, height);
+        Self {
+            inner: Rc::new(webview.as_ptr()),
+        }
+    }
+
+    /// Create a window with popup type.
+    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
         Self::create_web_window(WindowType::Popup, Handle::null(), x, y, width, height)
     }
 
+    /// Create a window with control type. This method creates window as child window.
     #[cfg(feature = "rwh_06")]
-    fn new_as_child<H>(hwnd: H, x: i32, y: i32, width: i32, height: i32) -> MBResult<Self>
+    pub fn new_as_child<H>(hwnd: H, x: i32, y: i32, width: i32, height: i32) -> MBResult<Self>
     where
         H: raw_window_handle::HasWindowHandle,
     {
@@ -252,19 +286,26 @@ impl WebViewExt for WebView {
             _ => Err(crate::error::MBError::UnsupportedPlatform),
         }
     }
+}
 
-    fn eval<T>(&self, script: &str) -> MBResult<T>
-    where
-        JsExecState: MBExecStateValue<T>,
-    {
-        let js_value = self.run_js(script);
-        let es = self.global_exec();
-        es.value(js_value)
+impl Drop for WebView {
+    fn drop(&mut self) {
+        if Rc::strong_count(&self.inner) == 0 {
+            self.destroy_web_window()
+        }
     }
 }
 
 impl Default for WebView {
     fn default() -> Self {
         Self::create_web_window(WindowType::Popup, Handle::null(), 0, 0, 200, 200)
+    }
+}
+
+impl std::ops::Deref for WebView {
+    type Target = MBWebView;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*(self.inner.as_ref() as *const wkeWebView as *const MBWebView) }
     }
 }

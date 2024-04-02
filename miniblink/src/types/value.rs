@@ -3,7 +3,7 @@ use std::ffi::{CStr, CString};
 use crate::call_api_or_panic;
 use crate::error::{MBError, MBResult};
 use crate::types::WkeString;
-use crate::webview::WebView;
+use crate::webview::MBWebView;
 use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue};
 
 /// See [`jsType`].
@@ -89,7 +89,7 @@ impl JsExecState {
         pub(crate) jsGetKeys => get_keys(js_object: JsValue) -> JsKeys;
         pub jsGetGlobal => get_global(prop: &str as CString) -> JsValue;
         pub jsSetGlobal => set_global(prop: &str as CString, value: JsValue);
-        pub jsGetWebView => get_webview() -> WebView;
+        pub jsGetWebView => get_webview() -> &'static MBWebView;
         // pub jsGetData => 
         // pub jsGetLastErrorIfException => get_last_error_if_exception() -> ;
         // pub jsFunction
