@@ -1,12 +1,11 @@
 use std::ffi::CString;
 use std::rc::Rc;
 
-use miniblink_sys::{wkeNavigationType, wkeString, wkeViewSettings, wkeWebView};
+use miniblink_sys::{wkeNavigationType, wkeNetJob, wkeString, wkeViewSettings, wkeWebView};
 
 use crate::error::MBResult;
 use crate::types::{
-    CProxy, Handle, JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, Proxy,
-    ViewSettings, WebFrameHandle, WindowType, WkeString,
+    CProxy, Handle, JsExecState, JsValue, MBExecStateValue, MenuItemId, NavigationType, NetJob, Proxy, ViewSettings, WebFrameHandle, WindowType, WkeString
 };
 
 use crate::{bind_global, bind_handler, bind_target};
@@ -54,7 +53,6 @@ impl RawWebView {
         // pub wkeSleep => sleep();
         pub wkeWake => wake();
         pub wkeRunJsByFrame => run_js_by_frame(frame_id: WebFrameHandle, script: &str as CString, is_in_closure: bool);
-        // pub(crate) wkeDestroyWebView => destroy_webview();
         pub wkeEnableWindow => enable_window(enable: bool);
         // pub wkeConfigure => configure();
     }
@@ -201,10 +199,10 @@ impl RawWebView {
         pub wkeOnDownload(url: *const i8) -> bool => on_download(String) -> bool | false;
         // wkeOnDownload2 => on_download2
         // wkeOnConsole => on_console
-        // wkeOnLoadUrlBegin => on_load_url_begin
+        pub wkeOnLoadUrlBegin(url: *const i8, job: wkeNetJob) => on_load_url_begin(String, NetJob);
         // wkeOnLoadUrlEnd => on_load_url_end
         // wkeOnLoadUrlHeadersReceived => on_load_url_headers_received
-        // wkeOnLoadUrlFinish => on_load_url_finish
+        // wkeOnLoadUrlFinish() => on_load_url_finish();
         // wkeOnLoadUrlFail => on_load_url_fail
         // wkeOnDidCreateScriptContext => on_did_create_script_context
         // wkeOnWillReleaseScriptContext => on_will_release_script_context
