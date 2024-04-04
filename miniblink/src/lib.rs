@@ -1,15 +1,13 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
 
-pub(crate) mod macros;
+// pub(crate) mod macros;
 mod util;
 
 /// Wrapper to wke global function, like wkeInitialize.
 pub mod app;
 /// Error in miniblink (this crate). See [`MBResult`] and [`MBError`].
 pub mod error;
-/// Define how object should act when crossing FFI
-pub(crate) mod ffi;
 /// Wapper to minibink types. See [`webview::WebView`].
 pub mod types;
 /// Wapper to wkeWebView. See [`webview::WebView`].
@@ -19,7 +17,7 @@ pub mod webview;
 pub mod prelude {
     pub use super::error::{MBError, MBResult};
     pub use super::types::{JsExecStateExt, MBExecStateValue};
-    pub use super::webview::MBWebViewExt;
+    pub use super::webview::WebViewExt;
 }
 
 /// Support for serde. Require `serde` feature.

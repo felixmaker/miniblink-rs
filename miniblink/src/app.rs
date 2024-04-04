@@ -3,24 +3,30 @@ use std::ffi::{CString, OsStr};
 use miniblink_sys::Library;
 
 use crate::{
-    bind_global, call_api_or_panic,
+    call_api_or_panic,
     error::{MBError, MBResult},
-    types::{CProxy, JsExecState, JsValue, MBExecStateValue, Proxy},
+    types::{JsExecState, JsValue, MBExecStateValue, Proxy},
     util::SafeCString,
     LIB,
 };
 
-bind_global! {
-    wkeInitialize => _initialize();
-    pub wkeSetProxy => set_proxy(config: &Proxy as CProxy);
-    pub wkeEnableHighDPISupport => enable_high_dpi_support();
-    pub wkeRunMessageLoop => run_message_loop();
-    // pub jsGC => gc();
-    // pub jsBindGetter => 
-    // pub jsBindSetter
+// const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";
+
+/// See wkeEnableHighDPISupport.
+pub fn enable_high_dpi_support() {
+    unsafe { call_api_or_panic().wkeEnableHighDPISupport() }
 }
 
-// const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";
+/// See wkeRunMessageLoop.
+pub fn run_message_loop() {
+    unsafe { call_api_or_panic().wkeRunMessageLoop() }
+}
+
+/// See wkeSetProxy
+pub fn set_proxy(config: &Proxy) {
+    let config = config.to_wke_proxy();
+    unsafe { call_api_or_panic().wkeSetProxy(&config) }
+}
 
 /// Initialize miniblink from `path`. Panic if failed to initialize. See `wkeInitialize`.
 pub fn initialize<P>(path: P) -> MBResult<&'static Library>
@@ -33,7 +39,7 @@ where
         let lib =
             unsafe { Library::new(path) }.map_err(|e| MBError::LibraryUnloaded(e.to_string()))?;
         let lib = LIB.get_or_init(|| lib);
-        _initialize();
+        unsafe { lib.wkeInitialize() };
         Ok(lib)
     }
 }

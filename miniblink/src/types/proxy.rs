@@ -13,20 +13,6 @@ pub enum ProxyType {
     Socks5Hostname,
 }
 
-/// see `wkeProxy`.
-pub struct Proxy {
-    type_: ProxyType,
-    hostname: String,
-    port: u16,
-    username: String,
-    password: String,
-}
-
-#[derive(Clone, Copy)]
-pub(crate) struct CProxy {
-    inner: wkeProxy,
-}
-
 impl ProxyType {
     fn to_wke_proxy_type(&self) -> wkeProxyType {
         match self {
@@ -40,24 +26,24 @@ impl ProxyType {
     }
 }
 
-impl CProxy {
-    pub(crate) fn new(proxy: &Proxy) -> Self {
-        let inner = wkeProxy {
-            type_: proxy.type_.to_wke_proxy_type(),
-            hostname: string_to_slice(&proxy.hostname),
-            port: proxy.port,
-            username: string_to_slice(&proxy.username),
-            password: string_to_slice(&proxy.password),
-        };
+#[allow(missing_docs)]
+/// see `wkeProxy`.
+pub struct Proxy {
+    pub type_: ProxyType,
+    pub hostname: String,
+    pub port: u16,
+    pub username: String,
+    pub password: String,
+}
 
-        Self { inner }
-    }
-
-    pub(crate) fn as_ptr(&self) -> *const wkeProxy {
-        &self.inner
-    }
-
-    pub(crate) fn into_wke_proxy(self) -> wkeProxy {
-        self.inner
+impl Proxy {
+    pub(crate) fn to_wke_proxy(&self) -> wkeProxy {
+        wkeProxy {
+            type_: self.type_.to_wke_proxy_type(),
+            hostname: string_to_slice(&self.hostname),
+            port: self.port,
+            username: string_to_slice(&self.username),
+            password: string_to_slice(&self.password),
+        }
     }
 }

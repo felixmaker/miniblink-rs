@@ -1,59 +1,62 @@
-use std::ffi::CString;
+use std::ffi::CStr;
 
 use miniblink_sys::{wkeNetJob, wkeRequestType, wkeSlist};
 
-use crate::{bind_target, ffi::{FromFFI, ToFFI}, types::WkeString};
-
+/// See wkeNetJob.
 #[repr(transparent)]
 pub struct NetJob {
     inner: wkeNetJob,
 }
 
-impl NetJob {
-    bind_target! {
-        pub wkeNetSetHTTPHeaderField => set_http_header_field(key: &str as WkeString, value: &str as WkeString, response: bool);
-        // pub wkeNetGetRawHttpHead => get_raw_http_head() -> &Slist;
-        pub wkeNetSetMIMEType => set_mime_type(mine_type: &str as CString);
-        // pub wkeNetSetData => set_data()
-        // pub wkeNetGetMIMEType => get_mime_type(mime: Option<&str> as Option<WkeString>) -> String;
-        pub wkeNetCancelRequest => cancel_request();
-        pub wkeNetHoldJobToAsynCommit => hold_job_to_asyn_commit() -> bool;
-        pub wkeNetGetRequestMethod => get_request_method() -> RequestType;
-        // pub wkeNetGetPostBody => get_post_body() 
-        
-    }
-}
+// impl NetJob {
+//     bind_target! {
+//         pub wkeNetSetHTTPHeaderField => set_http_header_field(key: &str as WkeString, value: &str as WkeString, response: bool);
+//         // pub wkeNetGetRawHttpHead => get_raw_http_head() -> &Slist;
+//         pub wkeNetSetMIMEType => set_mime_type(mine_type: &str as CString);
+//         // pub wkeNetSetData => set_data()
+//         // pub wkeNetGetMIMEType => get_mime_type(mime: Option<&str> as Option<WkeString>) -> String;
+//         pub wkeNetCancelRequest => cancel_request();
+//         pub wkeNetHoldJobToAsynCommit => hold_job_to_asyn_commit() -> bool;
+//         pub wkeNetGetRequestMethod => get_request_method() -> RequestType;
+//         // pub wkeNetGetPostBody => get_post_body()
 
-impl ToFFI<wkeNetJob> for NetJob {
-    fn to(&self) -> wkeNetJob {
-        self.inner
-    }   
+//     }
+// }
+
+impl NetJob {
+    /// #Safety
+    /// Pointer should be valid.
+    pub unsafe fn from_ptr(ptr: wkeNetJob) -> Self {
+        Self { inner: ptr }
+    }
 }
 
 enum RequestType {
     Invalidation,
     Get,
     Post,
-    Put
+    Put,
 }
 
-impl FromFFI<wkeRequestType> for RequestType {
+impl From<wkeRequestType> for RequestType {
     fn from(value: wkeRequestType) -> Self {
         match value {
             wkeRequestType::kWkeRequestTypeInvalidation => Self::Invalidation,
             wkeRequestType::kWkeRequestTypeGet => Self::Get,
             wkeRequestType::kWkeRequestTypePost => Self::Post,
             wkeRequestType::kWkeRequestTypePut => Self::Put,
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 }
 
+/// See wkeSlist.
 #[repr(transparent)]
 pub struct Slist {
     inner: wkeSlist,
 }
 
+#[allow(missing_docs)]
 pub struct SlintIter {
     current: *mut wkeSlist,
 }
@@ -69,15 +72,15 @@ impl Iterator for SlintIter {
             match (current.data.is_null(), current.next.is_null()) {
                 (false, _) => {
                     self.current = current.next;
-                    Some(FromFFI::from(current.data as *const i8))
-                },
+                    assert!(!current.data.is_null());
+                    let data = unsafe { CStr::from_ptr(current.data) };
+                    Some(data.to_string_lossy().to_string())
+                }
                 (true, false) => {
                     self.current = current.next;
                     Some(String::new())
-                },
-                (true, true) => {
-                    None
                 }
+                (true, true) => None,
             }
         }
     }
@@ -111,9 +114,7 @@ mod tests {
             next: std::ptr::from_mut(&mut slist2),
         };
 
-        let slist = Slist {
-            inner: slist1
-        };
+        let slist = Slist { inner: slist1 };
 
         let mut slist_iter = slist.into_iter();
         assert_eq!(slist_iter.next(), Some("Are".into()));

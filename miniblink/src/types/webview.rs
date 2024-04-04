@@ -1,4 +1,4 @@
-use miniblink_sys::{wkeNavigationType, wkeWebFrameHandle, HWND};
+use miniblink_sys::{wkeNavigationType, wkeWebFrameHandle, wkeWindowType, HWND};
 
 /// Navigation Type. See `wkeNavigationType`.
 #[allow(missing_docs)]
@@ -32,6 +32,16 @@ pub enum WindowType {
     Transparent,
 }
 
+impl From<WindowType> for wkeWindowType {
+    fn from(value: WindowType) -> Self {
+        match value {
+            WindowType::Control => wkeWindowType::WKE_WINDOW_TYPE_CONTROL,
+            WindowType::Popup => wkeWindowType::WKE_WINDOW_TYPE_POPUP,
+            WindowType::Transparent => wkeWindowType::WKE_WINDOW_TYPE_TRANSPARENT,
+        }
+    }
+}
+
 #[repr(transparent)]
 /// Represent a Windows HWND
 pub struct Handle(pub isize);
@@ -46,6 +56,12 @@ impl Handle {
 impl From<HWND> for Handle {
     fn from(value: HWND) -> Self {
         Self(value as _)
+    }
+}
+
+impl From<Handle> for HWND {
+    fn from(value: Handle) -> Self {
+        value.0 as _
     }
 }
 

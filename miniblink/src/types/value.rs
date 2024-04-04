@@ -3,7 +3,8 @@ use std::ffi::{CStr, CString};
 use crate::call_api_or_panic;
 use crate::error::{MBError, MBResult};
 use crate::types::WkeString;
-use crate::webview::RawWebView;
+use crate::util::SafeCString;
+use crate::webview::WebView;
 use miniblink_sys::{jsExecState, jsKeys, jsType, jsValue};
 
 /// See [`jsType`].
@@ -57,7 +58,13 @@ impl std::fmt::Display for JsType {
     }
 }
 
-use crate::{bind_target, bind_target_global};
+macro_rules! js_value {
+    ($expr: expr) => {{
+        let value = $expr;
+        assert!(value != 0);
+        unsafe { JsValue::from_ptr(value) }
+    }};
+}
 
 /// See `jsExecState`.
 #[derive(Clone, Copy)]
@@ -66,54 +73,133 @@ pub struct JsExecState {
 }
 
 impl JsExecState {
-    bind_target_global! {
-        pub jsInt => int(value: i32) -> JsValue;
-        pub jsDouble => double(value: f64) -> JsValue;
-        pub jsBoolean => boolean(value: bool) -> JsValue;
-        pub jsUndefined => undefined() -> JsValue;
-        pub jsNull => null() -> JsValue
+    /// See jsInt.
+    pub fn int(&self, value: i32) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsInt(value) })
+    }
+    /// See jsDouble.
+    pub fn double(&self, value: f64) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsDouble(value) })
+    }
+    /// See jsBoolean.
+    pub fn boolean(&self, value: bool) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsBoolean(value) })
+    }
+    /// See jsUndefined.
+    pub fn undefined(&self) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsUndefined() })
+    }
+    /// See jsNull.
+    pub fn null(&self) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsNull() })
     }
 
-    bind_target! {
-        pub jsArg => arg(index: i32) -> JsValue;
-        pub jsArgCount => arg_count() -> i32;
-        pub jsEmptyArray => empty_array() -> JsValue;
-        pub jsEmptyObject => empty_object() -> JsValue;
-        pub jsString => string(value: &str as CString) -> JsValue;
-        pub jsGetAt => get_at(js_array: JsValue, index: i32) -> JsValue;
-        pub jsSetAt => set_at(js_array: JsValue, index: i32, js_value: JsValue);
-        pub jsGetLength => get_length(js_array: JsValue) -> i32;
-        pub jsSetLength => set_length(js_array: JsValue, length: i32);
-        pub jsGet => get(js_object: JsValue, prop: &str as CString) -> JsValue;
-        pub jsSet => set(js_object: JsValue, prop: &str as CString, value: JsValue);
-        pub(crate) jsGetKeys => get_keys(js_object: JsValue) -> JsKeys;
-        pub jsGetGlobal => get_global(prop: &str as CString) -> JsValue;
-        pub jsSetGlobal => set_global(prop: &str as CString, value: JsValue);
-        pub jsGetWebView => get_webview() -> RawWebView;
-        // pub jsGetData =>
-        // pub jsGetLastErrorIfException => get_last_error_if_exception() -> ;
-        // pub jsFunction
-        // pub jsObject
+    /// See jsArg.
+    pub fn arg(&self, index: i32) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsArg(self.inner, index) })
+    }
+    /// See jsArgCount.
+    pub fn arg_count(&self) -> i32 {
+        unsafe { call_api_or_panic().jsArgCount(self.inner) }
+    }
+    /// See jsEmptyArray.
+    pub fn empty_array(&self) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsEmptyArray(self.inner,) })
+    }
+    /// See jsEmptyObject.
+    pub fn empty_object(&self) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsEmptyObject(self.inner,) })
+    }
+    /// See jsString.
+    pub fn string(&self, value: &str) -> JsValue {
+        js_value!({
+            let value = CString::safe_new(value);
+            unsafe { call_api_or_panic().jsString(self.inner, value.as_ptr()) }
+        })
+    }
+    /// See jsGetAt.
+    pub fn get_at(&self, js_array: JsValue, index: i32) -> JsValue {
+        js_value!(unsafe { call_api_or_panic().jsGetAt(self.inner, js_array.as_ptr(), index) })
+    }
+    /// See jsSetAt.
+    pub fn set_at(&self, js_array: JsValue, index: i32, js_value: JsValue) {
+        unsafe {
+            call_api_or_panic().jsSetAt(self.inner, js_array.as_ptr(), index, js_value.as_ptr())
+        }
+    }
+    /// See jsGetLength.
+    pub fn get_length(&self, js_array: JsValue) -> i32 {
+        unsafe { call_api_or_panic().jsGetLength(self.inner, js_array.as_ptr()) }
+    }
+    /// See jsSetLength.
+    pub fn set_length(&self, js_array: JsValue, length: i32) {
+        unsafe { call_api_or_panic().jsSetLength(self.inner, js_array.as_ptr(), length) }
+    }
+    /// See jsGet.
+    pub fn get(&self, js_object: JsValue, prop: &str) -> JsValue {
+        let prop = CString::safe_new(prop);
+        js_value!({
+            unsafe { call_api_or_panic().jsGet(self.inner, js_object.as_ptr(), prop.as_ptr()) }
+        })
+    }
+    /// See jsSet.
+    pub fn set(&self, js_object: JsValue, prop: &str, value: JsValue) {
+        let prop = CString::safe_new(prop);
+        unsafe {
+            call_api_or_panic().jsSet(
+                self.inner,
+                js_object.as_ptr(),
+                prop.as_ptr(),
+                value.as_ptr(),
+            )
+        }
+    }
+    /// See jsGetKeys.
+    pub fn get_keys(&self, js_object: JsValue) -> JsKeys {
+        let keys = unsafe { call_api_or_panic().jsGetKeys(self.inner, js_object.as_ptr()) };
+        assert!(!keys.is_null());
+        unsafe { JsKeys::from_ptr(keys) }
+    }
+    /// See jsGetGlobal.
+    pub fn get_global(&self, prop: &str) -> JsValue {
+        js_value!({
+            let prop = CString::safe_new(prop);
+            unsafe { call_api_or_panic().jsGetGlobal(self.inner, prop.as_ptr()) }
+        })
+    }
+    /// See jsSetGlobal.
+    pub fn set_global(&self, prop: &str, value: JsValue) {
+        let prop = CString::safe_new(prop);
+        unsafe { call_api_or_panic().jsSetGlobal(self.inner, prop.as_ptr(), value.as_ptr()) }
+    }
+    /// See jsGetWebView.
+    pub fn get_webview(&self) -> WebView {
+        let webview = unsafe { call_api_or_panic().jsGetWebView(self.inner) };
+        assert!(!webview.is_null());
+        unsafe { WebView::from_ptr(webview) }
     }
 
-    bind_target! {
-        pub jsEvalW => eval(script: &str as WkeString) -> JsValue;
-        pub jsEvalExW => eval_ex(script: &str as WkeString, is_in_closure: bool) -> JsValue;
-        // pub jsCall => call(func: JsValue, this_value: JsValue, args: jsValue* , int arg_count);
-        // pub jsCallGlobal => call(func: JsValue, args: jsValue* , int arg_count);
+    /// See jsEvalW.
+    pub fn eval(&self, script: &str) -> JsValue {
+        js_value!({
+            let script = WkeString::new(script);
+            unsafe { call_api_or_panic().jsEvalW(self.inner, script.as_wcstr_ptr()) }
+        })
     }
-
-    bind_target! {
-        jsToInt => _to_int(value: JsValue) -> i32;
-        jsToDouble => _to_double(value: JsValue) -> f64;
-        jsToTempString => _to_string(value: JsValue) -> String;
-        jsToBoolean => _to_boolean(value: JsValue) -> bool;
+    /// See jsEvalExW.
+    pub fn eval_ex(&self, script: &str, is_in_closure: bool) -> JsValue {
+        let script = WkeString::new(script);
+        js_value!(unsafe {
+            call_api_or_panic().jsEvalExW(self.inner, script.as_wcstr_ptr(), is_in_closure)
+        })
     }
 
     /// See `jsToInt`.
     pub fn to_int(&self, value: JsValue) -> MBResult<i32> {
         match value.type_of_() {
-            JsType::Number => Ok(self._to_int(value)),
+            JsType::Number => {
+                Ok(unsafe { call_api_or_panic().jsToInt(self.inner, value.as_ptr()) })
+            }
             other => Err(MBError::UnsupportedType(JsType::Number, other)),
         }
     }
@@ -121,7 +207,9 @@ impl JsExecState {
     /// See `jsToDouble`.
     pub fn to_double(&self, value: JsValue) -> MBResult<f64> {
         match value.type_of_() {
-            JsType::Number => Ok(self._to_double(value)),
+            JsType::Number => {
+                Ok(unsafe { call_api_or_panic().jsToDouble(self.inner, value.as_ptr()) })
+            }
             other => Err(MBError::UnsupportedType(JsType::Number, other)),
         }
     }
@@ -129,7 +217,9 @@ impl JsExecState {
     /// See `jsToBoolean`.
     pub fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
         match value.type_of_() {
-            JsType::Boolean => Ok(self._to_boolean(value)),
+            JsType::Boolean => {
+                Ok(unsafe { call_api_or_panic().jsToBoolean(self.inner, value.as_ptr()) != 0 })
+            }
             other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
         }
     }
@@ -141,7 +231,14 @@ impl JsExecState {
             | JsType::Null
             | JsType::Number
             | JsType::String
-            | JsType::Undefined => Ok(self._to_string(value)),
+            | JsType::Undefined => {
+                let value = unsafe { call_api_or_panic().jsToString(self.inner, value.as_ptr()) };
+                assert!(!value.is_null());
+                let value = unsafe { CStr::from_ptr(value) }
+                    .to_string_lossy()
+                    .to_string();
+                Ok(value)
+            }
             other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
         }
     }
@@ -190,7 +287,8 @@ impl JsExecStateExt for JsExecState {
     }
 }
 
-pub(crate) struct JsKeys {
+/// See jsKeys.
+pub struct JsKeys {
     inner: *mut jsKeys,
 }
 
@@ -238,18 +336,50 @@ pub struct JsValue {
 }
 
 impl JsValue {
-    bind_target! {
-        pub jsTypeOf => type_of_() -> JsType;
-        pub jsIsNumber => is_number() -> bool;
-        pub jsIsString => is_string() -> bool;
-        pub jsIsBoolean => is_boolean() -> bool;
-        pub jsIsObject => is_object() -> bool;
-        pub jsIsFunction => is_function() -> bool;
-        pub jsIsUndefined => is_undefined() -> bool;
-        pub jsIsNull => is_null() -> bool;
-        pub jsIsArray => is_array() -> bool;
-        pub jsIsTrue => is_true() -> bool;
-        pub jsIsFalse => is_false() -> bool;
+    /// See jsTypeOf.
+    pub fn type_of_(&self) -> JsType {
+        let js_type = unsafe { call_api_or_panic().jsTypeOf(self.inner) };
+        JsType::from(js_type)
+    }
+    /// See jsIsNumber.
+    pub fn is_number(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsNumber(self.inner) } != 0)
+    }
+    /// See jsIsString.
+    pub fn is_string(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsString(self.inner) } != 0)
+    }
+    /// See jsIsBoolean.
+    pub fn is_boolean(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsBoolean(self.inner) } != 0)
+    }
+    /// See jsIsObject.
+    pub fn is_object(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsObject(self.inner) } != 0)
+    }
+    /// See jsIsFunction.
+    pub fn is_function(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsFunction(self.inner) } != 0)
+    }
+    /// See jsIsUndefined.
+    pub fn is_undefined(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsUndefined(self.inner) } != 0)
+    }
+    /// See jsIsNull.
+    pub fn is_null(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsNull(self.inner) } != 0)
+    }
+    /// See jsIsArray.
+    pub fn is_array(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsArray(self.inner) } != 0)
+    }
+    /// See jsIsTrue.
+    pub fn is_true(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsTrue(self.inner) } != 0)
+    }
+    /// See jsIsFalse.
+    pub fn is_false(&self) -> bool {
+        (unsafe { call_api_or_panic().jsIsFalse(self.inner) } != 0)
     }
 
     /// Get the inner ptr of [`JsValue`]. See [`jsValue`].
