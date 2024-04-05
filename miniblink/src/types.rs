@@ -389,7 +389,7 @@ pub struct Proxy {
 }
 
 impl Proxy {
-    pub(crate) fn to_wke_proxy(&self) -> wkeProxy {
+    pub(crate) fn to_wke(&self) -> wkeProxy {
         wkeProxy {
             type_: self.type_.to_wke_proxy_type(),
             hostname: string_to_slice(&self.hostname),
@@ -1176,6 +1176,113 @@ impl std::ops::Deref for WkeString {
     type Target = WkeStr;
     fn deref(&self) -> &Self::Target {
         unsafe { &*(&self.inner as *const wkeString as *const WkeStr) }
+    }
+}
+
+/// Defines cookie commands performed using inner curl.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum CookieCommand {
+    /// Execute `curl_easy_setopt(curl, CURLOPT_COOKIELIST, "ALL");`
+    ClearAllCookies,
+    /// Execute `curl_easy_setopt(curl, CURLOPT_COOKIELIST, "SESS");`
+    ClearSessionCookies,
+    /// Execute `curl_easy_setopt(curl, CURLOPT_COOKIELIST, "FLUSH");`
+    FlushCookiesToFile,
+    /// Execute `curl_easy_setopt(curl, CURLOPT_COOKIELIST, "RELOAD");`
+    ReloadCookiesFromFile,
+}
+
+impl CookieCommand {
+    pub(crate) fn into_wke(self) -> wkeCookieCommand {
+        match self {
+            Self::ClearAllCookies => wkeCookieCommand::wkeCookieCommandClearAllCookies,
+            Self::ClearSessionCookies => wkeCookieCommand::wkeCookieCommandClearSessionCookies,
+            Self::FlushCookiesToFile => wkeCookieCommand::wkeCookieCommandFlushCookiesToFile,
+            Self::ReloadCookiesFromFile => wkeCookieCommand::wkeCookieCommandReloadCookiesFromFile,
+        }
+    }
+}
+
+#[allow(missing_docs)]
+/// Wraps wkeSettings.
+pub struct Settings {
+    pub proxy: Proxy,
+    pub mask: u32,
+    pub extension: CString,
+}
+
+impl Settings {
+    pub(crate) fn to_wke(&self) -> wkeSettings {
+        let Settings {
+            proxy,
+            mask,
+            extension,
+        } = self;
+        wkeSettings {
+            proxy: proxy.to_wke(),
+            mask: *mask,
+            extension: extension.as_ptr(),
+        }
+    }
+
+    /// Creates settings.
+    pub fn new(proxy: Proxy, mask: u32, extension: &str) -> Self {
+        Self {
+            proxy,
+            mask,
+            extension: CString::safe_new(extension),
+        }
+    }
+}
+
+#[allow(missing_docs)]
+/// Cookie vistor, make it easier to use in callbacks
+pub struct CookieVisitor {
+    pub name: String,
+    pub value: String,
+    pub domain: String,
+    pub path: String,
+    pub secure: i32,
+    pub http_only: i32,
+    pub expires: *mut i32,
+}
+
+impl CookieVisitor {
+    pub(crate) fn from_wke(
+        name: *const ::std::os::raw::c_char,
+        value: *const ::std::os::raw::c_char,
+        domain: *const ::std::os::raw::c_char,
+        path: *const ::std::os::raw::c_char,
+        secure: ::std::os::raw::c_int,
+        http_only: ::std::os::raw::c_int,
+        expires: *mut ::std::os::raw::c_int,
+    ) -> Self {
+        assert!(!name.is_null());
+        assert!(!value.is_null());
+        assert!(!domain.is_null());
+        assert!(!path.is_null());
+        assert!(!expires.is_null());
+
+        let name = unsafe { CStr::from_ptr(name) };
+        let value = unsafe { CStr::from_ptr(value) };
+        let domain = unsafe { CStr::from_ptr(domain) };
+        let path = unsafe { CStr::from_ptr(path) };
+
+        Self {
+            name: name.to_string_lossy().to_string(),
+            value: value.to_string_lossy().to_string(),
+            domain: domain.to_string_lossy().to_string(),
+            path: path.to_string_lossy().to_string(),
+            secure,
+            http_only,
+            expires,
+        }
+    }
+
+    /// Set the cookie expires.
+    pub fn set_expires(&self, expires: i32) {
+        assert!(!self.expires.is_null());
+        unsafe { *self.expires = expires }
     }
 }
 
