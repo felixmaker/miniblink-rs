@@ -624,8 +624,8 @@ impl WebView {
         unsafe { call_api_or_panic().wkeSetMediaVolume(*self.inner, media_volume) }
     }
     /// Get media volume. Unimplemented!
-    pub fn get_media_volume() {
-        todo!()
+    pub fn get_media_volume(&self) -> f32 {
+        unsafe { call_api_or_panic().wkeGetMediaVolume(*self.inner) }
     }
     /// Set zoom factor. Defaults to 1.0.
     pub fn set_zoom_factor(&self, zoom_factor: f32) {
