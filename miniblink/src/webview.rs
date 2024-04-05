@@ -1147,13 +1147,15 @@ impl WebView {
     pub fn on_will_media_load() {
         todo!()
     }
-    ///判断frameId是否是主frame
-    pub fn is_main_frame() {
-        todo!()
+    /// Check is the frame is the main frame.
+    pub fn is_main_frame(&self, frame: WebFrameHandle) -> bool {
+        (unsafe { call_api_or_panic().wkeIsMainFrame(*self.inner, frame.as_ptr()) } != 0)
     }
-    /// 获取主frame的句柄
-    pub fn web_frame_get_main_frame() {
-        todo!()
+    /// Get main frame.
+    pub fn web_frame_get_main_frame(&self) -> WebFrameHandle {
+        let main_frame = unsafe { call_api_or_panic().wkeWebFrameGetMainFrame(*self.inner) };
+        assert!(!main_frame.is_null());
+        unsafe { WebFrameHandle::from_ptr(main_frame) }
     }
 }
 
