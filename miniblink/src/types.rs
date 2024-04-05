@@ -1059,6 +1059,15 @@ pub struct Point {
     pub y: i32,
 }
 
+impl Point {
+    pub(crate) fn to_wke(&self) -> POINT {
+        POINT {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+
 #[repr(transparent)]
 /// see `wkeWebFrameHandle`
 pub struct WebFrameHandle {
@@ -1115,6 +1124,10 @@ impl WkeStr {
     pub unsafe fn from_ptr(ptr: wkeString) -> Self {
         assert!(!ptr.is_null());
         Self { inner: ptr }
+    }
+
+    pub(crate) fn as_ptr(&self) -> wkeString {
+        self.inner
     }
 
     pub(crate) fn to_string(&self) -> String {

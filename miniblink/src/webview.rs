@@ -641,27 +641,52 @@ impl WebView {
     pub fn perform_cookie_command(&self, command: CookieCommand) {
         unsafe { call_api_or_panic().wkePerformCookieCommand(*self.inner, command.into_wke()) }
     }
-    /// 对webView设置一个key value键值对。可以用来保存用户自己定义的任何指针
+    /// Set a use value.
     pub fn set_user_key_value() {
         todo!()
     }
-    /// 对webView设置一个key value键值对。可以用来保存用户自己定义的任何指针
+    /// Get a use value.
     pub fn get_user_key_value() {
         todo!()
     }
-    ///
-    pub fn get_cursor_info_type() {
-        todo!()
+    /// Get the cursor info type.
+    pub fn get_cursor_info_type(&self) -> i32 {
+        unsafe { call_api_or_panic().wkeGetCursorInfoType(*self.inner) }
     }
-    /// 创建一个webview，但不创建真窗口。一般用在离屏渲染里，如游戏
-    pub fn create_web_view() {
-        todo!()
+    /// Create webview without window, used as offscreen rendering.
+    pub fn create_web_view() -> Self {
+        let webview = unsafe { call_api_or_panic().wkeCreateWebView() };
+        assert!(!webview.is_null());
+        Self {
+            inner: Rc::new(webview),
+        }
     }
-    /// See wkeSetCursorInfoType.
+    /// Set the cursor info type.
     pub fn set_cursor_info_type(&self, cursor_info_type: i32) {
         unsafe { call_api_or_panic().wkeSetCursorInfoType(*self.inner, cursor_info_type) }
     }
-    // wkeSetDragFiles => set_drag_files(clint_pos: &Point as POINT, screen_pos: *const POINT, files: &[&str], files_count: i32);
+    /// Set drag files.
+    pub fn set_drag_files(
+        &self,
+        client_pos: &Point,
+        screen_pos: &Point,
+        files: &[&str],
+        files_count: i32,
+    ) {
+        let client_pos = client_pos.to_wke();
+        let screen_pos = screen_pos.to_wke();
+        let files: Box<[WkeString]> = files.iter().map(|file| WkeString::new(&file)).collect();
+        let mut files: Box<[wkeString]> = files.iter().map(|file| file.as_ptr()).collect();
+        unsafe {
+            call_api_or_panic().wkeSetDragFiles(
+                *self.inner,
+                &client_pos,
+                &screen_pos,
+                files.as_mut_ptr(),
+                files_count,
+            )
+        }
+    }
     /// See wkeSetDeviceParameter.
     pub fn set_device_parameter(
         &self,
@@ -689,8 +714,6 @@ impl WebView {
     }
 
     /// Delay miniblink garbage collection with miniseconds.
-    ///
-    /// 延迟让miniblink垃圾回收
     pub fn gc(&self, delay_ms: i32) {
         unsafe { call_api_or_panic().wkeGC(*self.inner, delay_ms) }
     }
