@@ -488,7 +488,7 @@ impl WebView {
     }
     /// Set the proxy of the webview.
     pub fn set_view_proxy(&self, proxy: &Proxy) {
-        let mut proxy = proxy.to_wke_proxy();
+        let mut proxy = proxy.to_wke();
         unsafe { call_api_or_panic().wkeSetViewProxy(*self.inner, &mut proxy) }
     }
     /// See wkeSetName.
@@ -518,12 +518,39 @@ impl WebView {
     }
     /// Set the cookie of a url.
     ///
-    /// #Note
-    /// `cookie` needs to be `curl` form, such as `PERSONALIZE=123;expires=Monday, 13-Jun-2022 03:04:55 GMT; domain=.fidelity.com; path=/; secure`.
+    /// Note: `cookie` needs to be `curl` form, such as `PERSONALIZE=123;expires=Monday, 13-Jun-2022 03:04:55 GMT; domain=.fidelity.com; path=/; secure`.
     pub fn set_cookie(&self, url: &str, cookie: &str) {
         let url = CString::safe_new(url);
         let cookie = CString::safe_new(cookie);
         unsafe { call_api_or_panic().wkeSetCookie(*self.inner, url.as_ptr(), cookie.as_ptr()) }
+    }
+    /// Visit all cookie using visitor.
+    pub fn visit_all_cookie<F>(&self, visitor: F)
+    where
+        F: Fn(CookieVisitor) -> bool + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            params: *mut ::std::os::raw::c_void,
+            name: *const ::std::os::raw::c_char,
+            value: *const ::std::os::raw::c_char,
+            domain: *const ::std::os::raw::c_char,
+            path: *const ::std::os::raw::c_char,
+            secure: ::std::os::raw::c_int,
+            http_only: ::std::os::raw::c_int,
+            expires: *mut ::std::os::raw::c_int,
+        ) -> bool
+        where
+            F: Fn(CookieVisitor) -> bool + 'static,
+        {
+            let visitor =
+                CookieVisitor::from_wke(name, value, domain, path, secure, http_only, expires);
+            let cb: *mut F = params as _;
+            let f = &mut *cb;
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(visitor)));
+            r.unwrap_or(false)
+        }
+        let cb: *mut F = Box::into_raw(Box::new(visitor));
+        unsafe { call_api_or_panic().wkeVisitAllCookie(*self.inner, cb as _, Some(shim::<F>)) }
     }
     /// Get favicon. This api must call in `on_loading_finish`.
     pub fn net_get_favicon<F>(&self, callback: F) -> i32
@@ -607,6 +634,12 @@ impl WebView {
     /// See wkeSetEditable. Unimplemented!
     pub fn set_editable(&self, editable: bool) {
         unsafe { call_api_or_panic().wkeSetEditable(*self.inner, editable) }
+    }
+    /// Perform operation on `cookie` using curl embedded in miniblink.
+    ///
+    /// Note: This api just executes curl command and does not change javascript content.
+    pub fn perform_cookie_command(&self, command: CookieCommand) {
+        unsafe { call_api_or_panic().wkePerformCookieCommand(*self.inner, command.into_wke()) }
     }
     /// 对webView设置一个key value键值对。可以用来保存用户自己定义的任何指针
     pub fn set_user_key_value() {
