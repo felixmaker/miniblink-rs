@@ -244,40 +244,63 @@ impl NetJob {
     pub unsafe fn from_ptr(ptr: wkeNetJob) -> Self {
         Self { inner: ptr }
     }
-    /// 在wkeOnLoadUrlBegin回调里调用，表示设置http请求（或者file:///协议）的 http header field。response一直要被设置成false
-    pub fn set_http_header_field(key: &str, value: &str, response: bool) {
+    /// Set http header field.
+    pub fn set_http_header_field(&self, key: &str, value: &str) {
+        let key = WkeString::new(key);
+        let value = WkeString::new(value);
+        unsafe {
+            call_api_or_panic().wkeNetSetHTTPHeaderField(
+                self.inner,
+                key.as_wcstr_ptr(),
+                value.as_wcstr_ptr(),
+                false,
+            )
+        }
+    }
+    /// Set http header field.
+    pub fn get_raw_http_head(&self) -> Slist {
+        let slist = unsafe { call_api_or_panic().wkeNetGetRawHttpHead(self.inner) };
+        assert!(!slist.is_null());
+        unsafe { Slist::from_ptr(slist) }
+    }
+    /// Set MIME type.
+    pub fn set_mime_type(&self, mine_type: &str) {
+        let mine_type = CString::safe_new(mine_type);
+        unsafe { call_api_or_panic().wkeNetSetMIMEType(self.inner, mine_type.as_ptr()) };
+    }
+    /// Set data after hook.
+    pub fn set_data(&self) {
         todo!()
     }
-    /// 在wkeOnLoadUrlBegin回调里调用，获取curl返回的原生请求头
-    ///返回值：const wkeSlist*，是一个C语言链表，详情看头文件
-    pub fn get_raw_http_head() -> Slist {
-        todo!()
+    /// Get the mine type.
+    pub fn get_mime_type(&self, mime_type: Option<&str>) -> String {
+        let mime_type = if let Some(mine_type) = mime_type {
+            let mine_type = WkeString::new(mine_type);
+            unsafe { call_api_or_panic().wkeNetGetMIMEType(self.inner, mine_type.as_ptr()) }
+        } else {
+            unsafe { call_api_or_panic().wkeNetGetMIMEType(self.inner, std::ptr::null_mut()) }
+        };
+        unsafe { CStr::from_ptr(mime_type) }
+            .to_string_lossy()
+            .to_string()
     }
-    /// 在wkeOnLoadUrlBegin回调里调用，表示设置http请求的MIME type
-    pub fn set_mime_type(mine_type: &str) {
-        todo!()
+    /// Cancel request.
+    pub fn cancel_request(&self) {
+        unsafe { call_api_or_panic().wkeNetCancelRequest(self.inner) }
     }
-    /// 在wkeOnLoadUrlEnd里被调用，表示设置hook后缓存的数据
-    pub fn set_data() {
-        todo!()
+    /// Hold job to async commit. Call `continue_job` to continue.
+    /// Ture means success.
+    pub fn hold_job_to_asyn_commit(&self) -> bool {
+        (unsafe { call_api_or_panic().wkeNetHoldJobToAsynCommit(self.inner) } != 0)
     }
-    /// 参数：第2个参数可以传nullptr
-    pub fn get_mime_type(mime: Option<&str>) -> String {
-        todo!()
+    /// Continue the job. Use after `hold_job_to_asyn_commit`.
+    pub fn continue_job(&self) {
+        unsafe { call_api_or_panic().wkeNetContinueJob(self.inner) }
     }
-    /// 在wkeOnLoadUrlBegin回调里调用，设置后，此请求将被取消。
-    pub fn cancel_request() {
-        todo!()
-    }
-    /// 高级用法。在wkeOnLoadUrlBegin回调里调用。 有时候，wkeOnLoadUrlBegin里拦截到一个请求后，不能马上判断出结果。此时可以调用本接口，然后在 异步的某个时刻，调用wkeNetContinueJob来让此请求继续进行
-    ///参数：略
-    ///返回值：TRUE代表成功，FALSE代表调用失败，不能再调用wkeNetContinueJob了
-    pub fn hold_job_to_asyn_commit() -> bool {
-        todo!()
-    }
-    /// 获取此请求的method，如post还是get
-    pub fn get_request_method() {
-        todo!()
+    /// Get request method.
+    pub fn get_request_method(&self) -> RequestType {
+        let method = unsafe { call_api_or_panic().wkeNetGetRequestMethod(self.inner) };
+        RequestType::from_wke(method)
     }
     /// Get the post body.
     pub fn get_post_body(&self) -> PostBodyElements {
@@ -287,15 +310,16 @@ impl NetJob {
     }
 }
 
-enum RequestType {
+#[allow(missing_docs)]
+pub enum RequestType {
     Invalidation,
     Get,
     Post,
     Put,
 }
 
-impl From<wkeRequestType> for RequestType {
-    fn from(value: wkeRequestType) -> Self {
+impl RequestType {
+    pub(crate) fn from_wke(value: wkeRequestType) -> Self {
         match value {
             wkeRequestType::kWkeRequestTypeInvalidation => Self::Invalidation,
             wkeRequestType::kWkeRequestTypeGet => Self::Get,
@@ -309,12 +333,18 @@ impl From<wkeRequestType> for RequestType {
 /// See wkeSlist.
 #[repr(transparent)]
 pub struct Slist {
-    inner: wkeSlist,
+    inner: *const wkeSlist,
+}
+
+impl Slist {
+    pub(crate) unsafe fn from_ptr(ptr: *const wkeSlist) -> Self {
+        Self { inner: ptr }
+    }
 }
 
 #[allow(missing_docs)]
 pub struct SlintIter {
-    current: *mut wkeSlist,
+    current: *const wkeSlist,
 }
 
 impl Iterator for SlintIter {
@@ -347,9 +377,9 @@ impl IntoIterator for Slist {
 
     type IntoIter = SlintIter;
 
-    fn into_iter(mut self) -> Self::IntoIter {
+    fn into_iter(self) -> Self::IntoIter {
         SlintIter {
-            current: &mut self.inner as *mut wkeSlist,
+            current: self.inner,
         }
     }
 }
@@ -1324,7 +1354,7 @@ mod tests {
             next: std::ptr::from_mut(&mut slist2),
         };
 
-        let slist = Slist { inner: slist1 };
+        let slist = unsafe { Slist::from_ptr(&slist1) };
 
         let mut slist_iter = slist.into_iter();
         assert_eq!(slist_iter.next(), Some("Are".into()));
