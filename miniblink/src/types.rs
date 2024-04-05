@@ -445,22 +445,7 @@ pub enum JsType {
 }
 
 impl JsType {
-    fn as_str(&self) -> &'static str {
-        match self {
-            JsType::Number => "NUMBER",
-            JsType::String => "STRING",
-            JsType::Boolean => "BOOLEAN",
-            JsType::Object => "OBJECT",
-            JsType::Function => "FUNCTION",
-            JsType::Undefined => "UNDEFINED",
-            JsType::Array => "ARRAY",
-            JsType::Null => "NULL",
-        }
-    }
-}
-
-impl From<jsType> for JsType {
-    fn from(value: jsType) -> Self {
+    pub(crate) fn from_wke(value: jsType) -> Self {
         match value {
             jsType::JSTYPE_ARRAY => Self::Array,
             jsType::JSTYPE_BOOLEAN => Self::Boolean,
@@ -471,6 +456,19 @@ impl From<jsType> for JsType {
             jsType::JSTYPE_STRING => Self::String,
             jsType::JSTYPE_UNDEFINED => Self::Undefined,
             _ => unimplemented!(),
+        }
+    }
+
+    fn as_str(&self) -> &'static str {
+        match self {
+            JsType::Number => "NUMBER",
+            JsType::String => "STRING",
+            JsType::Boolean => "BOOLEAN",
+            JsType::Object => "OBJECT",
+            JsType::Function => "FUNCTION",
+            JsType::Undefined => "UNDEFINED",
+            JsType::Array => "ARRAY",
+            JsType::Null => "NULL",
         }
     }
 }
@@ -516,7 +514,7 @@ impl JsExecState {
     pub fn null(&self) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsNull() })
     }
-    /// 获取第argIdx对应的参数的jsValue值。
+    /// Get the arg value.
     pub fn arg(&self, index: i32) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsArg(self.inner, index) })
     }
@@ -524,9 +522,13 @@ impl JsExecState {
     pub fn arg_count(&self) -> i32 {
         unsafe { call_api_or_panic().jsArgCount(self.inner) }
     }
-    /// 判断第argIdx个参数的参数类型。argIdx从是个0开始计数的值。如果超出jsArgCount返回的值，将发生崩溃
-    pub fn arg_type() {
-        todo!()
+    /// Get the arg type.
+    pub fn arg_type(&self, index: i32) -> Option<JsType> {
+        if index > self.arg_count() {
+            return None;
+        }
+        let js_type = unsafe { call_api_or_panic().jsArgType(self.inner, index) };
+        Some(JsType::from_wke(js_type))
     }
     /// See jsEmptyArray.
     pub fn empty_array(&self) -> JsValue {
@@ -692,17 +694,41 @@ impl JsExecState {
         Self { inner: ptr }
     }
 
-    /// 调用一个func对应的js函数。如果此js函数是成员函数，则需要填thisValue。 否则可以传jsUndefined。args是个数组，个数由argCount控制。 func可以是从js里取的，也可以是自行构造的。
-    pub fn call() {
-        todo!()
+    /// Call js function. If js function is a member, `this` is required to set.
+    pub fn call(
+        &self,
+        func: JsValue,
+        this: Option<JsValue>,
+        args: &[JsValue],
+        arg_count: i32,
+    ) -> JsValue {
+        let this = this.unwrap_or(self.undefined());
+        let mut args: Box<[jsValue]> = args.iter().map(|v| v.as_ptr()).collect();
+        js_value!(unsafe {
+            call_api_or_panic().jsCall(
+                self.inner,
+                func.as_ptr(),
+                this.as_ptr(),
+                args.as_mut_ptr(),
+                arg_count,
+            )
+        })
     }
-    /// 调用window上的全局函数
-    pub fn call_global() {
-        todo!()
+    /// Call js function on window object.
+    pub fn call_global(&self, func: JsValue, args: &[JsValue], arg_count: i32) -> JsValue {
+        let mut args: Box<[jsValue]> = args.iter().map(|v| v.as_ptr()).collect();
+        js_value!(unsafe {
+            call_api_or_panic().jsCallGlobal(
+                self.inner,
+                func.as_ptr(),
+                args.as_mut_ptr(),
+                arg_count,
+            )
+        })
     }
-    /// 强制垃圾回收
-    pub fn gc() {
-        todo!()
+    /// Force garbage collection
+    pub fn gc(&self) {
+        unsafe { call_api_or_panic().jsGC() }
     }
     /// 创建一个主frame的全局函数。jsData的用法如上。js调用：XXX() 此时jsData的callAsFunction触发。 其实jsFunction和jsObject功能基本类似。且jsObject的功能更强大一些
     pub fn function() {
@@ -712,9 +738,14 @@ impl JsExecState {
     pub fn get_data() {
         todo!()
     }
-    /// 当wkeRunJs、jsCall等接口调用时，如果执行的js代码有异常，此接口将获取到异常信息。否则返回nullptr。
-    pub fn get_last_error_if_exception() {
-        todo!()
+    /// Get last error if exception when calling run_js, call, at el. api.
+    pub fn get_last_error_if_exception(&self) -> Option<JsExceptionInfo> {
+        let error = unsafe { call_api_or_panic().jsGetLastErrorIfException(self.inner) };
+        if error.is_null() {
+            None
+        } else {
+            Some(JsExceptionInfo::from_wke(unsafe { *error }))
+        }
     }
 }
 
@@ -744,6 +775,57 @@ impl JsExecStateExt for JsExecState {
                 )),
                 _ => MBError::ArgNotMatch(format!("not match at arg index {index}")),
             })
+        }
+    }
+}
+
+#[allow(missing_docs)]
+pub struct JsExceptionInfo {
+    pub message: String,
+    pub source_line: String,
+    pub script_resource_name: String,
+    pub line_number: i32,
+    pub start_position: i32,
+    pub end_position: i32,
+    pub start_column: i32,
+    pub end_column: i32,
+    pub callstack_string: String,
+}
+
+impl JsExceptionInfo {
+    pub(crate) fn from_wke(value: jsExceptionInfo) -> Self {
+        let jsExceptionInfo {
+            message,
+            sourceLine,
+            scriptResourceName,
+            lineNumber,
+            startPosition,
+            endPosition,
+            startColumn,
+            endColumn,
+            callstackString,
+        } = value;
+
+        assert!(!message.is_null());
+        assert!(!sourceLine.is_null());
+        assert!(!scriptResourceName.is_null());
+        assert!(!callstackString.is_null());
+
+        let message = unsafe { CStr::from_ptr(message) };
+        let source_line = unsafe { CStr::from_ptr(sourceLine) };
+        let script_resource_name = unsafe { CStr::from_ptr(scriptResourceName) };
+        let callstack_string = unsafe { CStr::from_ptr(callstackString) };
+
+        Self {
+            message: message.to_string_lossy().to_string(),
+            source_line: source_line.to_string_lossy().to_string(),
+            script_resource_name: script_resource_name.to_string_lossy().to_string(),
+            line_number: lineNumber,
+            start_position: startPosition,
+            end_position: endPosition,
+            start_column: startColumn,
+            end_column: endColumn,
+            callstack_string: callstack_string.to_string_lossy().to_string(),
         }
     }
 }
@@ -800,7 +882,7 @@ impl JsValue {
     /// See jsTypeOf.
     pub fn type_of_(&self) -> JsType {
         let js_type = unsafe { call_api_or_panic().jsTypeOf(self.inner) };
-        JsType::from(js_type)
+        JsType::from_wke(js_type)
     }
     /// See jsIsNumber.
     pub fn is_number(&self) -> bool {
@@ -1296,9 +1378,9 @@ impl CookieVisitor {
         value: *const ::std::os::raw::c_char,
         domain: *const ::std::os::raw::c_char,
         path: *const ::std::os::raw::c_char,
-        secure: ::std::os::raw::c_int,
-        http_only: ::std::os::raw::c_int,
-        expires: *mut ::std::os::raw::c_int,
+        secure: i32,
+        http_only: i32,
+        expires: *mut i32,
     ) -> Self {
         assert!(!name.is_null());
         assert!(!value.is_null());
