@@ -1,4 +1,4 @@
-use std::ffi::{CString, OsStr};
+use std::ffi::{CStr, CString, OsStr};
 
 use miniblink_sys::Library;
 
@@ -22,7 +22,7 @@ pub fn run_message_loop() {
     unsafe { call_api_or_panic().wkeRunMessageLoop() }
 }
 
-/// See wkeSetProxy
+/// 设置整个mb的代码。此句是全局生效
 pub fn set_proxy(config: &Proxy) {
     let config = config.to_wke_proxy();
     unsafe { call_api_or_panic().wkeSetProxy(&config) }
@@ -45,6 +45,8 @@ where
 }
 
 /// Bind function to global `window` object. See `wkeJsBindFunction`.
+/// 和jsBindFunction功能类似，但更方便一点，可以传一个param做自定义数据。
+/// 此接口和wkeJsBindFunction必须在webview创建前调用
 pub fn js_bind_function<F>(name: &str, func: F, arg_count: u32)
 where
     F: Fn(JsExecState) -> MBResult<JsValue> + 'static,
@@ -125,5 +127,53 @@ pub mod app_ext {
         pub bind4(P1, P2, P3, P4);
         pub bind5(P1, P2, P3, P4, P5);
         pub bind6(P1, P2, P3, P4, P5, P6)
+    }
+}
+
+/// Wraps to global functions
+pub struct App {}
+
+impl App {
+    /// Get the version of miniblink
+    ///
+    /// 获取目前api版本号
+    pub fn version() -> u32 {
+        unsafe { call_api_or_panic().wkeVersion() }
+    }
+
+    /// Get the version string of miniblink
+    ///
+    /// 获取版本字符串
+    pub fn version_string() -> String {
+        let version = unsafe { call_api_or_panic().wkeGetVersionString() };
+        assert!(!version.is_null());
+        unsafe { CStr::from_ptr(version).to_string_lossy().to_string() }
+    }
+
+    /// 设置一些配置项
+    pub fn wke_configure() {
+        todo!()
+    }
+    /// 对js winows绑定一个属性访问器，在js里windows.XXX这种形式调用时，fn会被调用
+    pub fn bind_getter() {
+        todo!()
+    }
+    /// 对js winows绑定一个属性设置器。
+    pub fn bind_setter() {
+        todo!()
+    }
+    /// 通过访问器visitor访问所有cookie。
+    pub fn visit_all_cookie() {
+        todo!()
+    }
+    /// Perform operation on `cookie` using curl embedded in miniblink.
+    /// command：
+    /// wkeCookieCommandClearAllCookies: 内部实际执行了curl_easy_setopt(curl, CURLOPT_COOKIELIST, "ALL");
+    /// wkeCookieCommandClearSessionCookies: curl_easy_setopt(curl, CURLOPT_COOKIELIST, "SESS");
+    /// wkeCookieCommandFlushCookiesToFile: curl_easy_setopt(curl, CURLOPT_COOKIELIST, "FLUSH");
+    /// wkeCookieCommandReloadCookiesFromFile: curl_easy_setopt(curl, CURLOPT_COOKIELIST, "RELOAD");
+    /// 注意：这个接口只是调用curl设置命令，并不会去修改js里的内容
+    pub fn perform_cookie_command() {
+        todo!()
     }
 }

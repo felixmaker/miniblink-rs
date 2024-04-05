@@ -3,9 +3,13 @@ use miniblink_sys::{wkeNavigationType, wkeWebFrameHandle, wkeWindowType, HWND};
 /// Navigation Type. See `wkeNavigationType`.
 #[allow(missing_docs)]
 pub enum NavigationType {
+    /// 点击a标签触发
     LinkClick,
+    /// 点击form触发
     FormSubmitte,
+    /// 前进后退触发
     BackForward,
+    /// 重新加载触发
     Reload,
     FormResubmit,
     Other,
@@ -27,8 +31,11 @@ impl From<wkeNavigationType> for NavigationType {
 /// Navigation Type. See `wkeWindowType`.
 #[allow(missing_docs)]
 pub enum WindowType {
+    /// 普通窗口
     Control,
+    /// 透明窗口。mb内部通过layer window实现
     Popup,
+    /// 嵌入在父窗口里的子窗口。此时parent需要被设置
     Transparent,
 }
 
@@ -114,5 +121,26 @@ impl WebFrameHandle {
     /// Get the inner wkeWebFrameHandle ptr.
     pub fn as_ptr(&self) -> wkeWebFrameHandle {
         self.frame
+    }
+}
+
+#[allow(missing_docs)]
+/// A rect type with x, y, width, height params.
+pub struct Rect {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
+}
+
+impl Rect {
+    /// Create a rect type
+    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 }

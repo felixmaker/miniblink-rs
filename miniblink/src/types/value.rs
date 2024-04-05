@@ -93,14 +93,17 @@ impl JsExecState {
     pub fn null(&self) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsNull() })
     }
-
-    /// See jsArg.
+    /// 获取第argIdx对应的参数的jsValue值。
     pub fn arg(&self, index: i32) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsArg(self.inner, index) })
     }
     /// See jsArgCount.
     pub fn arg_count(&self) -> i32 {
         unsafe { call_api_or_panic().jsArgCount(self.inner) }
+    }
+    /// 判断第argIdx个参数的参数类型。argIdx从是个0开始计数的值。如果超出jsArgCount返回的值，将发生崩溃
+    pub fn arg_type() {
+        todo!()
     }
     /// See jsEmptyArray.
     pub fn empty_array(&self) -> JsValue {
@@ -116,6 +119,14 @@ impl JsExecState {
             let value = CString::safe_new(value);
             unsafe { call_api_or_panic().jsString(self.inner, value.as_ptr()) }
         })
+    }
+    ///
+    pub fn array_buffer() {
+        todo!()
+    }
+    ///
+    pub fn get_array_buffer() {
+        todo!()
     }
     /// See jsGetAt.
     pub fn get_at(&self, js_array: JsValue, index: i32) -> JsValue {
@@ -160,26 +171,28 @@ impl JsExecState {
         assert!(!keys.is_null());
         unsafe { JsKeys::from_ptr(keys) }
     }
-    /// See jsGetGlobal.
+    /// 获取window上的属性
     pub fn get_global(&self, prop: &str) -> JsValue {
         js_value!({
             let prop = CString::safe_new(prop);
             unsafe { call_api_or_panic().jsGetGlobal(self.inner, prop.as_ptr()) }
         })
     }
-    /// See jsSetGlobal.
+    /// 设置window上的属性
     pub fn set_global(&self, prop: &str, value: JsValue) {
         let prop = CString::safe_new(prop);
         unsafe { call_api_or_panic().jsSetGlobal(self.inner, prop.as_ptr(), value.as_ptr()) }
     }
-    /// See jsGetWebView.
+    /// 获取es对应的webview
     pub fn get_webview(&self) -> WebView {
         let webview = unsafe { call_api_or_panic().jsGetWebView(self.inner) };
         assert!(!webview.is_null());
         unsafe { WebView::from_ptr(webview) }
     }
 
-    /// See jsEvalW.
+    /// 执行一段js，并返回值。
+    ///参数：略
+    ///注意：str的代码会在mb内部自动被包裹在一个function(){}中。所以使用的变量会被隔离 注意：要获取返回值，请写return。这和wke不太一样。wke不需要写retrun
     pub fn eval(&self, script: &str) -> JsValue {
         js_value!({
             let script = WkeString::new(script);
@@ -254,6 +267,31 @@ impl JsExecState {
     pub unsafe fn from_ptr(ptr: jsExecState) -> Self {
         assert!(!ptr.is_null());
         Self { inner: ptr }
+    }
+
+    /// 调用一个func对应的js函数。如果此js函数是成员函数，则需要填thisValue。 否则可以传jsUndefined。args是个数组，个数由argCount控制。 func可以是从js里取的，也可以是自行构造的。
+    pub fn call() {
+        todo!()
+    }
+    /// 调用window上的全局函数
+    pub fn call_global() {
+        todo!()
+    }
+    /// 强制垃圾回收
+    pub fn gc() {
+        todo!()
+    }
+    /// 创建一个主frame的全局函数。jsData的用法如上。js调用：XXX() 此时jsData的callAsFunction触发。 其实jsFunction和jsObject功能基本类似。且jsObject的功能更强大一些
+    pub fn function() {
+        todo!()
+    }
+    ///获取jsObject或jsFunction创建的jsValue对应的jsData指针。
+    pub fn get_data() {
+        todo!()
+    }
+    /// 当wkeRunJs、jsCall等接口调用时，如果执行的js代码有异常，此接口将获取到异常信息。否则返回nullptr。
+    pub fn get_last_error_if_exception() {
+        todo!()
     }
 }
 
