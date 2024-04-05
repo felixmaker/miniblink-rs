@@ -1,7 +1,7 @@
 use std::ffi::{CStr, CString};
 use std::rc::Rc;
 
-use miniblink_sys::{wkeMemBuf, wkeNavigationType, wkeString, wkeViewSettings, wkeWebView};
+use miniblink_sys::{wkeMemBuf, wkeNavigationType, wkeString, wkeViewSettings, wkeWebView, HDC};
 
 use crate::error::MBResult;
 use crate::prelude::MBExecStateValue;
@@ -718,30 +718,60 @@ impl WebView {
         unsafe { call_api_or_panic().wkeGC(*self.inner, delay_ms) }
     }
 
+    /// Get the page pixels.
     ///
-    ///
-    /// 获取页面的像素的简化版函数
-    ///
-    /// bits：外部申请并传递给mb的buffer，大小是webview宽度 * 高度 * 4 字节。
-    /// pitch：填0即可。这个参数玩过directX的人应该懂
-    pub fn paint() {
-        todo!()
+    /// bits: a buffer with length width * height * 4 bytes.
+    /// pitch: 0
+    pub fn paint(&self, bits: &mut [u8], pitch: i32) {
+        assert_eq!(
+            bits.len(),
+            (self.get_width() * self.get_height() * 4) as usize
+        );
+        unsafe { call_api_or_panic().wkePaint(*self.inner, bits.as_mut_ptr() as _, pitch) }
     }
 
-    /// 参数：
-    /// bits	外部申请并传递给mb的buffer，大小是bufWid * bufHei * 4 字节
-    /// bufWid、bufHei	bits的宽高
-    /// xDst、yDst	绘制到bits的哪个坐标
-    /// w、h、xSrc、ySrc	mb需要取的画面的起始坐标
-    /// bCopyAlpha	是否拷贝画面的透明度值
-    /// 注意：此函数一般给3d游戏使用。另外频繁使用此接口并拷贝像素有性能问题。最好用wkeGetViewDC再去拷贝dc。
-    pub fn paint2() {
-        todo!()
+    /// Get the page pixels.
+    ///
+    /// bits: a buffer with length of buf_width * buf_height * 4
+    /// x_dst, y_dst: where to paint
+    /// w, h, x_src, y_src: where to get
+    /// copy_alpha: Whether to copy the transparency value of the picture
+    ///
+    /// Note: This function is generally used in 3D games.
+    /// In addition, there are performance issues with frequently using this interface and copying pixels.
+    pub fn paint2(
+        &self,
+        bits: &mut [u8],
+        buf_width: i32,
+        buf_height: i32,
+        x_dst: i32,
+        y_dst: i32,
+        w: i32,
+        h: i32,
+        x_src: i32,
+        y_src: i32,
+        copy_alpha: bool,
+    ) {
+        unsafe {
+            call_api_or_panic().wkePaint2(
+                *self.inner,
+                bits.as_mut_ptr() as _,
+                buf_width,
+                buf_height,
+                x_dst,
+                y_dst,
+                w,
+                h,
+                x_src,
+                y_src,
+                copy_alpha,
+            )
+        }
     }
 
-    /// 获取webview的DC
-    pub fn get_view_dc() {
-        todo!()
+    /// Get the view dc.
+    pub fn get_view_dc(&self) -> HDC {
+        unsafe { call_api_or_panic().wkeGetViewDC(*self.inner) }
     }
 
     /// 向mb发送鼠标消息
