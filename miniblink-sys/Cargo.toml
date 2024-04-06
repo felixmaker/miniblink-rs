@@ -1,6 +1,6 @@
 [package]
 name = "miniblink-sys"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 authors = ["The miniblink-rs Authors"]
 description = "Rust bindings to mininlink49"
@@ -12,3 +12,6 @@ exclude = ["./header"]
 
 [dependencies]
 libloading = "0.8"
+windows = { version=">=0.54", features=[
+    "Win32_Foundation", "Win32_System_Threading", "Win32_Graphics_Gdi"
+]}
