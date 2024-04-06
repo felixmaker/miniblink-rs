@@ -1,7 +1,9 @@
 use std::ffi::{CStr, CString};
 use std::rc::Rc;
 
-use miniblink_sys::{wkeMemBuf, wkeNavigationType, wkeString, wkeViewSettings, wkeWebView, HDC};
+use miniblink_sys::{
+    wkeMemBuf, wkeNavigationType, wkeRect, wkeString, wkeViewSettings, wkeWebView, HDC, HWND,
+};
 
 use crate::error::MBResult;
 use crate::prelude::MBExecStateValue;
@@ -59,7 +61,7 @@ impl WebView {
     /// This method creates a real window.
     pub fn create_web_window(
         window_type: WindowType,
-        handle: Handle,
+        handle: HWND,
         x: i32,
         y: i32,
         width: i32,
@@ -83,7 +85,7 @@ impl WebView {
 
     /// Create a window with popup type.
     pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
-        Self::create_web_window(WindowType::Popup, Handle::null(), x, y, width, height)
+        Self::create_web_window(WindowType::Popup, HWND(0), x, y, width, height)
     }
 
     /// Create a window with control type. This method creates window as child window.
@@ -95,7 +97,7 @@ impl WebView {
         match hwnd.window_handle().map(|x| x.as_raw()) {
             Ok(raw_window_handle::RawWindowHandle::Win32(handle)) => Ok(Self::create_web_window(
                 WindowType::Control,
-                Handle(isize::from(handle.hwnd)),
+                HWND(isize::from(handle.hwnd)),
                 x,
                 y,
                 width,
@@ -234,29 +236,29 @@ impl WebView {
 
     /// Check if the webview can go back.
     pub fn can_go_back(&self) -> bool {
-        (unsafe { call_api_or_panic().wkeCanGoBack(*self.inner) } != 0)
+        (unsafe { call_api_or_panic().wkeCanGoBack(*self.inner) }).as_bool()
     }
     /// Check if the webview can go forward.
     pub fn can_go_forward(&self) -> bool {
-        (unsafe { call_api_or_panic().wkeCanGoForward(*self.inner) } != 0)
+        (unsafe { call_api_or_panic().wkeCanGoForward(*self.inner) }).as_bool()
     }
     /// Check if the document is ready.
     pub fn is_document_ready(&self) -> bool {
-        (unsafe { call_api_or_panic().wkeIsDocumentReady(*self.inner) } != 0)
+        (unsafe { call_api_or_panic().wkeIsDocumentReady(*self.inner) }).as_bool()
     }
     /// Check if the webview is awake! Unimplemented!
     pub fn is_awake(&self) -> bool {
-        (unsafe { call_api_or_panic().wkeIsAwake(*self.inner) } != 0)
+        (unsafe { call_api_or_panic().wkeIsAwake(*self.inner) }).as_bool()
     }
 
     /// Check if the window is transparent.
     pub fn is_transparent(&self) -> bool {
-        (unsafe { call_api_or_panic().wkeIsTransparent(*self.inner) } != 0)
+        (unsafe { call_api_or_panic().wkeIsTransparent(*self.inner) }).as_bool()
     }
 
     /// Force the webview to go back.
     pub fn go_back(&self) -> bool {
-        (unsafe { call_api_or_panic().wkeGoBack(*self.inner) } != 0)
+        (unsafe { call_api_or_panic().wkeGoBack(*self.inner) }).as_bool()
     }
     /// Send select all command to editor.
     pub fn editor_select_all(&self) {
@@ -351,14 +353,12 @@ impl WebView {
         unsafe { call_api_or_panic().wkeGetContentHeight(*self.inner) }
     }
     /// Get the host HWND. Same as [`get_window_handle`].
-    pub fn get_host_hwnd(&self) -> Handle {
-        let hwnd = unsafe { call_api_or_panic().wkeGetHostHWND(*self.inner) };
-        Handle::from(hwnd)
+    pub fn get_host_hwnd(&self) -> HWND {
+        unsafe { call_api_or_panic().wkeGetHostHWND(*self.inner) }
     }
     /// Get the host HWND.
-    pub fn get_window_handle(&self) -> Handle {
-        let hwnd = unsafe { call_api_or_panic().wkeGetWindowHandle(*self.inner) };
-        Handle::from(hwnd)
+    pub fn get_window_handle(&self) -> HWND {
+        unsafe { call_api_or_panic().wkeGetWindowHandle(*self.inner) }
     }
     /// See wkeGetNavigateIndex.
     pub fn get_navigate_index(&self) -> i32 {
@@ -500,7 +500,7 @@ impl WebView {
     ///
     /// # Note
     /// Only works to the webview created using [`create_web_view`]
-    pub fn set_handle(&self, hwnd: Handle) {
+    pub fn set_handle(&self, hwnd: HWND) {
         unsafe { call_api_or_panic().wkeSetHandle(*self.inner, hwnd.into()) }
     }
     /// Set the webview handle offset.
@@ -1126,13 +1126,70 @@ impl WebView {
     pub fn on_url_changed2() {
         todo!()
     }
-    /// 页面有任何需要刷新的地方，将调用此回调
-    pub fn on_paint_updated() {
-        todo!()
+    /// Call on paint updated.
+    pub fn on_paint_updated<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, HDC, i32, i32, i32, i32) + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv_ptr: miniblink_sys::wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            hdc: HDC,
+            x: ::std::os::raw::c_int,
+            y: ::std::os::raw::c_int,
+            cx: ::std::os::raw::c_int,
+            cy: ::std::os::raw::c_int,
+        ) where
+            F: FnMut(&mut WebView, HDC, i32, i32, i32, i32) + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv_ptr);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                f(&mut wv, hdc, x, y, cx, cy)
+            }));
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnPaintUpdated(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
-    /// 同上。不同的是回调过来的是填充好像素的buffer，而不是DC。方便嵌入到游戏中做离屏渲染
-    pub fn on_paint_bit_updated() {
-        todo!()
+    /// Call on paint updated. Buffer.
+    pub fn on_paint_bit_updated<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, &[u8], Rect, i32, i32) + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            buffer: *const ::std::os::raw::c_void,
+            r: *const wkeRect,
+            width: ::std::os::raw::c_int,
+            height: ::std::os::raw::c_int,
+        ) where
+            F: FnMut(&mut WebView, &[u8], Rect, i32, i32) + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            let wkeRect { x, y, w, h } = *r;
+            let buffer =
+                std::ptr::slice_from_raw_parts(buffer as *const u8, (width * height * 4) as usize);
+            let buffer = &*buffer;
+            let r = Rect::new(x, y, w, h);
+
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                f(&mut wv, buffer, r, width, height)
+            }));
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnPaintBitUpdated(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
     /// 网页点击a标签创建新窗口时将触发回调
     pub fn on_create_view() {
@@ -1179,7 +1236,7 @@ impl WebView {
     }
     /// Check is the frame is the main frame.
     pub fn is_main_frame(&self, frame: WebFrameHandle) -> bool {
-        (unsafe { call_api_or_panic().wkeIsMainFrame(*self.inner, frame.as_ptr()) } != 0)
+        (unsafe { call_api_or_panic().wkeIsMainFrame(*self.inner, frame.as_ptr()) }).as_bool()
     }
     /// Get main frame.
     pub fn web_frame_get_main_frame(&self) -> WebFrameHandle {
@@ -1201,7 +1258,7 @@ impl Drop for WebView {
 
 impl Default for WebView {
     fn default() -> Self {
-        Self::create_web_window(WindowType::Popup, Handle::null(), 0, 0, 200, 200)
+        Self::create_web_window(WindowType::Popup, HWND(0), 0, 0, 200, 200)
     }
 }
 

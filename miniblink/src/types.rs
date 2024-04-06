@@ -291,7 +291,7 @@ impl NetJob {
     /// Hold job to async commit. Call `continue_job` to continue.
     /// Ture means success.
     pub fn hold_job_to_asyn_commit(&self) -> bool {
-        (unsafe { call_api_or_panic().wkeNetHoldJobToAsynCommit(self.inner) } != 0)
+        (unsafe { call_api_or_panic().wkeNetHoldJobToAsynCommit(self.inner) }).as_bool()
     }
     /// Continue the job. Use after `hold_job_to_asyn_commit`.
     pub fn continue_job(&self) {
@@ -656,7 +656,10 @@ impl JsExecState {
     pub fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
         match value.type_of_() {
             JsType::Boolean => {
-                Ok(unsafe { call_api_or_panic().jsToBoolean(self.inner, value.as_ptr()) != 0 })
+                Ok(
+                    (unsafe { call_api_or_panic().jsToBoolean(self.inner, value.as_ptr()) })
+                        .as_bool(),
+                )
             }
             other => Err(MBError::UnsupportedType(JsType::Boolean, other)),
         }
@@ -886,43 +889,43 @@ impl JsValue {
     }
     /// See jsIsNumber.
     pub fn is_number(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsNumber(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsNumber(self.inner) }).as_bool()
     }
     /// See jsIsString.
     pub fn is_string(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsString(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsString(self.inner) }).as_bool()
     }
     /// See jsIsBoolean.
     pub fn is_boolean(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsBoolean(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsBoolean(self.inner) }).as_bool()
     }
     /// See jsIsObject.
     pub fn is_object(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsObject(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsObject(self.inner) }).as_bool()
     }
     /// See jsIsFunction.
     pub fn is_function(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsFunction(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsFunction(self.inner) }).as_bool()
     }
     /// See jsIsUndefined.
     pub fn is_undefined(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsUndefined(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsUndefined(self.inner) }).as_bool()
     }
     /// See jsIsNull.
     pub fn is_null(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsNull(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsNull(self.inner) }).as_bool()
     }
     /// See jsIsArray.
     pub fn is_array(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsArray(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsArray(self.inner) }).as_bool()
     }
     /// See jsIsTrue.
     pub fn is_true(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsTrue(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsTrue(self.inner) }).as_bool()
     }
     /// See jsIsFalse.
     pub fn is_false(&self) -> bool {
-        (unsafe { call_api_or_panic().jsIsFalse(self.inner) } != 0)
+        (unsafe { call_api_or_panic().jsIsFalse(self.inner) }).as_bool()
     }
 
     /// Get the inner ptr of [`JsValue`]. See [`jsValue`].
@@ -1114,29 +1117,6 @@ impl From<WindowType> for wkeWindowType {
             WindowType::Popup => wkeWindowType::WKE_WINDOW_TYPE_POPUP,
             WindowType::Transparent => wkeWindowType::WKE_WINDOW_TYPE_TRANSPARENT,
         }
-    }
-}
-
-#[repr(transparent)]
-/// Represent a Windows HWND
-pub struct Handle(pub isize);
-
-impl Handle {
-    /// Handle NULL
-    pub fn null() -> Self {
-        Handle(0)
-    }
-}
-
-impl From<HWND> for Handle {
-    fn from(value: HWND) -> Self {
-        Self(value as _)
-    }
-}
-
-impl From<Handle> for HWND {
-    fn from(value: Handle) -> Self {
-        value.0 as _
     }
 }
 

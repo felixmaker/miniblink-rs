@@ -5,7 +5,7 @@ use miniblink_sys::Library;
 use crate::{
     call_api_or_panic,
     error::{MBError, MBResult},
-    types::{CookieVisitor, JsExecState, JsValue, MBExecStateValue, Proxy, Settings},
+    types::{JsExecState, JsValue, MBExecStateValue, Proxy, Settings},
     util::SafeCString,
     LIB,
 };
@@ -22,7 +22,7 @@ pub fn run_message_loop() {
     unsafe { call_api_or_panic().wkeRunMessageLoop() }
 }
 
-/// 设置整个mb的代码。此句是全局生效
+/// Set global proxy.
 pub fn set_proxy(config: &Proxy) {
     let config = config.to_wke();
     unsafe { call_api_or_panic().wkeSetProxy(&config) }
