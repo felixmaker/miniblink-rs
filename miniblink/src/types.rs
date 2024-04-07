@@ -718,7 +718,7 @@ impl JsExecState {
         self.inner
     }
 
-    /// Create [`JsExecState`] from ptr.
+    /// Create `JsExecState` from pointer.
     /// 
     /// Safety: The pointer must be valid
     pub unsafe fn from_ptr(ptr: jsExecState) -> Self {
@@ -949,12 +949,13 @@ impl JsValue {
         (unsafe { call_api_or_panic().jsIsFalse(self.inner) }).as_bool()
     }
 
-    /// Get the inner ptr of [`JsValue`]. See [`jsValue`].
+    /// Get the inner pointer.
     pub fn as_ptr(&self) -> jsValue {
         self.inner
     }
 
-    /// Create [`JsValue`] from ptr.
+    /// Create `JsValue` from a pointer.
+    /// 
     /// # Safety
     /// Pointer must not be 0
     pub unsafe fn from_ptr(ptr: jsValue) -> Self {
@@ -1095,9 +1096,9 @@ where
 /// Navigation Type.
 #[allow(missing_docs)]
 pub enum NavigationType {
-    /// Click on <a>
+    /// Click on a tag
     LinkClick,
-    /// On <form> submit
+    /// On form submit
     FormSubmitte,
     BackForward,
     Reload,
@@ -1177,7 +1178,7 @@ impl MenuItemId {
 
 /// View Settings.
 pub struct ViewSettings {
-    /// TBD
+    /// Size. TBD
     pub size: i32,
     /// Background color
     pub backgroud_color: u32,

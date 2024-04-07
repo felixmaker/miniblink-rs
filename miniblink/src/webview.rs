@@ -30,7 +30,7 @@ type WebViewWrapper = Rc<wkeWebView>;
 
 #[derive(Clone, Debug)]
 #[repr(transparent)]
-/// Wrapper to [`miniblink_sys::wkeWebView`].
+/// Webview. Wraps to `wkeWebView`.
 pub struct WebView {
     inner: WebViewWrapper,
 }
@@ -59,8 +59,7 @@ impl WebView {
 
     /// Creates a webview window.
     ///
-    /// #Note
-    /// This method creates a real window.
+    /// Note: This method creates a real window.
     pub fn create_web_window(
         window_type: WindowType,
         handle: HWND,
@@ -109,7 +108,7 @@ impl WebView {
         }
     }
 
-    /// Set if show the window.
+    /// Show the window.
     pub fn show_window(&self, show: bool) {
         unsafe { call_api_or_panic().wkeShowWindow(*self.inner, show) }
     }
@@ -160,7 +159,7 @@ impl WebView {
     pub fn move_to_center(&self) {
         unsafe { call_api_or_panic().wkeMoveToCenter(*self.inner) }
     }
-    /// Resize the webview window. Same as [`resize`].
+    /// Resize the webview window. Same as `resize`.
     pub fn resize_window(&self, width: i32, height: i32) {
         unsafe { call_api_or_panic().wkeResizeWindow(*self.inner, width, height) }
     }
@@ -181,8 +180,7 @@ impl WebView {
     }
     /// Clear cookie.
     ///
-    /// # Note
-    /// Only support clearing all page cookies.
+    /// Note: Only support clearing all page cookies.
     pub fn clear_cookie(&self) {
         unsafe { call_api_or_panic().wkeClearCookie(*self.inner) }
     }
@@ -210,8 +208,7 @@ impl WebView {
     }
     /// Run a script by frame. Param `is_in_closure` means if script needs to be in the form of `function() {}`.
     ///
-    /// #Note
-    /// if `is_in_closure` is `true`, keyword `return` is required to get returned value.
+    /// Note: if `is_in_closure` is `true`, keyword `return` is required to get returned value.
     pub fn run_js_by_frame(
         &self,
         frame_id: WebFrameHandle,
@@ -231,7 +228,7 @@ impl WebView {
         unsafe { JsValue::from_ptr(result) }
     }
 
-    /// Set if the window is enabled.
+    /// Enable the window.
     pub fn enable_window(&self, enable: bool) {
         unsafe { call_api_or_panic().wkeEnableWindow(*self.inner, enable) }
     }
@@ -298,7 +295,7 @@ impl WebView {
             .to_string_lossy()
             .to_string()
     }
-    /// TBD
+    /// Get the name. TBD
     pub fn get_name(&self) -> String {
         let name = unsafe { call_api_or_panic().wkeGetName(*self.inner) };
         assert!(!name.is_null());
@@ -354,7 +351,7 @@ impl WebView {
     pub fn get_content_height(&self) -> i32 {
         unsafe { call_api_or_panic().wkeGetContentHeight(*self.inner) }
     }
-    /// Get the host HWND. Same as [`get_window_handle`].
+    /// Get the host HWND. Same as `get_window_handle`.
     pub fn get_host_hwnd(&self) -> HWND {
         unsafe { call_api_or_panic().wkeGetHostHWND(*self.inner) }
     }
@@ -390,7 +387,7 @@ impl WebView {
         assert!(!handle.is_null());
         unsafe { WebFrameHandle::from_ptr(handle) }
     }
-    /// TBD
+    /// Set the resource GC. TBD
     pub fn set_resource_gc(&self, resource_gc: i32) {
         unsafe { call_api_or_panic().wkeSetResourceGc(*self.inner, resource_gc) }
     }
@@ -409,13 +406,13 @@ impl WebView {
     }
     /// Enable some experimental function.
     /// debugString：
-    ///  - "showDevTools"  Enable devtools, set param as file:///c:/miniblink-release/front_end/inspector.html (UTF8 encoded)
-    ///  - "wakeMinInterval"	Set the minimum of wake interval, default is 10
-    ///  - "drawMinInterval"	Set the minimum of draw interval, default is 3
-    ///  - "minimumFontSize"	Set the minimum font size
-    ///  - "minimumLogicalFontSize"	Set the minimum logical font size
-    ///  - "defaultFontSize"    Set the default font size
-    ///  - "defaultFixedFontSize"	Set the default fixed font size
+    ///  - showDevTools: Enable devtools, set param as file:///c:/miniblink-release/front_end/inspector.html (UTF8 encoded)
+    ///  - wakeMinInterval: Set the minimum of wake interval, default is 10
+    ///  - drawMinInterval: Set the minimum of draw interval, default is 3
+    ///  - minimumFontSize: Set the minimum font size
+    ///  - minimumLogicalFontSize: Set the minimum logical font size
+    ///  - defaultFontSize: Set the default font size
+    ///  - defaultFixedFontSize: Set the default fixed font size
     pub fn set_debug_config(&self, debug_string: &str, param: &str) {
         let debug_string = CString::safe_new(debug_string);
         let param = CString::safe_new(param);
@@ -447,34 +444,34 @@ impl WebView {
     pub fn set_context_menu_enabled(&self, context_menu_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetContextMenuEnabled(*self.inner, context_menu_enabled) }
     }
-    /// Enable if navigation to new window on clicking on <a> link.
+    /// Enable if navigation to new window on clicking on `<a>` link.
     pub fn set_navigation_to_new_window_enabled(&self, navigation_to_new_window_enabled: bool) {
         unsafe {
             call_api_or_panic()
                 .wkeSetNavigationToNewWindowEnable(*self.inner, navigation_to_new_window_enabled)
         }
     }
-    /// Set if enable csp check. See [`Same-origin_policy`](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy).
+    /// Enable csp check. See [`Same-origin_policy`](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy).
     pub fn set_csp_check_enable(&self, csp_check_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetCspCheckEnable(*self.inner, csp_check_enabled) }
     }
-    /// Set if enable npapi plugins, such as flash.
+    /// Enable npapi plugins, such as flash.
     pub fn set_npapi_plugins_enabled(&self, npapi_plugins_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetNpapiPluginsEnabled(*self.inner, npapi_plugins_enabled) }
     }
-    /// Set if enable headless.
+    /// Enable headless mode.
     pub fn set_headless_enabled(&self, headless_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetHeadlessEnabled(*self.inner, headless_enabled) }
     }
-    /// Set if enable drag.
+    /// Enable drag.
     pub fn set_drag_enabled(&self, drag_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetDragEnable(*self.inner, drag_enabled) }
     }
-    /// Set if enable drag drop.
+    /// Enable drag drop.
     pub fn set_drag_drop_enable(&self, drag_drop_enable: bool) {
         unsafe { call_api_or_panic().wkeSetDragDropEnable(*self.inner, drag_drop_enable) }
     }
-    /// Set if show context menu item.
+    /// Show context menu items.
     pub fn set_context_menu_item_show(&self, item_id: MenuItemId, show: bool) {
         unsafe {
             call_api_or_panic().wkeSetContextMenuItemShow(*self.inner, item_id.to_wke(), show)
@@ -495,15 +492,14 @@ impl WebView {
         let mut proxy = proxy.to_wke();
         unsafe { call_api_or_panic().wkeSetViewProxy(*self.inner, &mut proxy) }
     }
-    /// IBD
+    /// Set the name. TBD.
     pub fn set_name(&self, name: &str) {
         let name = CString::safe_new(name);
         unsafe { call_api_or_panic().wkeSetName(*self.inner, name.as_ptr()) }
     }
     /// Set the HWND of the webview.
     ///
-    /// # Note
-    /// Only works to the webview created using [`create_web_view`]
+    /// Note: Only works to the webview created using `create_web_view`.
     pub fn set_handle(&self, hwnd: HWND) {
         unsafe { call_api_or_panic().wkeSetHandle(*self.inner, hwnd.into()) }
     }
@@ -807,7 +803,7 @@ impl WebView {
 
     /// Send key up event to miniblink.
     ///
-    /// vkey_code: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+    /// vkey_code: <https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx>
     pub fn fire_key_up_event<U>(&self, vkey_code: u32, flags: U, system_key: bool) -> bool
     where
         U: Into<u32>,
@@ -821,7 +817,7 @@ impl WebView {
 
     /// Send key down event to miniblink.
     ///
-    /// vkey_code: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+    /// vkey_code: <https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx>
     pub fn fire_key_down_event<U>(&self, vkey_code: u32, flags: U, system_key: bool) -> bool
     where
         U: Into<u32>,
@@ -835,8 +831,8 @@ impl WebView {
 
     /// Send key press event to miniblink.
     ///
-    /// char_code: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646276(v=vs.85).aspx
-    /// vkey_code: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+    /// char_code: <https://msdn.microsoft.com/en-us/library/windows/desktop/ms646276(v=vs.85).aspx>
+    /// vkey_code: <https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx>
     pub fn fire_key_press_event<U>(&self, vkey_code: u32, flags: U, system_key: bool) -> bool
     where
         U: Into<u32>,
@@ -1012,7 +1008,9 @@ impl WebView {
     }
     /// Call when JavaScript call `prompt`.
     ///
-    /// - param1: message              
+    /// - param1: message
+    /// - param2: default result
+    /// - param3: result
     pub fn on_prompt_box<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String, String, String) -> bool + 'static,
@@ -1268,7 +1266,7 @@ impl WebView {
             call_api_or_panic().wkeOnPaintBitUpdated(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// Call on create new webview window after clicking <a> tag.
+    /// Call on create new webview window after clicking `<a>` tag.
     ///
     /// - param1: navigation type
     /// - param2: url
@@ -1514,7 +1512,9 @@ impl WebView {
         }
     }
     /// Call on will media load. May change!
-    ///
+    /// 
+    /// - param1: url
+    /// - param2: info
     pub fn on_will_media_load<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String, MediaLoadInfo) + 'static,
@@ -1574,7 +1574,7 @@ impl Default for WebView {
     }
 }
 
-/// Extra API for MBWebView
+/// Extra API for WebView
 pub trait WebViewExt {
     /// Eval a script on webview
     fn eval<T>(&self, script: &str) -> MBResult<T>

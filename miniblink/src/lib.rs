@@ -8,7 +8,7 @@ mod util;
 pub mod app;
 /// Error in miniblink (this crate). See [`MBResult`] and [`MBError`].
 pub mod error;
-/// Wapper to minibink types. See [`webview::WebView`].
+/// Wapper to minibink types.
 pub mod types;
 /// Wapper to wkeWebView. See [`webview::WebView`].
 pub mod webview;
