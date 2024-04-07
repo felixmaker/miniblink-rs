@@ -12,6 +12,10 @@ use crate::{
     webview::WebView,
 };
 
+pub use miniblink_sys::{
+    BOOL, COLORREF, HANDLE, HDC, HWND, LPARAM, LRESULT, POINT, RECT, STARTUPINFOW, WPARAM,
+};
+
 #[allow(missing_docs)]
 pub struct TempCallbackInfo {
     pub size: i32,
@@ -645,7 +649,7 @@ impl JsExecState {
     }
 
     /// Execute a script. The script is wrapped in a `function(){}` block.
-    /// 
+    ///
     /// Required key word `return` if want to return a value.
     pub fn eval(&self, script: &str) -> JsValue {
         js_value!({
@@ -719,7 +723,7 @@ impl JsExecState {
     }
 
     /// Create `JsExecState` from pointer.
-    /// 
+    ///
     /// Safety: The pointer must be valid
     pub unsafe fn from_ptr(ptr: jsExecState) -> Self {
         assert!(!ptr.is_null());
@@ -955,7 +959,7 @@ impl JsValue {
     }
 
     /// Create `JsValue` from a pointer.
-    /// 
+    ///
     /// # Safety
     /// Pointer must not be 0
     pub unsafe fn from_ptr(ptr: jsValue) -> Self {
