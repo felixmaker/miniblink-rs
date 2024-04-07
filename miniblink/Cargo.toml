@@ -1,6 +1,6 @@
 [package]
 name = "miniblink"
-version = "0.1.6"
+version = "0.2.0"
 edition = "2021"
 authors = ["The miniblink-rs Authors"]
 description = "Rust bindings to mininlink49"
@@ -12,7 +12,7 @@ categories = [ "gui" ]
 exclude = ["./examples"]
 
 [dependencies]
-miniblink-sys = { path = "../miniblink-sys", version = ">=0.2" }
+miniblink-sys = { path = "../miniblink-sys", version = "=0.2" }
 raw-window-handle = {version = "0.6", optional = true}
 serde = {version = "1", optional = true}
 
@@ -23,6 +23,6 @@ serde_derive = "1"
 windows = {version = "0.54", features = ["Win32_Foundation", "Win32_Graphics_Gdi"] }
 
 [features]
-default = ["serde", "rwh_06"]
+default = ["serde"]
 serde = ["dep:serde"]
 rwh_06 = ["dep:raw-window-handle"]

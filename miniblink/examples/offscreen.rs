@@ -6,7 +6,7 @@ use miniblink::{
     webview::WebView,
 };
 use miniblink_sys::HWND;
-use raw_window_handle::HasWindowHandle;
+use winit::raw_window_handle::HasWindowHandle;
 use windows::Win32::Graphics::Gdi::{
     BitBlt, CreateCompatibleDC, CreateDIBSection, DeleteObject, GetDC, ReleaseDC, SelectObject,
     BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HBITMAP, HDC, SRCCOPY,
@@ -134,7 +134,7 @@ fn main() {
         .unwrap();
 
     let window_handle = {
-        if let raw_window_handle::RawWindowHandle::Win32(hwnd) =
+        if let winit::raw_window_handle::RawWindowHandle::Win32(hwnd) =
             window.window_handle().unwrap().as_raw()
         {
             hwnd.hwnd
@@ -145,6 +145,7 @@ fn main() {
 
     let hwnd = HWND(window_handle.get());
     let webview = WebView::create_web_view();
+
     webview.resize(800, 600);
     webview.set_handle(hwnd);
     webview.show_window(true);

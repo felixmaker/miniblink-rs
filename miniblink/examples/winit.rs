@@ -1,5 +1,6 @@
 use miniblink::{app, webview::WebView};
-use raw_window_handle::HasWindowHandle;
+use miniblink_sys::HWND;
+use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle, Win32WindowHandle};
 use winit::{
     dpi::LogicalSize,
     event::{Event, WindowEvent},
@@ -26,8 +27,11 @@ fn main() {
         .unwrap();
 
     let window_handle = window.window_handle().unwrap();
+    let RawWindowHandle::Win32(Win32WindowHandle { hwnd, .. }) = window_handle.as_raw() else {
+        panic!("Only support win32")
+    };
 
-    let webview = WebView::new_as_child(&window_handle, 0, 0, 800, 600).unwrap();
+    let webview = WebView::new_as_child(HWND(hwnd.get()), 0, 0, 800, 600);
     webview.show_window(true);
     webview.load_url("https://bing.com");
     webview.on_title_changed(move |_, title| {

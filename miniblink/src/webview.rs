@@ -90,22 +90,16 @@ impl WebView {
     }
 
     /// Create a window with control type. This method creates window as child window.
-    #[cfg(feature = "rwh_06")]
-    pub fn new_as_child<H>(hwnd: H, x: i32, y: i32, width: i32, height: i32) -> MBResult<Self>
-    where
-        H: raw_window_handle::HasWindowHandle,
+    pub fn new_as_child(hwnd: HWND, x: i32, y: i32, width: i32, height: i32) -> Self
     {
-        match hwnd.window_handle().map(|x| x.as_raw()) {
-            Ok(raw_window_handle::RawWindowHandle::Win32(handle)) => Ok(Self::create_web_window(
-                WindowType::Control,
-                HWND(isize::from(handle.hwnd)),
-                x,
-                y,
-                width,
-                height,
-            )),
-            _ => Err(crate::error::MBError::UnsupportedPlatform),
-        }
+        Self::create_web_window(
+            WindowType::Control,
+            hwnd,
+            x,
+            y,
+            width,
+            height,
+        )
     }
 
     /// Show the window.
@@ -1512,7 +1506,7 @@ impl WebView {
         }
     }
     /// Call on will media load. May change!
-    /// 
+    ///
     /// - param1: url
     /// - param2: info
     pub fn on_will_media_load<F>(&self, callback: F)
@@ -1590,5 +1584,22 @@ impl WebViewExt for WebView {
         let js_value = self.run_js(script);
         let es = self.global_exec();
         es.value(js_value)
+    }
+}
+
+#[cfg(feature = "rwh_06")]
+impl HasWindowHandle for WebView {
+    fn window_handle(
+        &self,
+    ) -> Result<raw_window_handle::WindowHandle<'_>, raw_window_handle::HandleError> {
+        use raw_window_handle::{RawWindowHandle, Win32WindowHandle};
+        use std::num::NonZeroIsize;
+
+        let hwnd = self.get_window_handle();
+        let raw_handle = RawWindowHandle::Win32(Win32WindowHandle::new(
+            NonZeroIsize::new(hwnd.0).ok_or(raw_window_handle::HandleError::Unavailable)?,
+        ));
+        
+        Ok(unsafe { raw_window_handle::WindowHandle::borrow_raw(raw_handle) })
     }
 }
