@@ -12,12 +12,12 @@ use crate::{
 
 // const DEFAULT_MINIBLINK_LIB: &'static str = "node.dll";
 
-/// See wkeEnableHighDPISupport.
+/// Enable high dpi support.
 pub fn enable_high_dpi_support() {
     unsafe { call_api_or_panic().wkeEnableHighDPISupport() }
 }
 
-/// See wkeRunMessageLoop.
+/// Run message loop provided by miniblink. Note: You may write your own message loop.
 pub fn run_message_loop() {
     unsafe { call_api_or_panic().wkeRunMessageLoop() }
 }

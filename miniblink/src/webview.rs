@@ -2,7 +2,9 @@ use std::ffi::{CStr, CString};
 use std::rc::Rc;
 
 use miniblink_sys::{
-    wkeMemBuf, wkeNavigationType, wkeRect, wkeString, wkeViewSettings, wkeWebView, HDC, HWND,
+    wkeConsoleLevel, wkeMediaLoadInfo, wkeMemBuf, wkeNavigationType, wkeNetJob, wkeRect, wkeString,
+    wkeViewSettings, wkeWebView, wkeWindowFeatures, BOOL, HDC, HWND, LPARAM, LRESULT, POINT, UINT,
+    WPARAM,
 };
 
 use crate::error::MBResult;
@@ -198,11 +200,11 @@ impl WebView {
         let rect = unsafe { call_api_or_panic().wkeGetCaretRect(*self.inner) };
         Rect::new(rect.x, rect.y, rect.w, rect.h)
     }
-    /// Sleep. Unimplemented!
+    /// Sleep. May unimplemented!
     pub fn sleep(&self) {
         unsafe { call_api_or_panic().wkeSleep(*self.inner) }
     }
-    /// Wake. Unimplemented!
+    /// Wake. May unimplemented!
     pub fn wake(&self) {
         unsafe { call_api_or_panic().wkeWake(*self.inner) }
     }
@@ -246,7 +248,7 @@ impl WebView {
     pub fn is_document_ready(&self) -> bool {
         (unsafe { call_api_or_panic().wkeIsDocumentReady(*self.inner) }).as_bool()
     }
-    /// Check if the webview is awake! Unimplemented!
+    /// Check if the webview is awake! May unimplemented!
     pub fn is_awake(&self) -> bool {
         (unsafe { call_api_or_panic().wkeIsAwake(*self.inner) }).as_bool()
     }
@@ -288,7 +290,7 @@ impl WebView {
     pub fn editor_redo(&self) {
         unsafe { call_api_or_panic().wkeEditorRedo(*self.inner) }
     }
-    /// See wkeGetSource.
+    /// Get the page source.
     pub fn get_source(&self) -> String {
         let source = unsafe { call_api_or_panic().wkeGetSource(*self.inner) };
         assert!(!source.is_null());
@@ -296,7 +298,7 @@ impl WebView {
             .to_string_lossy()
             .to_string()
     }
-    /// See wkeGetName.
+    /// TBD
     pub fn get_name(&self) -> String {
         let name = unsafe { call_api_or_panic().wkeGetName(*self.inner) };
         assert!(!name.is_null());
@@ -324,11 +326,11 @@ impl WebView {
         assert!(!url.is_null());
         unsafe { CStr::from_ptr(url) }.to_string_lossy().to_string()
     }
-    /// See wkeGetWebviewId.
+    /// Get the webview ID.
     pub fn get_webview_id(&self) -> i32 {
         unsafe { call_api_or_panic().wkeGetWebviewId(*self.inner) }
     }
-    /// See the page title.
+    /// Get the page title.
     pub fn get_title(&self) -> String {
         let title = unsafe { call_api_or_panic().wkeGetTitle(*self.inner) };
         assert!(!title.is_null());
@@ -344,11 +346,11 @@ impl WebView {
     pub fn get_height(&self) -> i32 {
         unsafe { call_api_or_panic().wkeGetHeight(*self.inner) }
     }
-    /// See the page content width.
+    /// Get the page content width.
     pub fn get_content_width(&self) -> i32 {
         unsafe { call_api_or_panic().wkeGetContentWidth(*self.inner) }
     }
-    /// See the page content height.
+    /// Get the page content height.
     pub fn get_content_height(&self) -> i32 {
         unsafe { call_api_or_panic().wkeGetContentHeight(*self.inner) }
     }
@@ -360,7 +362,7 @@ impl WebView {
     pub fn get_window_handle(&self) -> HWND {
         unsafe { call_api_or_panic().wkeGetWindowHandle(*self.inner) }
     }
-    /// See wkeGetNavigateIndex.
+    /// Get the navigate index.
     pub fn get_navigate_index(&self) -> i32 {
         unsafe { call_api_or_panic().wkeGetNavigateIndex(*self.inner) }
     }
@@ -388,11 +390,11 @@ impl WebView {
         assert!(!handle.is_null());
         unsafe { WebFrameHandle::from_ptr(handle) }
     }
-    /// See wkeSetResourceGc.
+    /// TBD
     pub fn set_resource_gc(&self, resource_gc: i32) {
         unsafe { call_api_or_panic().wkeSetResourceGc(*self.inner, resource_gc) }
     }
-    /// See wkeSetWebViewName.
+    /// Set the name of webview.
     pub fn set_webview_name(&self, webview_name: &str) {
         let webview_name = CString::safe_new(webview_name);
         unsafe { call_api_or_panic().wkeSetWebViewName(*self.inner, webview_name.as_ptr()) }
@@ -437,11 +439,11 @@ impl WebView {
     pub fn set_touch_enabled(&self, touch_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetTouchEnabled(*self.inner, touch_enabled) }
     }
-    /// See wkeSetSystemTouchEnabled.
+    /// Enable system touch.
     pub fn set_system_touch_enabled(&self, system_touch_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetSystemTouchEnabled(*self.inner, system_touch_enabled) }
     }
-    /// See wkeSetContextMenuEnabled.
+    /// Enable context menu.
     pub fn set_context_menu_enabled(&self, context_menu_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetContextMenuEnabled(*self.inner, context_menu_enabled) }
     }
@@ -464,24 +466,26 @@ impl WebView {
     pub fn set_headless_enabled(&self, headless_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetHeadlessEnabled(*self.inner, headless_enabled) }
     }
-    /// See wkeSetDragEnable.
+    /// Set if enable drag.
     pub fn set_drag_enabled(&self, drag_enabled: bool) {
         unsafe { call_api_or_panic().wkeSetDragEnable(*self.inner, drag_enabled) }
     }
-    /// See wkeSetDragDropEnable.
+    /// Set if enable drag drop.
     pub fn set_drag_drop_enable(&self, drag_drop_enable: bool) {
         unsafe { call_api_or_panic().wkeSetDragDropEnable(*self.inner, drag_drop_enable) }
     }
-    /// See wkeSetContextMenuItemShow.
-    // pub fn set_context_menu_item_show(&self, item_id: MenuItemId, show: bool) {
-    // unsafe {call_api_or_panic().wkeSetContextMenuItemShow(*self.inner, item_id.into(), show)}
-    // }
-    /// See wkeSetLanguage.
+    /// Set if show context menu item.
+    pub fn set_context_menu_item_show(&self, item_id: MenuItemId, show: bool) {
+        unsafe {
+            call_api_or_panic().wkeSetContextMenuItemShow(*self.inner, item_id.to_wke(), show)
+        }
+    }
+    /// Set language.
     pub fn set_language(&self, language: &str) {
         let language = CString::safe_new(language);
         unsafe { call_api_or_panic().wkeSetLanguage(*self.inner, language.as_ptr()) }
     }
-    /// See wkeSetViewNetInterface.
+    /// Set view net interface.
     pub fn set_view_net_interface(&self, net_interface: &str) {
         let net_interface = CString::safe_new(net_interface);
         unsafe { call_api_or_panic().wkeSetViewNetInterface(*self.inner, net_interface.as_ptr()) }
@@ -491,7 +495,7 @@ impl WebView {
         let mut proxy = proxy.to_wke();
         unsafe { call_api_or_panic().wkeSetViewProxy(*self.inner, &mut proxy) }
     }
-    /// See wkeSetName.
+    /// IBD
     pub fn set_name(&self, name: &str) {
         let name = CString::safe_new(name);
         unsafe { call_api_or_panic().wkeSetName(*self.inner, name.as_ptr()) }
@@ -619,11 +623,11 @@ impl WebView {
         let path = WkeString::new(path);
         unsafe { call_api_or_panic().wkeSetLocalStorageFullPath(*self.inner, path.as_wcstr_ptr()) }
     }
-    /// Set media volume. Unimplemented!
+    /// Set media volume. May unimplemented!
     pub fn set_media_volume(&self, media_volume: f32) {
         unsafe { call_api_or_panic().wkeSetMediaVolume(*self.inner, media_volume) }
     }
-    /// Get media volume. Unimplemented!
+    /// Get media volume. May unimplemented!
     pub fn get_media_volume(&self) -> f32 {
         unsafe { call_api_or_panic().wkeGetMediaVolume(*self.inner) }
     }
@@ -631,7 +635,7 @@ impl WebView {
     pub fn set_zoom_factor(&self, zoom_factor: f32) {
         unsafe { call_api_or_panic().wkeSetZoomFactor(*self.inner, zoom_factor) }
     }
-    /// See wkeSetEditable. Unimplemented!
+    /// Set if editable. May unimplemented!
     pub fn set_editable(&self, editable: bool) {
         unsafe { call_api_or_panic().wkeSetEditable(*self.inner, editable) }
     }
@@ -640,14 +644,6 @@ impl WebView {
     /// Note: This api just executes curl command and does not change javascript content.
     pub fn perform_cookie_command(&self, command: CookieCommand) {
         unsafe { call_api_or_panic().wkePerformCookieCommand(*self.inner, command.into_wke()) }
-    }
-    /// Set a use value.
-    pub fn set_user_key_value() {
-        todo!()
-    }
-    /// Get a use value.
-    pub fn get_user_key_value() {
-        todo!()
     }
     /// Get the cursor info type.
     pub fn get_cursor_info_type(&self) -> i32 {
@@ -668,26 +664,24 @@ impl WebView {
     /// Set drag files.
     pub fn set_drag_files(
         &self,
-        client_pos: &Point,
-        screen_pos: &Point,
+        client_pos: &POINT,
+        screen_pos: &POINT,
         files: &[&str],
         files_count: i32,
     ) {
-        let client_pos = client_pos.to_wke();
-        let screen_pos = screen_pos.to_wke();
         let files: Box<[WkeString]> = files.iter().map(|file| WkeString::new(&file)).collect();
         let mut files: Box<[wkeString]> = files.iter().map(|file| file.as_ptr()).collect();
         unsafe {
             call_api_or_panic().wkeSetDragFiles(
                 *self.inner,
-                &client_pos,
-                &screen_pos,
+                client_pos,
+                screen_pos,
                 files.as_mut_ptr(),
                 files_count,
             )
         }
     }
-    /// See wkeSetDeviceParameter.
+    /// set the device parameter.
     pub fn set_device_parameter(
         &self,
         device: &str,
@@ -707,7 +701,7 @@ impl WebView {
             )
         }
     }
-    /// See wkeSetWindowTitle.
+    /// Set window title.
     pub fn set_window_title(&self, window_title: &str) {
         let window_title = CString::safe_new(window_title);
         unsafe { call_api_or_panic().wkeSetWindowTitle(*self.inner, window_title.as_ptr()) }
@@ -774,52 +768,108 @@ impl WebView {
         unsafe { call_api_or_panic().wkeGetViewDC(*self.inner) }
     }
 
-    /// 向mb发送鼠标消息
-    /// 参数：
-    /// message：可取WM_MOUSELEAVE等Windows相关鼠标消息
-    /// x、y：坐标
-    /// flags：可取值有WKE_CONTROL、WKE_SHIFT、WKE_LBUTTON、WKE_MBUTTON、WKE_RBUTTON，可通过“或”操作并联。
-    pub fn fire_mouse_event() {
-        todo!()
+    /// Fire mouse event to miniblink.
+    pub fn fire_mouse_event<M, U>(&self, message: M, x: i32, y: i32, flags: U) -> bool
+    where
+        M: Into<u32>,
+        U: Into<u32>,
+    {
+        unsafe {
+            call_api_or_panic()
+                .wkeFireMouseEvent(*self.inner, message.into(), x, y, flags.into())
+                .as_bool()
+        }
     }
 
-    /// 向mb发送菜单消息（未实现）
-    pub fn fire_context_menu_event() {
-        todo!()
+    /// Fire context menu event to miniblink.
+    pub fn fire_context_menu_event<U>(&self, x: i32, y: i32, flags: U) -> bool
+    where
+        U: Into<u32>,
+    {
+        unsafe {
+            call_api_or_panic()
+                .wkeFireContextMenuEvent(*self.inner, x, y, flags.into())
+                .as_bool()
+        }
     }
 
-    /// 向mb发送滚轮消息，用法和参数类似wkeFireMouseEvent。
-    pub fn fire_mouse_wheel_event() {
-        todo!()
+    /// Fire mouse wheel to miniblink.
+    pub fn fire_mouse_wheel_event<U>(&self, x: i32, y: i32, delta: i32, flags: U) -> bool
+    where
+        U: Into<u32>,
+    {
+        unsafe {
+            call_api_or_panic()
+                .wkeFireMouseWheelEvent(*self.inner, x, y, delta, flags.into())
+                .as_bool()
+        }
     }
 
-    /// 向mb发送WM_KEYUP消息，
-    /// 参数：
-    /// virtualKeyCode：见https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx flags：可取值有WKE_REPEAT、WKE_EXTENDED，可通过“或”操作并联。 systemKey：暂时没用
-    pub fn fire_key_up_event() {
-        todo!()
+    /// Send key up event to miniblink.
+    ///
+    /// vkey_code: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+    pub fn fire_key_up_event<U>(&self, vkey_code: u32, flags: U, system_key: bool) -> bool
+    where
+        U: Into<u32>,
+    {
+        unsafe {
+            call_api_or_panic()
+                .wkeFireKeyUpEvent(*self.inner, vkey_code, flags.into(), system_key)
+                .as_bool()
+        }
     }
 
-    /// 向mb发送WM_KEYUP消息，
-    /// 参数：
-    /// virtualKeyCode：见https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx flags：可取值有WKE_REPEAT、WKE_EXTENDED，可通过“或”操作并联。 systemKey：暂时没用
-    pub fn fire_key_down_event() {
-        todo!()
-    }
-    /// 向mb发送WM_KEYUP消息，
-    /// charCode：WM_CHAR消息的The character code of the key.见https://msdn.microsoft.com/en-us/library/windows/desktop/ms646276(v=vs.85).aspx
-    /// 参数：
-    /// virtualKeyCode：见https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx flags：可取值有WKE_REPEAT、WKE_EXTENDED，可通过“或”操作并联。 systemKey：暂时没用
-    pub fn fire_key_press_event() {
-        todo!()
-    }
-
-    /// 向mb发送任意windows消息。不过目前mb主要用来处理光标相关。mb在无窗口模式下，要响应光标事件，需要通过本函数手动发送光标消息
-    pub fn fire_windows_message() {
-        todo!()
+    /// Send key down event to miniblink.
+    ///
+    /// vkey_code: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+    pub fn fire_key_down_event<U>(&self, vkey_code: u32, flags: U, system_key: bool) -> bool
+    where
+        U: Into<u32>,
+    {
+        unsafe {
+            call_api_or_panic()
+                .wkeFireKeyDownEvent(*self.inner, vkey_code, flags.into(), system_key)
+                .as_bool()
+        }
     }
 
-    /// 鼠标划过的元素，如果是，则调用此回调，并发送a标签的url
+    /// Send key press event to miniblink.
+    ///
+    /// char_code: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646276(v=vs.85).aspx
+    /// vkey_code: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
+    pub fn fire_key_press_event<U>(&self, vkey_code: u32, flags: U, system_key: bool) -> bool
+    where
+        U: Into<u32>,
+    {
+        unsafe {
+            call_api_or_panic()
+                .wkeFireKeyPressEvent(*self.inner, vkey_code, flags.into(), system_key)
+                .as_bool()
+        }
+    }
+
+    /// Fire any message to miniblink.
+    pub unsafe fn fire_windows_message(
+        &self,
+        hwnd: HWND,
+        message: UINT,
+        wparam: WPARAM,
+        lparam: LPARAM,
+        result: *mut LRESULT,
+    ) -> BOOL {
+        call_api_or_panic().wkeFireWindowsMessage(
+            *self.inner,
+            hwnd,
+            message,
+            wparam,
+            lparam,
+            result,
+        )
+    }
+
+    /// Call on mouse over url changed.
+    ///
+    /// - param1: a href
     pub fn on_mouse_over_url_changed<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String) + 'static,
@@ -850,7 +900,9 @@ impl WebView {
         }
     }
 
-    /// 设置标题变化的通知回调      
+    /// Call on title changed.
+    ///
+    /// - param1: document title
     pub fn on_title_changed<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String) + 'static,
@@ -875,7 +927,9 @@ impl WebView {
             call_api_or_panic().wkeOnTitleChanged(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// url改变回调         
+    /// Call on url changed.
+    ///
+    /// - param1: url
     pub fn on_url_changed<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String) + 'static,
@@ -900,7 +954,9 @@ impl WebView {
             call_api_or_panic().wkeOnURLChanged(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// 网页调用alert会走到这个接口填入的回调
+    /// Call when JavaScript call `alert`.
+    ///
+    /// - param1: message
     pub fn on_alert_box<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String) + 'static,
@@ -925,7 +981,9 @@ impl WebView {
             call_api_or_panic().wkeOnAlertBox(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// See wkeOnConfirmBox.           
+    /// Call when JavaScript call `confirm`.
+    ///
+    /// - param1: message        
     pub fn on_confirm_box<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String) -> bool + 'static,
@@ -952,7 +1010,9 @@ impl WebView {
             call_api_or_panic().wkeOnConfirmBox(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// See wkeOnPromptBox.           
+    /// Call when JavaScript call `prompt`.
+    ///
+    /// - param1: message              
     pub fn on_prompt_box<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String, String, String) -> bool + 'static,
@@ -985,8 +1045,11 @@ impl WebView {
             call_api_or_panic().wkeOnPromptBox(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// 网页开始浏览将触发回调        
-    /// 注意：wkeNavigationCallback回调的返回值，如果是true，表示可以继续进行浏览，false表示阻止本次浏览。
+    /// Call on navigation
+    ///
+    /// - param1: navigation type
+    /// - param2: url
+    /// - return: bool, means if continue navigation
     pub fn on_navigation<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, NavigationType, String) -> bool + 'static,
@@ -1004,7 +1067,7 @@ impl WebView {
             let cb: *mut F = c_ptr as _;
             let f = &mut *cb;
 
-            let navigation_type = NavigationType::from(navigation_type);
+            let navigation_type = NavigationType::from_wke(navigation_type);
             let url = WkeStr::from_ptr(url).to_string();
 
             let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -1020,7 +1083,7 @@ impl WebView {
         }
     }
 
-    /// 对应js里的body onload事件         
+    /// Call on document ready (in JavaScript is body onload event).
     pub fn on_document_ready<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView) + 'static,
@@ -1044,7 +1107,10 @@ impl WebView {
         }
     }
 
-    /// 页面下载事件回调。点击某些链接，触发下载会调用       
+    /// Call on download.
+    ///
+    /// - param1: download url.
+    /// - return: bool, means if continue to download.
     pub fn on_download<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, String) -> bool + 'static,
@@ -1073,7 +1139,9 @@ impl WebView {
         }
     }
 
-    /// wkeWebView如果是真窗口模式，则在收到WM_CLODE消息时触发此回调。可以通过在回调中返回false拒绝关闭窗口    
+    /// Call on window closing if the WebView is created as real window.
+    ///
+    /// - return: bool, means if close window.    
     pub fn on_window_closing<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView) -> bool + 'static,
@@ -1099,7 +1167,9 @@ impl WebView {
         }
     }
 
-    /// 窗口即将被销毁时触发回调。不像wkeOnWindowClosing，这个操作无法取消
+    /// Call on window destroy if the WebView is created as real window.
+    ///
+    /// - return: bool. The api can not prevent window closing.
     pub fn on_window_destroy<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView) -> bool + 'static,
@@ -1122,11 +1192,13 @@ impl WebView {
             call_api_or_panic().wkeOnWindowDestroy(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// 和上个接口不同的是，回调多了个参数
-    pub fn on_url_changed2() {
-        todo!()
-    }
-    /// Call on paint updated.
+    /// Call on paint updated. You may call `BitBlt` to copy pixels from one to anthor.
+    ///
+    /// - param1: HDC of the webview.
+    /// - param2: logical position x
+    /// - param3: logical position y
+    /// - param4: logical width to x
+    /// - param5: logical height to y
     pub fn on_paint_updated<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, HDC, i32, i32, i32, i32) + 'static,
@@ -1156,7 +1228,12 @@ impl WebView {
             call_api_or_panic().wkeOnPaintUpdated(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// Call on paint updated. Buffer.
+    /// Call on paint updated. May change!
+    ///
+    /// - param1: buffer, with length width * height * 4
+    /// - param2: rect
+    /// - param3: width
+    /// - param4: height
     pub fn on_paint_bit_updated<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, &[u8], Rect, i32, i32) + 'static,
@@ -1191,48 +1268,283 @@ impl WebView {
             call_api_or_panic().wkeOnPaintBitUpdated(*self.inner, Some(shim::<F>), cb as *mut _);
         }
     }
-    /// 网页点击a标签创建新窗口时将触发回调
-    pub fn on_create_view() {
-        todo!()
+    /// Call on create new webview window after clicking <a> tag.
+    ///
+    /// - param1: navigation type
+    /// - param2: url
+    /// - param3: window features
+    pub fn on_create_view<F>(&self, callback: F)
+    where
+        F: Fn(WebView, NavigationType, String, WindowFeatures) -> WebView + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            navigation_type: wkeNavigationType,
+            url: wkeString,
+            window_features: *const wkeWindowFeatures,
+        ) -> wkeWebView
+        where
+            F: Fn(WebView, NavigationType, String, WindowFeatures) -> WebView + 'static,
+        {
+            let wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            let navigation_type = NavigationType::from_wke(navigation_type);
+            assert!(!url.is_null());
+            assert!(!window_features.is_null());
+
+            let url = WkeStr::from_ptr(url).to_string();
+            let window_features = WindowFeatures::from_wke(*window_features);
+            let wv1 = wv.clone();
+
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                f(wv, navigation_type, url, window_features)
+            }));
+
+            let wv = r.unwrap_or(wv1);
+            *wv.inner
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnCreateView(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
-    /// 同上。区别是wkeDocumentReady2Callback多了wkeWebFrameHandle frameId参数。可以判断是否是主frame
-    pub fn on_document_ready2() {
-        todo!()
+    /// Call on reponse from server after request sent.
+    ///
+    /// - param1: url
+    /// - param2: netjob
+    /// - return: bool, need document!
+    pub fn net_on_response<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, String, NetJob) -> bool + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            url: *const ::std::ffi::c_char,
+            job: wkeNetJob,
+        ) -> bool
+        where
+            F: FnMut(&mut WebView, String, NetJob) -> bool + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            assert!(!url.is_null());
+            assert!(!job.is_null());
+
+            let url = CStr::from_ptr(url).to_string_lossy().to_string();
+            let job = NetJob::from_ptr(job);
+
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut wv, url, job)));
+            r.unwrap_or(false)
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeNetOnResponse(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
-    /// 一个网络请求发送后，收到服务器response触发回调
-    pub fn net_on_response() {
-        todo!()
+    /// Call on JavaScript calling `console`.
+    ///
+    /// param1: console level.
+    /// param2: message.
+    /// param3: source name.
+    /// param4: source line.
+    /// param5: stack trace.
+    pub fn on_console<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, ConsoleLevel, String, String, u32, String) -> WebView + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            level: wkeConsoleLevel,
+            message: wkeString,
+            source_name: wkeString,
+            source_line: ::std::os::raw::c_uint,
+            stack_trace: wkeString,
+        ) where
+            F: FnMut(&mut WebView, ConsoleLevel, String, String, u32, String) -> WebView + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            let level = ConsoleLevel::from_wke(level);
+
+            assert!(!message.is_null());
+            assert!(!source_name.is_null());
+            assert!(!stack_trace.is_null());
+
+            let message = WkeStr::from_ptr(message).to_string();
+            let source_name = WkeStr::from_ptr(source_name).to_string();
+            let stack_trace = WkeStr::from_ptr(stack_trace).to_string();
+
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                f(
+                    &mut wv,
+                    level,
+                    message,
+                    source_name,
+                    source_line,
+                    stack_trace,
+                )
+            }));
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnConsole(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
-    /// 网页调用console触发
-    pub fn on_console() {
-        todo!()
+    /// Call on load url begin (before any web request).
+    ///
+    /// - param1: url
+    /// - param2: netjob
+    /// - return: bool, means if reject web requet. panic then reject.
+    ///
+    /// Note: if call hook_request on netjob, miniblink will not process the request, instead hook the request and send request to on_load_url_end handler.
+    pub fn on_load_url_begin<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, String, NetJob) -> bool + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            url: *const ::std::ffi::c_char,
+            job: wkeNetJob,
+        ) -> bool
+        where
+            F: FnMut(&mut WebView, String, NetJob) -> bool + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            assert!(!url.is_null());
+            assert!(!job.is_null());
+
+            let url = CStr::from_ptr(url).to_string_lossy().to_string();
+            let job = NetJob::from_ptr(job);
+
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut wv, url, job)));
+            r.unwrap_or(false)
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnLoadUrlBegin(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
-    /// 暂时未实现
-    pub fn set_ui_thread_callback() {
-        todo!()
+    /// Call on load url finish.
+    ///
+    /// - param1: url
+    /// - param2: netjob
+    /// - param3: length
+    pub fn on_load_url_finish<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, String, NetJob, i32) + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            url: *const ::std::ffi::c_char,
+            job: wkeNetJob,
+            len: ::std::os::raw::c_int,
+        ) where
+            F: FnMut(&mut WebView, String, NetJob, i32) + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            assert!(!url.is_null());
+            assert!(!job.is_null());
+
+            let url = CStr::from_ptr(url).to_string_lossy().to_string();
+            let job = NetJob::from_ptr(job);
+
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                f(&mut wv, url, job, len)
+            }));
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnLoadUrlFinish(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
-    ///任何网络请求发起前会触发此回调
-    /// 参数：typedef bool(*wkeLoadUrlBeginCallback)(wkeWebView webView, void* param, const char *url, void *job)
-    /// 注意：
-    /// 1，此回调功能强大，在回调里，如果对job设置了wkeNetHookRequest，则表示mb会缓存获取到的网络数据，并在这次网络请求 结束后调用wkeOnLoadUrlEnd设置的回调，同时传递缓存的数据。在此期间，mb不会处理网络数据。
-    /// 2，如果在wkeLoadUrlBeginCallback里没设置wkeNetHookRequest，则不会触发wkeOnLoadUrlEnd回调。
-    /// 3，如果wkeLoadUrlBeginCallback回调里返回true，表示mb不处理此网络请求（既不会发送网络请求）。返回false，表示mb依然会发送网络请求。
-    /// 用法举例：
-    pub fn on_load_url_begin() {
-        todo!()
+    /// Call on load url fail.
+    ///
+    /// - param1: url
+    /// - param2: netjob
+    pub fn on_load_url_fail<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, String, NetJob) + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            url: *const ::std::ffi::c_char,
+            job: wkeNetJob,
+        ) where
+            F: FnMut(&mut WebView, String, NetJob) + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            assert!(!url.is_null());
+            assert!(!job.is_null());
+
+            let url = CStr::from_ptr(url).to_string_lossy().to_string();
+            let job = NetJob::from_ptr(job);
+
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut wv, url, job)));
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnLoadUrlFail(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
-    /// javascript的v8执行环境被创建时触发此回调
-    /// 注意：每个frame创建时都会触发此回调
-    pub fn on_did_create_script_context() {
-        todo!()
-    }
-    ///每个frame的javascript的v8执行环境被关闭时触发此回调
-    pub fn on_will_release_script_context() {
-        todo!()
-    }
-    /// video等多媒体标签创建时触发此回调
-    pub fn on_will_media_load() {
-        todo!()
+    /// Call on will media load. May change!
+    ///
+    pub fn on_will_media_load<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, String, MediaLoadInfo) + 'static,
+    {
+        unsafe extern "C" fn shim<F>(
+            wv: wkeWebView,
+            param: *mut ::std::os::raw::c_void,
+            url: *const ::std::os::raw::c_char,
+            info: *mut wkeMediaLoadInfo,
+        ) where
+            F: FnMut(&mut WebView, String, MediaLoadInfo) + 'static,
+        {
+            let mut wv = WebView::from_ptr(wv);
+            let cb: *mut F = param as _;
+            let f = &mut *cb;
+
+            assert!(!url.is_null());
+            assert!(!info.is_null());
+
+            let url = CStr::from_ptr(url).to_string_lossy().to_string();
+            let info = MediaLoadInfo::from_wke(*info);
+
+            let _ =
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut wv, url, info)));
+        }
+
+        let cb: *mut F = Box::into_raw(Box::new(callback));
+        unsafe {
+            call_api_or_panic().wkeOnWillMediaLoad(*self.inner, Some(shim::<F>), cb as *mut _);
+        }
     }
     /// Check is the frame is the main frame.
     pub fn is_main_frame(&self, frame: WebFrameHandle) -> bool {

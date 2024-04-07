@@ -52,27 +52,43 @@ impl TempCallbackInfo {
 
 #[allow(missing_docs)]
 pub struct WillSendRequestInfo {
-    inner: *mut wkeWillSendRequestInfo,
+    pub url: String,
+    pub new_url: String,
+    pub resource_type: ResourceType,
+    pub http_response_code: i32,
+    pub method: String,
+    pub referrer: String,
 }
 
 impl WillSendRequestInfo {
     pub(crate) unsafe fn from_ptr(ptr: *mut wkeWillSendRequestInfo) -> Self {
-        // macro_rules! wke_string {
-        //     ($expr: expr) => {{
-        //         let ptr = $expr;
-        //         assert!(!ptr.is_null());
-        //         unsafe { WkeStr::from_ptr(ptr) }.to_string()
-        //     }};
-        // }
-        // Self {
-        //     url: wke_string!(wke.url),
-        //     new_url: wke_string!(wke.newUrl),
-        //     resource_type: ResourceType::from_wke(wke.resourceType),
-        //     http_response_code: wke.httpResponseCode,
-        //     method: wke_string!(wke.method),
-        //     referrer: wke_string!(wke.referrer),
-        // }
-        Self { inner: ptr }
+        macro_rules! wke_string {
+            ($expr: expr) => {{
+                let ptr = $expr;
+                assert!(!ptr.is_null());
+                unsafe { WkeStr::from_ptr(ptr) }.to_string()
+            }};
+        }
+
+        assert!(!ptr.is_null());
+        let wkeWillSendRequestInfo {
+            url,
+            newUrl,
+            resourceType,
+            httpResponseCode,
+            method,
+            referrer,
+            ..
+        } = *ptr;
+
+        Self {
+            url: wke_string!(url),
+            new_url: wke_string!(newUrl),
+            resource_type: ResourceType::from_wke(resourceType),
+            http_response_code: httpResponseCode,
+            method: wke_string!(method),
+            referrer: wke_string!(referrer),
+        }
     }
 }
 
@@ -123,6 +139,7 @@ impl ResourceType {
     }
 }
 
+#[allow(missing_docs)]
 pub struct PostBodyElement {
     // pub size: i32,
     // pub type_: HttpBodyElementType,
@@ -213,6 +230,7 @@ pub enum HttpBodyElementType {
 }
 
 impl HttpBodyElementType {
+    #[allow(unused)]
     pub(crate) fn from_wke(wke: wkeHttBodyElementType) -> Self {
         match wke {
             wkeHttBodyElementType::wkeHttBodyElementTypeData => Self::Data,
@@ -222,7 +240,7 @@ impl HttpBodyElementType {
     }
 }
 
-#[allow(missing_docs)]
+/// MemBuf. May change!
 pub struct MemBuf {
     inner: *mut wkeMemBuf,
 }
@@ -231,9 +249,24 @@ impl MemBuf {
     pub(crate) unsafe fn from_ptr(ptr: *mut wkeMemBuf) -> Self {
         Self { inner: ptr }
     }
+
+    /// Get unuse.
+    pub fn get_unuse(&self) -> i32 {
+        unsafe { *self.inner }.unuse
+    }
+
+    /// Get length.
+    pub fn get_length(&self) -> usize {
+        unsafe { *self.inner }.length
+    }
+
+    /// Get data.
+    pub unsafe fn get_data(&self) -> *mut ::std::ffi::c_void {
+        (*self.inner).data
+    }
 }
 
-/// See wkeNetJob.
+/// NetJob. Wraps to wkeNetJob.
 #[repr(transparent)]
 pub struct NetJob {
     inner: wkeNetJob,
@@ -267,10 +300,6 @@ impl NetJob {
     pub fn set_mime_type(&self, mine_type: &str) {
         let mine_type = CString::safe_new(mine_type);
         unsafe { call_api_or_panic().wkeNetSetMIMEType(self.inner, mine_type.as_ptr()) };
-    }
-    /// Set data after hook.
-    pub fn set_data(&self) {
-        todo!()
     }
     /// Get the mine type.
     pub fn get_mime_type(&self, mime_type: Option<&str>) -> String {
@@ -308,6 +337,10 @@ impl NetJob {
         assert!(!elements.is_null());
         unsafe { PostBodyElements::from_ptr(elements) }
     }
+    /// Get the post body.
+    pub fn hook_request(&self) {
+        unsafe { call_api_or_panic().wkeNetHookRequest(self.inner) }
+    }
 }
 
 #[allow(missing_docs)]
@@ -330,7 +363,7 @@ impl RequestType {
     }
 }
 
-/// See wkeSlist.
+/// Slist. Wraps to wkeSlist.
 #[repr(transparent)]
 pub struct Slist {
     inner: *const wkeSlist,
@@ -408,13 +441,17 @@ impl ProxyType {
     }
 }
 
-#[allow(missing_docs)]
-/// see `wkeProxy`.
+/// Proxy
 pub struct Proxy {
+    /// Proxy type
     pub type_: ProxyType,
+    /// Hostname: eg. 127.0.0.1
     pub hostname: String,
+    /// Port: eg. 443
     pub port: u16,
+    /// Proxy username
     pub username: String,
+    /// Proxy password
     pub password: String,
 }
 
@@ -430,7 +467,7 @@ impl Proxy {
     }
 }
 
-/// See [`jsType`].
+/// JsType
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsType {
@@ -487,30 +524,30 @@ macro_rules! js_value {
     }};
 }
 
-/// See `jsExecState`.
+/// JsExecState. Wraps to jsExecState.
 #[derive(Clone, Copy)]
 pub struct JsExecState {
     pub(crate) inner: jsExecState,
 }
 
 impl JsExecState {
-    /// See jsInt.
+    /// Create an int.
     pub fn int(&self, value: i32) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsInt(value) })
     }
-    /// See jsDouble.
+    /// Create a double.
     pub fn double(&self, value: f64) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsDouble(value) })
     }
-    /// See jsBoolean.
+    /// Create a boolean.
     pub fn boolean(&self, value: bool) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsBoolean(value) })
     }
-    /// See jsUndefined.
+    /// Create an undefined.
     pub fn undefined(&self) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsUndefined() })
     }
-    /// See jsNull.
+    /// Create a null.
     pub fn null(&self) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsNull() })
     }
@@ -518,7 +555,7 @@ impl JsExecState {
     pub fn arg(&self, index: i32) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsArg(self.inner, index) })
     }
-    /// See jsArgCount.
+    /// Get the arg count.
     pub fn arg_count(&self) -> i32 {
         unsafe { call_api_or_panic().jsArgCount(self.inner) }
     }
@@ -530,55 +567,47 @@ impl JsExecState {
         let js_type = unsafe { call_api_or_panic().jsArgType(self.inner, index) };
         Some(JsType::from_wke(js_type))
     }
-    /// See jsEmptyArray.
+    /// Create an empty array.
     pub fn empty_array(&self) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsEmptyArray(self.inner,) })
     }
-    /// See jsEmptyObject.
+    /// Create an empty object.
     pub fn empty_object(&self) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsEmptyObject(self.inner,) })
     }
-    /// See jsString.
+    /// Create a string.
     pub fn string(&self, value: &str) -> JsValue {
         js_value!({
             let value = CString::safe_new(value);
             unsafe { call_api_or_panic().jsString(self.inner, value.as_ptr()) }
         })
     }
-    ///
-    pub fn array_buffer() {
-        todo!()
-    }
-    ///
-    pub fn get_array_buffer() {
-        todo!()
-    }
-    /// See jsGetAt.
+    /// Get a js value from array using index.
     pub fn get_at(&self, js_array: JsValue, index: i32) -> JsValue {
         js_value!(unsafe { call_api_or_panic().jsGetAt(self.inner, js_array.as_ptr(), index) })
     }
-    /// See jsSetAt.
+    /// Set a js value from array using index.
     pub fn set_at(&self, js_array: JsValue, index: i32, js_value: JsValue) {
         unsafe {
             call_api_or_panic().jsSetAt(self.inner, js_array.as_ptr(), index, js_value.as_ptr())
         }
     }
-    /// See jsGetLength.
+    /// Get the length of an array.
     pub fn get_length(&self, js_array: JsValue) -> i32 {
         unsafe { call_api_or_panic().jsGetLength(self.inner, js_array.as_ptr()) }
     }
-    /// See jsSetLength.
+    /// Set the length of an array. Can be used to extend the length of js array.
     pub fn set_length(&self, js_array: JsValue, length: i32) {
         unsafe { call_api_or_panic().jsSetLength(self.inner, js_array.as_ptr(), length) }
     }
-    /// See jsGet.
+    /// Get a value from an object
     pub fn get(&self, js_object: JsValue, prop: &str) -> JsValue {
         let prop = CString::safe_new(prop);
         js_value!({
             unsafe { call_api_or_panic().jsGet(self.inner, js_object.as_ptr(), prop.as_ptr()) }
         })
     }
-    /// See jsSet.
+    /// Set a value to an object
     pub fn set(&self, js_object: JsValue, prop: &str, value: JsValue) {
         let prop = CString::safe_new(prop);
         unsafe {
@@ -590,41 +619,41 @@ impl JsExecState {
             )
         }
     }
-    /// See jsGetKeys.
+    /// Get the keys of an object.
     pub fn get_keys(&self, js_object: JsValue) -> JsKeys {
         let keys = unsafe { call_api_or_panic().jsGetKeys(self.inner, js_object.as_ptr()) };
         assert!(!keys.is_null());
         unsafe { JsKeys::from_ptr(keys) }
     }
-    /// 获取window上的属性
+    /// Get js value from global window object.
     pub fn get_global(&self, prop: &str) -> JsValue {
         js_value!({
             let prop = CString::safe_new(prop);
             unsafe { call_api_or_panic().jsGetGlobal(self.inner, prop.as_ptr()) }
         })
     }
-    /// 设置window上的属性
+    /// Get a js value to global window object.
     pub fn set_global(&self, prop: &str, value: JsValue) {
         let prop = CString::safe_new(prop);
         unsafe { call_api_or_panic().jsSetGlobal(self.inner, prop.as_ptr(), value.as_ptr()) }
     }
-    /// 获取es对应的webview
+    /// Get webview where state belongs to.
     pub fn get_webview(&self) -> WebView {
         let webview = unsafe { call_api_or_panic().jsGetWebView(self.inner) };
         assert!(!webview.is_null());
         unsafe { WebView::from_ptr(webview) }
     }
 
-    /// 执行一段js，并返回值。
-    ///参数：略
-    ///注意：str的代码会在mb内部自动被包裹在一个function(){}中。所以使用的变量会被隔离 注意：要获取返回值，请写return。这和wke不太一样。wke不需要写retrun
+    /// Execute a script. The script is wrapped in a `function(){}` block.
+    /// 
+    /// Required key word `return` if want to return a value.
     pub fn eval(&self, script: &str) -> JsValue {
         js_value!({
             let script = WkeString::new(script);
             unsafe { call_api_or_panic().jsEvalW(self.inner, script.as_wcstr_ptr()) }
         })
     }
-    /// See jsEvalExW.
+    /// Execute a script.
     pub fn eval_ex(&self, script: &str, is_in_closure: bool) -> JsValue {
         let script = WkeString::new(script);
         js_value!(unsafe {
@@ -632,9 +661,9 @@ impl JsExecState {
         })
     }
 
-    /// See `jsToInt`.
+    /// Convert a value to int.
     pub fn to_int(&self, value: JsValue) -> MBResult<i32> {
-        match value.type_of_() {
+        match value.type_of() {
             JsType::Number => {
                 Ok(unsafe { call_api_or_panic().jsToInt(self.inner, value.as_ptr()) })
             }
@@ -642,9 +671,9 @@ impl JsExecState {
         }
     }
 
-    /// See `jsToDouble`.
+    /// Convert a value to double.
     pub fn to_double(&self, value: JsValue) -> MBResult<f64> {
-        match value.type_of_() {
+        match value.type_of() {
             JsType::Number => {
                 Ok(unsafe { call_api_or_panic().jsToDouble(self.inner, value.as_ptr()) })
             }
@@ -652,9 +681,9 @@ impl JsExecState {
         }
     }
 
-    /// See `jsToBoolean`.
+    /// Convert a value to boolean.
     pub fn to_boolean(&self, value: JsValue) -> MBResult<bool> {
-        match value.type_of_() {
+        match value.type_of() {
             JsType::Boolean => {
                 Ok(
                     (unsafe { call_api_or_panic().jsToBoolean(self.inner, value.as_ptr()) })
@@ -665,9 +694,9 @@ impl JsExecState {
         }
     }
 
-    /// See `jsToTempString`.
+    /// Convert a value to string.
     pub fn to_string(&self, value: JsValue) -> MBResult<String> {
-        match value.type_of_() {
+        match value.type_of() {
             JsType::Boolean
             | JsType::Null
             | JsType::Number
@@ -684,14 +713,14 @@ impl JsExecState {
         }
     }
 
-    /// Get inner ptr of [`JsExecState`]. See [`jsExecState`].
+    /// Get inner pointer.
     pub fn as_ptr(&self) -> jsExecState {
         self.inner
     }
 
     /// Create [`JsExecState`] from ptr.
-    /// # Safety
-    /// The pointer must be valid
+    /// 
+    /// Safety: The pointer must be valid
     pub unsafe fn from_ptr(ptr: jsExecState) -> Self {
         assert!(!ptr.is_null());
         Self { inner: ptr }
@@ -732,14 +761,6 @@ impl JsExecState {
     /// Force garbage collection
     pub fn gc(&self) {
         unsafe { call_api_or_panic().jsGC() }
-    }
-    /// 创建一个主frame的全局函数。jsData的用法如上。js调用：XXX() 此时jsData的callAsFunction触发。 其实jsFunction和jsObject功能基本类似。且jsObject的功能更强大一些
-    pub fn function() {
-        todo!()
-    }
-    ///获取jsObject或jsFunction创建的jsValue对应的jsData指针。
-    pub fn get_data() {
-        todo!()
     }
     /// Get last error if exception when calling run_js, call, at el. api.
     pub fn get_last_error_if_exception(&self) -> Option<JsExceptionInfo> {
@@ -833,7 +854,7 @@ impl JsExceptionInfo {
     }
 }
 
-/// See jsKeys.
+/// JsKeys. Wraps to jsKeys.
 pub struct JsKeys {
     inner: *mut jsKeys,
 }
@@ -875,55 +896,55 @@ impl JsKeys {
 //     }
 // }
 
-/// See `jsValue`.
+/// JsValue. Wraps to `jsValue`.
 #[derive(Debug, Clone, Copy)]
 pub struct JsValue {
     pub(crate) inner: jsValue,
 }
 
 impl JsValue {
-    /// See jsTypeOf.
-    pub fn type_of_(&self) -> JsType {
+    /// get the type.
+    pub fn type_of(&self) -> JsType {
         let js_type = unsafe { call_api_or_panic().jsTypeOf(self.inner) };
         JsType::from_wke(js_type)
     }
-    /// See jsIsNumber.
+    /// Check if is a number.
     pub fn is_number(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsNumber(self.inner) }).as_bool()
     }
-    /// See jsIsString.
+    /// Check if is a string.
     pub fn is_string(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsString(self.inner) }).as_bool()
     }
-    /// See jsIsBoolean.
+    /// Check if is a boolean.
     pub fn is_boolean(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsBoolean(self.inner) }).as_bool()
     }
-    /// See jsIsObject.
+    /// Check if is an object.
     pub fn is_object(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsObject(self.inner) }).as_bool()
     }
-    /// See jsIsFunction.
+    /// Check if is a function.
     pub fn is_function(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsFunction(self.inner) }).as_bool()
     }
-    /// See jsIsUndefined.
+    /// Check if is a undefined.
     pub fn is_undefined(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsUndefined(self.inner) }).as_bool()
     }
-    /// See jsIsNull.
+    /// Check if is a null.
     pub fn is_null(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsNull(self.inner) }).as_bool()
     }
-    /// See jsIsArray.
+    /// Check if is an array.
     pub fn is_array(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsArray(self.inner) }).as_bool()
     }
-    /// See jsIsTrue.
+    /// Check if is true.
     pub fn is_true(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsTrue(self.inner) }).as_bool()
     }
-    /// See jsIsFalse.
+    /// Check if is false.
     pub fn is_false(&self) -> bool {
         (unsafe { call_api_or_panic().jsIsFalse(self.inner) }).as_bool()
     }
@@ -1071,23 +1092,21 @@ where
     }
 }
 
-/// Navigation Type. See `wkeNavigationType`.
+/// Navigation Type.
 #[allow(missing_docs)]
 pub enum NavigationType {
-    /// 点击a标签触发
+    /// Click on <a>
     LinkClick,
-    /// 点击form触发
+    /// On <form> submit
     FormSubmitte,
-    /// 前进后退触发
     BackForward,
-    /// 重新加载触发
     Reload,
     FormResubmit,
     Other,
 }
 
-impl From<wkeNavigationType> for NavigationType {
-    fn from(value: wkeNavigationType) -> Self {
+impl NavigationType {
+    pub(crate) fn from_wke(value: wkeNavigationType) -> Self {
         match value {
             wkeNavigationType::WKE_NAVIGATION_TYPE_LINKCLICK => Self::LinkClick,
             wkeNavigationType::WKE_NAVIGATION_TYPE_FORMRESUBMITT => Self::FormSubmitte,
@@ -1099,15 +1118,15 @@ impl From<wkeNavigationType> for NavigationType {
     }
 }
 
-/// Navigation Type. See `wkeWindowType`.
+/// Window Type.
 #[allow(missing_docs)]
 pub enum WindowType {
-    /// 普通窗口
-    Control,
-    /// 透明窗口。mb内部通过layer window实现
+    /// Popup type
     Popup,
-    /// 嵌入在父窗口里的子窗口。此时parent需要被设置
+    /// Transparent type. Achieved using layer window.    
     Transparent,
+    /// Control type. Create window as child window. Requied parent.
+    Control,
 }
 
 impl From<WindowType> for wkeWindowType {
@@ -1120,7 +1139,7 @@ impl From<WindowType> for wkeWindowType {
     }
 }
 
-/// See `wkeMenuItemId`
+/// MenuItemID
 #[allow(missing_docs)]
 pub enum MenuItemId {
     MenuSelectedAllId,
@@ -1137,31 +1156,34 @@ pub enum MenuItemId {
     MenuSaveImageId,
 }
 
-/// see `wkeViewSettings`
-#[allow(missing_docs)]
-pub struct ViewSettings {
-    pub size: i32,
-    pub backgroud_color: u32,
-}
-
-/// see `POINT`
-#[allow(missing_docs)]
-pub struct Point {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Point {
-    pub(crate) fn to_wke(&self) -> POINT {
-        POINT {
-            x: self.x,
-            y: self.y,
+impl MenuItemId {
+    pub(crate) fn to_wke(&self) -> wkeMenuItemId {
+        match self {
+            Self::MenuSelectedAllId => wkeMenuItemId::kWkeMenuSelectedAllId,
+            Self::MenuSelectedTextId => wkeMenuItemId::kWkeMenuSelectedTextId,
+            Self::MenuUndoId => wkeMenuItemId::kWkeMenuUndoId,
+            Self::MenuCopyImageId => wkeMenuItemId::kWkeMenuCopyImageId,
+            Self::MenuInspectElementAtId => wkeMenuItemId::kWkeMenuInspectElementAtId,
+            Self::MenuCutId => wkeMenuItemId::kWkeMenuCutId,
+            Self::MenuPasteId => wkeMenuItemId::kWkeMenuPasteId,
+            Self::MenuPrintId => wkeMenuItemId::kWkeMenuPrintId,
+            Self::MenuGoForwardId => wkeMenuItemId::kWkeMenuGoForwardId,
+            Self::MenuGoBackId => wkeMenuItemId::kWkeMenuGoBackId,
+            Self::MenuReloadId => wkeMenuItemId::kWkeMenuReloadId,
+            Self::MenuSaveImageId => wkeMenuItemId::kWkeMenuSaveImageId,
         }
     }
 }
 
-#[repr(transparent)]
-/// see `wkeWebFrameHandle`
+/// View Settings.
+pub struct ViewSettings {
+    /// TBD
+    pub size: i32,
+    /// Background color
+    pub backgroud_color: u32,
+}
+
+/// WebFrameHandle
 pub struct WebFrameHandle {
     frame: wkeWebFrameHandle,
 }
@@ -1230,12 +1252,12 @@ impl WkeStr {
         cstr.to_string_lossy().to_string()
     }
 
-    /// See `wkeGetStringW`.
+    /// Call wkeGetStringW to get a *const wchar_t pointer.
     pub fn as_wcstr_ptr(&self) -> *const wchar_t {
         unsafe { call_api_or_panic().wkeGetStringW(self.inner) }
     }
 
-    /// See `wkeGetString`.
+    /// Call wkeGetString to get a *const c_char pointer.
     pub fn as_cstr_ptr(&self) -> *const c_char {
         unsafe { call_api_or_panic().wkeGetString(self.inner) }
     }
@@ -1388,6 +1410,167 @@ impl CookieVisitor {
     pub fn set_expires(&self, expires: i32) {
         assert!(!self.expires.is_null());
         unsafe { *self.expires = expires }
+    }
+}
+
+#[allow(missing_docs)]
+pub struct WindowFeatures {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
+    pub menu_bar_visible: bool,
+    pub status_bar_visible: bool,
+    pub tool_bar_visible: bool,
+    pub location_bar_visible: bool,
+    pub scrollbars_visible: bool,
+    pub resizable: bool,
+    pub fullscreen: bool,
+}
+
+impl WindowFeatures {
+    pub(crate) fn from_wke(value: wkeWindowFeatures) -> Self {
+        let wkeWindowFeatures {
+            x,
+            y,
+            width,
+            height,
+            menuBarVisible: menu_bar_visible,
+            statusBarVisible: status_bar_visible,
+            toolBarVisible: tool_bar_visible,
+            locationBarVisible: location_bar_visible,
+            scrollbarsVisible: scrollbars_visible,
+            resizable,
+            fullscreen,
+        } = value;
+
+        WindowFeatures {
+            x,
+            y,
+            width,
+            height,
+            menu_bar_visible,
+            status_bar_visible,
+            tool_bar_visible,
+            location_bar_visible,
+            scrollbars_visible,
+            resizable,
+            fullscreen,
+        }
+    }
+}
+
+#[allow(missing_docs)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ConsoleLevel {
+    Debug,
+    Log,
+    Info,
+    Warning,
+    Error,
+    RevokedError,
+    // Last,
+}
+
+impl ConsoleLevel {
+    pub(crate) fn from_wke(value: wkeConsoleLevel) -> Self {
+        match value {
+            wkeConsoleLevel::wkeLevelDebug => Self::Debug,
+            wkeConsoleLevel::wkeLevelLog => Self::Log,
+            wkeConsoleLevel::wkeLevelInfo => Self::Info,
+            wkeConsoleLevel::wkeLevelWarning => Self::Warning,
+            wkeConsoleLevel::wkeLevelError => Self::Error,
+            wkeConsoleLevel::wkeLevelRevokedError => Self::RevokedError,
+            // wkeConsoleLevel::wkeLevelLast => Self::Last,
+            _ => unimplemented!(),
+        }
+    }
+}
+
+#[allow(missing_docs)]
+pub struct MediaLoadInfo {
+    pub size: i32,
+    pub width: i32,
+    pub height: i32,
+    pub duration: f64,
+}
+
+impl MediaLoadInfo {
+    pub(crate) fn from_wke(value: wkeMediaLoadInfo) -> Self {
+        let wkeMediaLoadInfo {
+            size,
+            width,
+            height,
+            duration,
+        } = value;
+
+        Self {
+            size,
+            width,
+            height,
+            duration,
+        }
+    }
+}
+
+#[allow(missing_docs)]
+#[repr(u32)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum MouseFlags {
+    LBUTTON = wkeMouseFlags::WKE_LBUTTON.0 as u32,
+    RBUTTON = wkeMouseFlags::WKE_RBUTTON.0 as u32,
+    SHIFT = wkeMouseFlags::WKE_SHIFT.0 as u32,
+    CONTROL = wkeMouseFlags::WKE_CONTROL.0 as u32,
+    MBUTTON = wkeMouseFlags::WKE_MBUTTON.0 as u32,
+}
+
+impl From<MouseFlags> for u32 {
+    fn from(value: MouseFlags) -> Self {
+        value as u32
+    }
+}
+
+impl std::ops::BitOr for MouseFlags {
+    type Output = u32;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        (self as u32) | (rhs as u32)
+    }
+}
+
+#[allow(missing_docs)]
+#[repr(u32)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum MouseMessage {
+    MOUSEMOVE = wkeMouseMsg::WKE_MSG_MOUSEMOVE.0 as u32,
+    LBUTTONDOWN = wkeMouseMsg::WKE_MSG_LBUTTONDOWN.0 as u32,
+    LBUTTONUP = wkeMouseMsg::WKE_MSG_LBUTTONUP.0 as u32,
+    LBUTTONDBLCLK = wkeMouseMsg::WKE_MSG_LBUTTONDBLCLK.0 as u32,
+    RBUTTONDOWN = wkeMouseMsg::WKE_MSG_RBUTTONDOWN.0 as u32,
+    RBUTTONUP = wkeMouseMsg::WKE_MSG_RBUTTONUP.0 as u32,
+    RBUTTONDBLCLK = wkeMouseMsg::WKE_MSG_RBUTTONDBLCLK.0 as u32,
+    MBUTTONDOWN = wkeMouseMsg::WKE_MSG_MBUTTONDOWN.0 as u32,
+    MBUTTONUP = wkeMouseMsg::WKE_MSG_MBUTTONUP.0 as u32,
+    MBUTTONDBLCLK = wkeMouseMsg::WKE_MSG_MBUTTONDBLCLK.0 as u32,
+    MOUSEWHEEL = wkeMouseMsg::WKE_MSG_MOUSEWHEEL.0 as u32,
+}
+
+impl From<MouseMessage> for u32 {
+    fn from(value: MouseMessage) -> Self {
+        value as u32
+    }
+}
+
+#[allow(missing_docs)]
+#[repr(u32)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum KeyFlags {
+    EXTENDED = wkeKeyFlags::WKE_EXTENDED.0 as u32,
+    REPEAT = wkeKeyFlags::WKE_REPEAT.0 as u32,
+}
+
+impl From<KeyFlags> for u32 {
+    fn from(value: KeyFlags) -> Self {
+        value as u32
     }
 }
 
