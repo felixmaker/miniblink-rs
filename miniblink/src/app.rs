@@ -131,7 +131,7 @@ where
     }
 }
 
-/// Experimantal app api
+/// Experimantal app api. May change!
 pub mod app_ext {
     use super::*;
 
