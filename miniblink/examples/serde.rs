@@ -1,4 +1,4 @@
-use miniblink::{app, app::app_ext, webview::WebView};
+use miniblink::{app, webview::WebView};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,7 +12,8 @@ fn main() {
 
     app::initialize("node.dll").unwrap();
 
-    app_ext::bind("format_user", |user: User| {
+    #[cfg(feature="serde")]
+    app::app_ext::bind("format_user", |user: User| {
         Ok(format!("{}: {}", user.name, user.age))
     });
 

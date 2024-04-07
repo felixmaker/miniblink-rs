@@ -1023,7 +1023,7 @@ impl MBExecStateValue<()> for JsExecState {
     }
 
     fn value(&self, value: JsValue) -> MBResult<()> {
-        match value.type_of_() {
+        match value.type_of() {
             JsType::Undefined => Ok(()),
             other => Err(MBError::UnsupportedType(JsType::Undefined, other)),
         }
