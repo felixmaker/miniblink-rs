@@ -1,10 +1,4 @@
-#![allow(unused)]
-#![allow(non_snake_case)]
-#![allow(non_camel_case_types)]
-#![allow(non_upper_case_globals)]
-
-mod header;
+#![allow(unused, non_snake_case, non_camel_case_types, non_upper_case_globals)]
 mod miniblink;
 
-pub use header::*;
 pub use miniblink::*;
