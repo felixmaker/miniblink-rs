@@ -20,14 +20,3 @@ impl SafeCString for CString {
         }
     }
 }
-
-pub fn string_to_slice<const N: usize>(s: &str) -> [i8; N] {
-    let mut vec = vec![0; N];
-    let bytes = CString::safe_new(s).into_bytes_with_nul();
-    for i in 0..bytes.len() {
-        if i < N {
-            vec[i] = bytes[i] as i8
-        }
-    }
-    vec.try_into().unwrap()
-}

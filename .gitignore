@@ -1,4 +1,6 @@
+.vscode
 /target
 node.dll
+miniblink.so
 Cargo.lock
 /test*

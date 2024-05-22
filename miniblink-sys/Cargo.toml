@@ -2,13 +2,12 @@
 name = "miniblink-sys"
 version = "0.3.0"
 edition = "2021"
-authors = ["The miniblink-rs Authors"]
+authors = ["felixmaker"]
 description = "Rust bindings to mininlink49"
 license = "Apache-2.0 OR MIT"
 readme = "README.md"
 repository = "https://github.com/felixmaker/miniblink-rs"
 categories = [ "gui" ]
-exclude = ["./header"]
 
 [dependencies]
 libloading = "0.8"

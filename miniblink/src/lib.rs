@@ -1,41 +1,28 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
 
-// pub(crate) mod macros;
 mod util;
 
-/// Wrapper to wke global function, like wkeInitialize.
+/// Wraps to global functions.
 pub mod app;
-/// Error in miniblink (this crate). See [`MBResult`] and [`MBError`].
+/// Defines the miniblink error types.
 pub mod error;
-/// Wapper to minibink types.
-pub mod types;
-/// Wapper to wkeWebView. See [`webview::WebView`].
+/// Wraps to mbWebView.
 pub mod webview;
-
-/// Prelude to use some useful functions and traits.
-pub mod prelude {
-    pub use super::error::{MBError, MBResult};
-    pub use super::types::{JsExecStateExt, MBExecStateValue};
-    pub use super::webview::WebViewExt;
-}
-
-/// Support for serde. Require `serde` feature.
-#[cfg(feature = "serde")]
-pub mod serde;
 
 use std::sync::OnceLock;
 
 use error::{MBError, MBResult};
-use miniblink_sys::Library;
 
-pub(crate) static LIB: OnceLock<Library> = OnceLock::new();
+type MbLibrary = miniblink_sys::Library;
 
-/// Call the inner [`Library`]. Use it to call unwrapped API.
-pub fn call_api() -> MBResult<&'static Library> {
+pub(crate) static LIB: OnceLock<MbLibrary> = OnceLock::new();
+
+/// Call the inner api. Use it to call unwrapped api.
+pub fn call_api() -> MBResult<&'static MbLibrary> {
     LIB.get().ok_or_else(|| MBError::NotInitialized)
 }
 
-pub(crate) fn call_api_or_panic() -> &'static Library {
+pub(crate) fn call_api_or_panic() -> &'static MbLibrary {
     call_api().unwrap()
 }
