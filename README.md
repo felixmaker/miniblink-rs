@@ -3,25 +3,19 @@
 Rust bindings to [mininlink49](https://github.com/weolar/miniblink49)
 
 ```rust
-use miniblink::prelude::*;
-use miniblink::{app, webview::WebView};
+use miniblink::{app, webview::*};
 
 fn main() {
-    app::initialize("node.dll").unwrap();
-
-    let wv = WebView::default();
-    wv.load_url("https://example.com");
-    wv.show_window(true);
-
-    wv.on_window_closing(|_| {
-        std::process::exit(0);
-    });
-
+    app::init("mb.dll").unwrap();
+    let view = WebView::default();
+    view.load_url("https://example.com");
+    view.on_close(|_| std::process::exit(0));
+    view.show();
     app::run_message_loop();
 }
 ```
 
-See [examples](./miniblink/examples) for basic usage
+See [examples](./miniblink/examples) for basic usage.
 
 # Notes
 
@@ -34,6 +28,8 @@ The rust safe wrapper `./miniblink` is not aimed to provide a complete API set.
 For now, the basic api in rust safe wrapper `./miniblink` is more stable than the earlier version, but still, may change in the future.
 
 It takes time to wrapper all api, so PRs are welcomed! :D
+
+From 0.3.x, api migrates from wkeXXX to mbXXX.
 
 # Credits
 
