@@ -2,7 +2,7 @@ use miniblink_sys::*;
 
 fn main() {
     unsafe {
-        let lib = Library::new("mb108_x32.dll").unwrap();
+        let lib = Library::new("mb.dll").unwrap();
         // let lib = Library::new("./miniblink.so").unwrap();
         let settings = std::mem::zeroed();
         lib.mbInit(&settings);

@@ -1,6 +1,7 @@
 .vscode
 node.dll
 miniblink.so
+mb.dll
 Cargo.lock
 cookie.dat
 /target
