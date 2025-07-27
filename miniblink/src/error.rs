@@ -9,6 +9,8 @@ pub enum MBError {
     NotInitialized,
     /// Raised when unable to load miniblink.
     LibraryUnloaded(String),
+    /// Undefined enum transmute
+    UndefinedEnumTransmute,
 }
 
 impl MBError {
@@ -17,6 +19,7 @@ impl MBError {
         match self {
             NotInitialized => "The miniblink is not initialized".into(),
             LibraryUnloaded(error) => format!("Failed to load miniblink! {error}"),
+            UndefinedEnumTransmute => format!("Undefined enum transmute!"),
         }
     }
 }

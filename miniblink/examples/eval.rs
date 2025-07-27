@@ -1,15 +1,15 @@
 use miniblink::{app, webview::*};
 
 fn main() {
-    app::init("mb.dll").unwrap();
-    let view = WebView::default();
-    view.on_query(|_wv, msg, request| -> (QueryMessage, String) {
-        match msg {
-            0 => (0, format!("hello, {}", request)),
-            _ => (-1, "".into()),
+    app::init("./mb.dll").unwrap();
+    let view = WebViewWindow::default();
+    view.on_query(|params| {
+        match params.custom_message {
+            0 => JsQueryResult{ custom_message: 0, response: format!("hello, {}", params.request) },
+            _ => JsQueryResult{ custom_message: -1, response: "".into() },
         }
     });
-    view.on_close(|_wv| std::process::exit(0));
+    view.on_close(|| std::process::exit(0));
     view.move_to_center();
     view.load_html_with_base_url(
         r#"

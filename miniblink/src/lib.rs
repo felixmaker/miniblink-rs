@@ -1,8 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
 
-mod util;
-
 /// Wraps to global functions.
 pub mod app;
 /// Defines the miniblink error types.

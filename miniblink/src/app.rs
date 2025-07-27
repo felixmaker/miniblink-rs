@@ -15,7 +15,7 @@ pub fn run_message_loop() {
     unsafe { call_api_or_panic().mbRunMessageLoop() }
 }
 
-/// Initialize miniblink from `path`. Panic if failed to initialize. See `wkeInitialize`.
+/// Initialize miniblink from `path`. Panic if failed to initialize.
 pub fn init<P>(path: P) -> MBResult<&'static Library>
 where
     P: AsRef<OsStr>,
