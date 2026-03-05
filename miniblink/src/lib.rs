@@ -7,6 +7,7 @@ pub mod app;
 pub mod error;
 /// Wraps to mbWebView.
 pub mod webview;
+pub(crate) mod mbstring;
 
 use std::sync::OnceLock;
 
