@@ -148,7 +148,7 @@ pub const MB_ENABLE_ENABLE_SWIFTSHAER: _mbSettingMask = 256;
 pub type _mbSettingMask = ::std::os::raw::c_int;
 pub use self::_mbSettingMask as mbSettingMask;
 pub type mbOnBlinkThreadInitCallback =
-    ::std::option::Option<unsafe extern "stdcall" fn(param: *mut ::std::os::raw::c_void)>;
+    ::std::option::Option<unsafe extern "system" fn(param: *mut ::std::os::raw::c_void)>;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _mbSettings {
@@ -379,7 +379,7 @@ pub type mbWebSocketChannel = *mut ::std::os::raw::c_void;
 #[derive(Copy, Clone)]
 pub struct _mbWebsocketHookCallbacks {
     pub onWillConnect: ::std::option::Option<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             param: *mut ::std::os::raw::c_void,
             channel: mbWebSocketChannel,
@@ -388,14 +388,14 @@ pub struct _mbWebsocketHookCallbacks {
         ) -> mbStringPtr,
     >,
     pub onConnected: ::std::option::Option<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             param: *mut ::std::os::raw::c_void,
             channel: mbWebSocketChannel,
         ) -> BOOL,
     >,
     pub onReceive: ::std::option::Option<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             param: *mut ::std::os::raw::c_void,
             channel: mbWebSocketChannel,
@@ -406,7 +406,7 @@ pub struct _mbWebsocketHookCallbacks {
         ) -> mbStringPtr,
     >,
     pub onSend: ::std::option::Option<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             param: *mut ::std::os::raw::c_void,
             channel: mbWebSocketChannel,
@@ -417,7 +417,7 @@ pub struct _mbWebsocketHookCallbacks {
         ) -> mbStringPtr,
     >,
     pub onError: ::std::option::Option<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             param: *mut ::std::os::raw::c_void,
             channel: mbWebSocketChannel,
@@ -442,7 +442,7 @@ pub use self::_mbImageFormat as mbImageFormat;
 pub type mbJsValue = ::std::os::raw::c_longlong;
 pub type mbJsExecState = *mut ::std::os::raw::c_void;
 pub type mbOnGetPdfPageDataCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         data: *mut ::std::os::raw::c_void,
@@ -450,7 +450,7 @@ pub type mbOnGetPdfPageDataCallback = ::std::option::Option<
     ),
 >;
 pub type mbRunJsCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         es: mbJsExecState,
@@ -458,7 +458,7 @@ pub type mbRunJsCallback = ::std::option::Option<
     ),
 >;
 pub type mbJsQueryCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         es: mbJsExecState,
@@ -468,7 +468,7 @@ pub type mbJsQueryCallback = ::std::option::Option<
     ),
 >;
 pub type mbJsQueryExCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         es: mbJsExecState,
@@ -477,21 +477,21 @@ pub type mbJsQueryExCallback = ::std::option::Option<
     ),
 >;
 pub type mbTitleChangedCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         title: *const utf8,
     ),
 >;
 pub type mbMouseOverUrlChangedCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const utf8,
     ),
 >;
 pub type mbURLChangedCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const utf8,
@@ -500,7 +500,7 @@ pub type mbURLChangedCallback = ::std::option::Option<
     ),
 >;
 pub type mbURLChangedCallback2 = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         frameId: mbWebFrameHandle,
@@ -508,7 +508,7 @@ pub type mbURLChangedCallback2 = ::std::option::Option<
     ),
 >;
 pub type mbPaintUpdatedCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         hdc: HDC,
@@ -519,7 +519,7 @@ pub type mbPaintUpdatedCallback = ::std::option::Option<
     ),
 >;
 pub type mbAcceleratedPaintCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         type_: ::std::os::raw::c_int,
@@ -529,7 +529,7 @@ pub type mbAcceleratedPaintCallback = ::std::option::Option<
     ),
 >;
 pub type mbPaintBitUpdatedCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         buffer: *const ::std::os::raw::c_void,
@@ -539,21 +539,21 @@ pub type mbPaintBitUpdatedCallback = ::std::option::Option<
     ),
 >;
 pub type mbAlertBoxCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         msg: *const utf8,
     ),
 >;
 pub type mbConfirmBoxCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         msg: *const utf8,
     ) -> BOOL,
 >;
 pub type mbPromptBoxCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         msg: *const utf8,
@@ -562,7 +562,7 @@ pub type mbPromptBoxCallback = ::std::option::Option<
     ) -> mbStringPtr,
 >;
 pub type mbNavigationCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         navigationType: mbNavigationType,
@@ -570,7 +570,7 @@ pub type mbNavigationCallback = ::std::option::Option<
     ) -> BOOL,
 >;
 pub type mbCreateViewCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         navigationType: mbNavigationType,
@@ -579,14 +579,14 @@ pub type mbCreateViewCallback = ::std::option::Option<
     ) -> mbWebView,
 >;
 pub type mbDocumentReadyCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         frameId: mbWebFrameHandle,
     ),
 >;
 pub type mbLoadUrlFinishCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const utf8,
@@ -595,7 +595,7 @@ pub type mbLoadUrlFinishCallback = ::std::option::Option<
     ),
 >;
 pub type mbLoadUrlHeadersReceivedCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const ::std::os::raw::c_char,
@@ -603,24 +603,24 @@ pub type mbLoadUrlHeadersReceivedCallback = ::std::option::Option<
     ),
 >;
 pub type mbCloseCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         unuse: *mut ::std::os::raw::c_void,
     ) -> BOOL,
 >;
 pub type mbDestroyCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         unuse: *mut ::std::os::raw::c_void,
     ) -> BOOL,
 >;
 pub type mbOnShowDevtoolsCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(webView: mbWebView, param: *mut ::std::os::raw::c_void),
+    unsafe extern "system" fn(webView: mbWebView, param: *mut ::std::os::raw::c_void),
 >;
 pub type mbDidCreateScriptContextCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         frameId: mbWebFrameHandle,
@@ -630,14 +630,14 @@ pub type mbDidCreateScriptContextCallback = ::std::option::Option<
     ),
 >;
 pub type mbGetPluginListCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         refresh: BOOL,
         pluginListBuilder: *mut ::std::os::raw::c_void,
         param: *mut ::std::os::raw::c_void,
     ) -> BOOL,
 >;
 pub type mbNetResponseCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const utf8,
@@ -645,13 +645,13 @@ pub type mbNetResponseCallback = ::std::option::Option<
     ) -> BOOL,
 >;
 pub type mbThreadCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         param1: *mut ::std::os::raw::c_void,
         param2: *mut ::std::os::raw::c_void,
     ),
 >;
 pub type mbNodeOnCreateProcessCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         applicationPath: *const WCHAR,
@@ -664,7 +664,7 @@ pub const MB_LOADING_FAILED: mbLoadingResult = 1;
 pub const MB_LOADING_CANCELED: mbLoadingResult = 2;
 pub type mbLoadingResult = ::std::os::raw::c_int;
 pub type mbLoadingFinishCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         frameId: mbWebFrameHandle,
@@ -674,7 +674,7 @@ pub type mbLoadingFinishCallback = ::std::option::Option<
     ),
 >;
 pub type mbDownloadCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         frameId: mbWebFrameHandle,
@@ -691,7 +691,7 @@ pub const mbLevelRevokedError: mbConsoleLevel = 6;
 pub const mbLevelLast: mbConsoleLevel = 6;
 pub type mbConsoleLevel = ::std::os::raw::c_int;
 pub type mbConsoleCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         level: mbConsoleLevel,
@@ -702,17 +702,17 @@ pub type mbConsoleCallback = ::std::option::Option<
     ),
 >;
 pub type mbOnCallUiThread = ::std::option::Option<
-    unsafe extern "stdcall" fn(webView: mbWebView, paramOnInThread: *mut ::std::os::raw::c_void),
+    unsafe extern "system" fn(webView: mbWebView, paramOnInThread: *mut ::std::os::raw::c_void),
 >;
 pub type mbCallUiThread = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         func: mbOnCallUiThread,
         param: *mut ::std::os::raw::c_void,
     ),
 >;
 pub type mbLoadUrlBeginCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const ::std::os::raw::c_char,
@@ -720,7 +720,7 @@ pub type mbLoadUrlBeginCallback = ::std::option::Option<
     ) -> BOOL,
 >;
 pub type mbLoadUrlEndCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const ::std::os::raw::c_char,
@@ -730,7 +730,7 @@ pub type mbLoadUrlEndCallback = ::std::option::Option<
     ),
 >;
 pub type mbLoadUrlFailCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const ::std::os::raw::c_char,
@@ -738,7 +738,7 @@ pub type mbLoadUrlFailCallback = ::std::option::Option<
     ),
 >;
 pub type mbWillReleaseScriptContextCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         frameId: mbWebFrameHandle,
@@ -747,7 +747,7 @@ pub type mbWillReleaseScriptContextCallback = ::std::option::Option<
     ),
 >;
 pub type mbNetGetFaviconCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         url: *const utf8,
@@ -759,7 +759,7 @@ pub const kMbAsynRequestStateFail: _MbAsynRequestState = 1;
 pub type _MbAsynRequestState = ::std::os::raw::c_int;
 pub use self::_MbAsynRequestState as MbAsynRequestState;
 pub type mbCanGoBackForwardCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         state: MbAsynRequestState,
@@ -767,7 +767,7 @@ pub type mbCanGoBackForwardCallback = ::std::option::Option<
     ),
 >;
 pub type mbGetCookieCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         state: MbAsynRequestState,
@@ -777,14 +777,14 @@ pub type mbGetCookieCallback = ::std::option::Option<
 pub type v8ContextPtr = *mut ::std::os::raw::c_void;
 pub type v8Isolate = *mut ::std::os::raw::c_void;
 pub type mbGetSourceCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         mhtml: *const utf8,
     ),
 >;
 pub type mbGetContentAsMarkupCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         content: *const utf8,
@@ -804,7 +804,7 @@ pub struct mbWebUrlResponse {
 }
 pub type mbWebUrlResponsePtr = *mut mbWebUrlResponse;
 pub type mbOnUrlRequestWillRedirectCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         oldRequest: mbWebUrlRequestPtr,
@@ -813,7 +813,7 @@ pub type mbOnUrlRequestWillRedirectCallback = ::std::option::Option<
     ),
 >;
 pub type mbOnUrlRequestDidReceiveResponseCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         request: mbWebUrlRequestPtr,
@@ -821,7 +821,7 @@ pub type mbOnUrlRequestDidReceiveResponseCallback = ::std::option::Option<
     ),
 >;
 pub type mbOnUrlRequestDidReceiveDataCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         request: mbWebUrlRequestPtr,
@@ -830,7 +830,7 @@ pub type mbOnUrlRequestDidReceiveDataCallback = ::std::option::Option<
     ),
 >;
 pub type mbOnUrlRequestDidFailCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         request: mbWebUrlRequestPtr,
@@ -838,7 +838,7 @@ pub type mbOnUrlRequestDidFailCallback = ::std::option::Option<
     ),
 >;
 pub type mbOnUrlRequestDidFinishLoadingCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         request: mbWebUrlRequestPtr,
@@ -860,7 +860,7 @@ pub const kMbDownloadOptCacheData: _mbDownloadOpt = 1;
 pub type _mbDownloadOpt = ::std::os::raw::c_int;
 pub use self::_mbDownloadOpt as mbDownloadOpt;
 pub type mbNetJobDataRecvCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         ptr: *mut ::std::os::raw::c_void,
         job: mbNetJob,
         data: *const ::std::os::raw::c_char,
@@ -868,7 +868,7 @@ pub type mbNetJobDataRecvCallback = ::std::option::Option<
     ),
 >;
 pub type mbNetJobDataFinishCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         ptr: *mut ::std::os::raw::c_void,
         job: mbNetJob,
         result: mbLoadingResult,
@@ -883,10 +883,10 @@ pub struct _mbNetJobDataBind {
 }
 pub type mbNetJobDataBind = _mbNetJobDataBind;
 pub type mbPopupDialogSaveNameCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(ptr: *mut ::std::os::raw::c_void, filePath: *const WCHAR),
+    unsafe extern "system" fn(ptr: *mut ::std::os::raw::c_void, filePath: *const WCHAR),
 >;
 pub type mbNetBeginSaveCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         ptr: *mut ::std::os::raw::c_void,
         filePath: *const ::std::os::raw::c_char,
         isPathExists: bool,
@@ -942,7 +942,7 @@ pub struct _mbDownloadOptions {
 }
 pub type mbDownloadOptions = _mbDownloadOptions;
 pub type mbDownloadInBlinkThreadCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         expectedContentLength: usize,
@@ -962,7 +962,7 @@ pub struct _mbPdfDatas {
 }
 pub type mbPdfDatas = _mbPdfDatas;
 pub type mbPrintPdfDataCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webview: mbWebView,
         param: *mut ::std::os::raw::c_void,
         datas: *const mbPdfDatas,
@@ -977,7 +977,7 @@ pub struct _mbScreenshotSettings {
 }
 pub type mbScreenshotSettings = _mbScreenshotSettings;
 pub type mbPrintBitmapCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webview: mbWebView,
         param: *mut ::std::os::raw::c_void,
         data: *const ::std::os::raw::c_char,
@@ -985,7 +985,7 @@ pub type mbPrintBitmapCallback = ::std::option::Option<
     ),
 >;
 pub type mbOnScreenshot = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         data: *const ::std::os::raw::c_char,
@@ -1025,10 +1025,10 @@ pub const MB_WINDOW_INFO_SHARTD_TEXTURE_ENABLE: _mbWindowInfo = 65536;
 pub type _mbWindowInfo = ::std::os::raw::c_int;
 pub use self::_mbWindowInfo as mbWindowInfo;
 pub type mbWindowClosingCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(webview: mbWebView, param: *mut ::std::os::raw::c_void) -> BOOL,
+    unsafe extern "system" fn(webview: mbWebView, param: *mut ::std::os::raw::c_void) -> BOOL,
 >;
 pub type mbWindowDestroyCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(webview: mbWebView, param: *mut ::std::os::raw::c_void),
+    unsafe extern "system" fn(webview: mbWebView, param: *mut ::std::os::raw::c_void),
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1038,7 +1038,7 @@ pub struct _mbDraggableRegion {
 }
 pub type mbDraggableRegion = _mbDraggableRegion;
 pub type mbDraggableRegionsChangedCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webview: mbWebView,
         param: *mut ::std::os::raw::c_void,
         rects: *const mbDraggableRegion,
@@ -1075,7 +1075,7 @@ pub struct _mbDefaultPrinterSettings {
 }
 pub type mbDefaultPrinterSettings = _mbDefaultPrinterSettings;
 pub type mbPrintingCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webview: mbWebView,
         param: *mut ::std::os::raw::c_void,
         step: mbPrintintStep,
@@ -1085,7 +1085,7 @@ pub type mbPrintingCallback = ::std::option::Option<
     ) -> BOOL,
 >;
 pub type mbImageBufferToDataURLCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         data: *const ::std::os::raw::c_char,
@@ -1125,7 +1125,7 @@ pub struct _mbViewLoadCallbackInfo {
 }
 pub type mbViewLoadCallbackInfo = _mbViewLoadCallbackInfo;
 pub type mbNetViewLoadInfoCallback = ::std::option::Option<
-    unsafe extern "stdcall" fn(
+    unsafe extern "system" fn(
         webView: mbWebView,
         param: *mut ::std::os::raw::c_void,
         type_: mbViewLoadType,
@@ -1168,21 +1168,21 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbInit:
-        Result<unsafe extern "stdcall" fn(settings: *const mbSettings), ::libloading::Error>,
-    pub mbUninit: Result<unsafe extern "stdcall" fn(), ::libloading::Error>,
+        Result<unsafe extern "system" fn(settings: *const mbSettings), ::libloading::Error>,
+    pub mbUninit: Result<unsafe extern "system" fn(), ::libloading::Error>,
     pub mbCreateInitSettings:
-        Result<unsafe extern "stdcall" fn() -> *mut mbSettings, ::libloading::Error>,
+        Result<unsafe extern "system" fn() -> *mut mbSettings, ::libloading::Error>,
     pub mbSetInitSettings: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             settings: *mut mbSettings,
             name: *const ::std::os::raw::c_char,
             value: *const ::std::os::raw::c_char,
         ),
         ::libloading::Error,
     >,
-    pub mbCreateWebView: Result<unsafe extern "stdcall" fn() -> mbWebView, ::libloading::Error>,
+    pub mbCreateWebView: Result<unsafe extern "system" fn() -> mbWebView, ::libloading::Error>,
     pub mbCreateWebViewBindGtkWindow: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             rootWindow: *mut ::std::os::raw::c_void,
             drawingArea: *mut ::std::os::raw::c_void,
             type_: *const ::std::os::raw::c_char,
@@ -1193,9 +1193,9 @@ pub struct Library {
         ) -> mbWebView,
         ::libloading::Error,
     >,
-    pub mbDestroyWebView: Result<unsafe extern "stdcall" fn(arg1: mbWebView), ::libloading::Error>,
+    pub mbDestroyWebView: Result<unsafe extern "system" fn(arg1: mbWebView), ::libloading::Error>,
     pub mbCreateWebWindow: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             type_: mbWindowType,
             parent: HWND,
             x: ::std::os::raw::c_int,
@@ -1206,7 +1206,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCreateWebWindowEx: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             type_: mbWindowType,
             parent: HWND,
             x: ::std::os::raw::c_int,
@@ -1218,7 +1218,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCreateWebCustomWindow: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             parent: HWND,
             style: DWORD,
             styleEx: DWORD,
@@ -1230,7 +1230,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbMoveWindow: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webview: mbWebView,
             x: ::std::os::raw::c_int,
             y: ::std::os::raw::c_int,
@@ -1239,40 +1239,40 @@ pub struct Library {
         ),
         ::libloading::Error,
     >,
-    pub mbMoveToCenter: Result<unsafe extern "stdcall" fn(webview: mbWebView), ::libloading::Error>,
+    pub mbMoveToCenter: Result<unsafe extern "system" fn(webview: mbWebView), ::libloading::Error>,
     pub mbSetAutoDrawToHwnd:
-        Result<unsafe extern "stdcall" fn(webview: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webview: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbGetCaretRect: Result<
-        unsafe extern "stdcall" fn(webviewHandle: mbWebView, r: *mut mbRect),
+        unsafe extern "system" fn(webviewHandle: mbWebView, r: *mut mbRect),
         ::libloading::Error,
     >,
     pub mbSetAudioMuted:
-        Result<unsafe extern "stdcall" fn(webview: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webview: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbIsAudioMuted:
-        Result<unsafe extern "stdcall" fn(webview: mbWebView) -> BOOL, ::libloading::Error>,
+        Result<unsafe extern "system" fn(webview: mbWebView) -> BOOL, ::libloading::Error>,
     pub mbCreateString: Result<
-        unsafe extern "stdcall" fn(str_: *const utf8, length: usize) -> mbStringPtr,
+        unsafe extern "system" fn(str_: *const utf8, length: usize) -> mbStringPtr,
         ::libloading::Error,
     >,
     pub mbCreateStringWithCopy: Result<
-        unsafe extern "stdcall" fn(str_: *const utf8, length: usize) -> mbStringPtr,
+        unsafe extern "system" fn(str_: *const utf8, length: usize) -> mbStringPtr,
         ::libloading::Error,
     >,
     pub mbCreateStringWithoutNullTermination: Result<
-        unsafe extern "stdcall" fn(str_: *const utf8, length: usize) -> mbStringPtr,
+        unsafe extern "system" fn(str_: *const utf8, length: usize) -> mbStringPtr,
         ::libloading::Error,
     >,
-    pub mbDeleteString: Result<unsafe extern "stdcall" fn(str_: mbStringPtr), ::libloading::Error>,
+    pub mbDeleteString: Result<unsafe extern "system" fn(str_: mbStringPtr), ::libloading::Error>,
     pub mbGetStringLen:
-        Result<unsafe extern "stdcall" fn(str_: mbStringPtr) -> usize, ::libloading::Error>,
+        Result<unsafe extern "system" fn(str_: mbStringPtr) -> usize, ::libloading::Error>,
     pub mbGetString:
-        Result<unsafe extern "stdcall" fn(str_: mbStringPtr) -> *const utf8, ::libloading::Error>,
+        Result<unsafe extern "system" fn(str_: mbStringPtr) -> *const utf8, ::libloading::Error>,
     pub mbSetProxy: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, proxy: *const mbProxy),
+        unsafe extern "system" fn(webView: mbWebView, proxy: *const mbProxy),
         ::libloading::Error,
     >,
     pub mbSetDebugConfig: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             debugString: *const ::std::os::raw::c_char,
             param: *const ::std::os::raw::c_char,
@@ -1280,29 +1280,29 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetSetData: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             jobPtr: mbNetJob,
             buf: *mut ::std::os::raw::c_void,
             len: ::std::os::raw::c_int,
         ),
         ::libloading::Error,
     >,
-    pub mbNetHookRequest: Result<unsafe extern "stdcall" fn(jobPtr: mbNetJob), ::libloading::Error>,
+    pub mbNetHookRequest: Result<unsafe extern "system" fn(jobPtr: mbNetJob), ::libloading::Error>,
     pub mbNetChangeRequestUrl: Result<
-        unsafe extern "stdcall" fn(jobPtr: mbNetJob, url: *const ::std::os::raw::c_char),
+        unsafe extern "system" fn(jobPtr: mbNetJob, url: *const ::std::os::raw::c_char),
         ::libloading::Error,
     >,
-    pub mbNetContinueJob: Result<unsafe extern "stdcall" fn(jobPtr: mbNetJob), ::libloading::Error>,
+    pub mbNetContinueJob: Result<unsafe extern "system" fn(jobPtr: mbNetJob), ::libloading::Error>,
     pub mbNetGetRawHttpHeadInBlinkThread:
-        Result<unsafe extern "stdcall" fn(jobPtr: mbNetJob) -> *const mbSlist, ::libloading::Error>,
+        Result<unsafe extern "system" fn(jobPtr: mbNetJob) -> *const mbSlist, ::libloading::Error>,
     pub mbNetGetRawResponseHeadInBlinkThread:
-        Result<unsafe extern "stdcall" fn(jobPtr: mbNetJob) -> *const mbSlist, ::libloading::Error>,
+        Result<unsafe extern "system" fn(jobPtr: mbNetJob) -> *const mbSlist, ::libloading::Error>,
     pub mbNetHoldJobToAsynCommit:
-        Result<unsafe extern "stdcall" fn(jobPtr: mbNetJob), ::libloading::Error>,
+        Result<unsafe extern "system" fn(jobPtr: mbNetJob), ::libloading::Error>,
     pub mbNetCancelRequest:
-        Result<unsafe extern "stdcall" fn(jobPtr: mbNetJob), ::libloading::Error>,
+        Result<unsafe extern "system" fn(jobPtr: mbNetJob), ::libloading::Error>,
     pub mbNetOnResponse: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webviewHandle: mbWebView,
             callback: mbNetResponseCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1310,7 +1310,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetSetWebsocketCallback: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webview: mbWebView,
             callbacks: *const mbWebsocketHookCallbacks,
             param: *mut ::std::os::raw::c_void,
@@ -1318,7 +1318,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetSendWsText: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             channel: mbWebSocketChannel,
             buf: *const ::std::os::raw::c_char,
             len: usize,
@@ -1326,7 +1326,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetSendWsBlob: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             channel: mbWebSocketChannel,
             buf: *const ::std::os::raw::c_char,
             len: usize,
@@ -1334,27 +1334,27 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetEnableResPacket: Result<
-        unsafe extern "stdcall" fn(webviewHandle: mbWebView, pathName: *const WCHAR),
+        unsafe extern "system" fn(webviewHandle: mbWebView, pathName: *const WCHAR),
         ::libloading::Error,
     >,
     pub mbNetGetPostBody: Result<
-        unsafe extern "stdcall" fn(jobPtr: mbNetJob) -> *mut mbPostBodyElements,
+        unsafe extern "system" fn(jobPtr: mbNetJob) -> *mut mbPostBodyElements,
         ::libloading::Error,
     >,
     pub mbNetCreatePostBodyElements: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, length: usize) -> *mut mbPostBodyElements,
+        unsafe extern "system" fn(webView: mbWebView, length: usize) -> *mut mbPostBodyElements,
         ::libloading::Error,
     >,
     pub mbNetFreePostBodyElements:
-        Result<unsafe extern "stdcall" fn(elements: *mut mbPostBodyElements), ::libloading::Error>,
+        Result<unsafe extern "system" fn(elements: *mut mbPostBodyElements), ::libloading::Error>,
     pub mbNetCreatePostBodyElement: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView) -> *mut mbPostBodyElement,
+        unsafe extern "system" fn(webView: mbWebView) -> *mut mbPostBodyElement,
         ::libloading::Error,
     >,
     pub mbNetFreePostBodyElement:
-        Result<unsafe extern "stdcall" fn(element: *mut mbPostBodyElement), ::libloading::Error>,
+        Result<unsafe extern "system" fn(element: *mut mbPostBodyElement), ::libloading::Error>,
     pub mbNetCreateWebUrlRequest: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             url: *const utf8,
             method: *const utf8,
             mime: *const utf8,
@@ -1362,7 +1362,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetAddHTTPHeaderFieldToUrlRequest: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             request: mbWebUrlRequestPtr,
             name: *const utf8,
             value: *const utf8,
@@ -1370,7 +1370,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetStartUrlRequest: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             request: mbWebUrlRequestPtr,
             param: *mut ::std::os::raw::c_void,
@@ -1379,35 +1379,35 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetGetHttpStatusCode: Result<
-        unsafe extern "stdcall" fn(response: mbWebUrlResponsePtr) -> ::std::os::raw::c_int,
+        unsafe extern "system" fn(response: mbWebUrlResponsePtr) -> ::std::os::raw::c_int,
         ::libloading::Error,
     >,
     pub mbNetGetRequestMethod:
-        Result<unsafe extern "stdcall" fn(jobPtr: mbNetJob) -> mbRequestType, ::libloading::Error>,
+        Result<unsafe extern "system" fn(jobPtr: mbNetJob) -> mbRequestType, ::libloading::Error>,
     pub mbNetGetExpectedContentLength: Result<
-        unsafe extern "stdcall" fn(response: mbWebUrlResponsePtr) -> ::std::os::raw::c_longlong,
+        unsafe extern "system" fn(response: mbWebUrlResponsePtr) -> ::std::os::raw::c_longlong,
         ::libloading::Error,
     >,
     pub mbNetGetResponseUrl: Result<
-        unsafe extern "stdcall" fn(response: mbWebUrlResponsePtr) -> *const utf8,
+        unsafe extern "system" fn(response: mbWebUrlResponsePtr) -> *const utf8,
         ::libloading::Error,
     >,
     pub mbNetCancelWebUrlRequest:
-        Result<unsafe extern "stdcall" fn(requestId: ::std::os::raw::c_int), ::libloading::Error>,
+        Result<unsafe extern "system" fn(requestId: ::std::os::raw::c_int), ::libloading::Error>,
     pub mbSetViewProxy: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, proxy: *const mbProxy),
+        unsafe extern "system" fn(webView: mbWebView, proxy: *const mbProxy),
         ::libloading::Error,
     >,
     pub mbNetSetMIMEType: Result<
-        unsafe extern "stdcall" fn(jobPtr: mbNetJob, type_: *const ::std::os::raw::c_char),
+        unsafe extern "system" fn(jobPtr: mbNetJob, type_: *const ::std::os::raw::c_char),
         ::libloading::Error,
     >,
     pub mbNetGetMIMEType: Result<
-        unsafe extern "stdcall" fn(jobPtr: mbNetJob) -> *const ::std::os::raw::c_char,
+        unsafe extern "system" fn(jobPtr: mbNetJob) -> *const ::std::os::raw::c_char,
         ::libloading::Error,
     >,
     pub mbNetGetHTTPHeaderField: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             job: mbNetJob,
             key: *const ::std::os::raw::c_char,
             fromRequestOrResponse: BOOL,
@@ -1415,7 +1415,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetSetHTTPHeaderField: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             jobPtr: mbNetJob,
             key: *const WCHAR,
             value: *const WCHAR,
@@ -1424,7 +1424,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetSetHTTPHeaderFieldUtf8: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             jobPtr: mbNetJob,
             key: *const utf8,
             value: *const utf8,
@@ -1433,29 +1433,29 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbSetMouseEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetTouchEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetSystemTouchEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetContextMenuEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetNavigationToNewWindowEnable:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetHeadlessEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetDragDropEnable:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetDragEnable:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetContextMenuItemShow: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, item: mbMenuItemId, isShow: BOOL),
+        unsafe extern "system" fn(webView: mbWebView, item: mbMenuItemId, isShow: BOOL),
         ::libloading::Error,
     >,
     pub mbSetHandle:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, wnd: HWND), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, wnd: HWND), ::libloading::Error>,
     pub mbSetHandleOffset: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             x: ::std::os::raw::c_int,
             y: ::std::os::raw::c_int,
@@ -1463,97 +1463,97 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetPlatformWindowHandle: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView) -> *mut ::std::os::raw::c_void,
+        unsafe extern "system" fn(webView: mbWebView) -> *mut ::std::os::raw::c_void,
         ::libloading::Error,
     >,
     pub mbGetHostHWND:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> HWND, ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> HWND, ::libloading::Error>,
     pub mbSetTransparent: Result<
-        unsafe extern "stdcall" fn(webviewHandle: mbWebView, transparent: BOOL),
+        unsafe extern "system" fn(webviewHandle: mbWebView, transparent: BOOL),
         ::libloading::Error,
     >,
     pub mbSetViewSettings: Result<
-        unsafe extern "stdcall" fn(webviewHandle: mbWebView, settings: *const mbViewSettings),
+        unsafe extern "system" fn(webviewHandle: mbWebView, settings: *const mbViewSettings),
         ::libloading::Error,
     >,
     pub mbSetCspCheckEnable:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetNpapiPluginsEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetMemoryCacheEnable:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetCookie: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, url: *const utf8, cookie: *const utf8),
+        unsafe extern "system" fn(webView: mbWebView, url: *const utf8, cookie: *const utf8),
         ::libloading::Error,
     >,
     pub mbSetCookieEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, enable: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, enable: BOOL), ::libloading::Error>,
     pub mbSetCookieJarPath: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, path: *const WCHAR),
+        unsafe extern "system" fn(webView: mbWebView, path: *const WCHAR),
         ::libloading::Error,
     >,
     pub mbSetCookieJarFullPath: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, path: *const WCHAR),
+        unsafe extern "system" fn(webView: mbWebView, path: *const WCHAR),
         ::libloading::Error,
     >,
     pub mbSetLocalStorageFullPath: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, path: *const WCHAR),
+        unsafe extern "system" fn(webView: mbWebView, path: *const WCHAR),
         ::libloading::Error,
     >,
     pub mbGetTitle:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> *const utf8, ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> *const utf8, ::libloading::Error>,
     pub mbSetWindowTitle: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, title: *const utf8),
+        unsafe extern "system" fn(webView: mbWebView, title: *const utf8),
         ::libloading::Error,
     >,
     pub mbSetWindowTitleW: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, title: *const WCHAR),
+        unsafe extern "system" fn(webView: mbWebView, title: *const WCHAR),
         ::libloading::Error,
     >,
     pub mbGetUrl:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> *const utf8, ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> *const utf8, ::libloading::Error>,
     pub mbGetCursorInfoType: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView) -> ::std::os::raw::c_int,
+        unsafe extern "system" fn(webView: mbWebView) -> ::std::os::raw::c_int,
         ::libloading::Error,
     >,
     pub mbAddPluginDirectory: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, path: *const WCHAR),
+        unsafe extern "system" fn(webView: mbWebView, path: *const WCHAR),
         ::libloading::Error,
     >,
     pub mbSetUserAgent: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, userAgent: *const utf8),
+        unsafe extern "system" fn(webView: mbWebView, userAgent: *const utf8),
         ::libloading::Error,
     >,
     pub mbSetZoomFactor:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, factor: f32), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, factor: f32), ::libloading::Error>,
     pub mbGetZoomFactor:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> f32, ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> f32, ::libloading::Error>,
     pub mbSetDiskCacheEnabled:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, enable: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, enable: BOOL), ::libloading::Error>,
     pub mbSetDiskCachePath: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, path: *const WCHAR),
+        unsafe extern "system" fn(webView: mbWebView, path: *const WCHAR),
         ::libloading::Error,
     >,
     pub mbSetDiskCacheLimit:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, limit: usize), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, limit: usize), ::libloading::Error>,
     pub mbSetDiskCacheLimitDisk:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, limit: usize), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, limit: usize), ::libloading::Error>,
     pub mbSetDiskCacheLevel: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, Level: ::std::os::raw::c_int),
+        unsafe extern "system" fn(webView: mbWebView, Level: ::std::os::raw::c_int),
         ::libloading::Error,
     >,
     pub mbSetResourceGc: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, intervalSec: ::std::os::raw::c_int),
+        unsafe extern "system" fn(webView: mbWebView, intervalSec: ::std::os::raw::c_int),
         ::libloading::Error,
     >,
     pub mbIsLoading:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> BOOL, ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> BOOL, ::libloading::Error>,
     pub mbCanGoBackOrForward: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, isGoBack: BOOL) -> BOOL,
+        unsafe extern "system" fn(webView: mbWebView, isGoBack: BOOL) -> BOOL,
         ::libloading::Error,
     >,
     pub mbCanGoBack: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbCanGoBackForwardCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1561,7 +1561,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCanGoForward: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbCanGoBackForwardCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1569,7 +1569,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetCookie: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbGetCookieCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1577,10 +1577,10 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetCookieOnBlinkThread:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> *const utf8, ::libloading::Error>,
-    pub mbClearCookie: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> *const utf8, ::libloading::Error>,
+    pub mbClearCookie: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbResize: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             w: ::std::os::raw::c_int,
             h: ::std::os::raw::c_int,
@@ -1588,15 +1588,15 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetSize: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, rc: *mut mbRect),
+        unsafe extern "system" fn(webView: mbWebView, rc: *mut mbRect),
         ::libloading::Error,
     >,
     pub mbGetWindowRect: Result<
-        unsafe extern "stdcall" fn(webview: mbWebView, rc: *mut mbRect) -> BOOL,
+        unsafe extern "system" fn(webview: mbWebView, rc: *mut mbRect) -> BOOL,
         ::libloading::Error,
     >,
     pub mbOnNavigation: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbNavigationCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1604,7 +1604,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnNavigationSync: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbNavigationCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1612,7 +1612,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnCreateView: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbCreateViewCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1620,7 +1620,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnDocumentReady: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbDocumentReadyCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1628,7 +1628,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnPaintUpdated: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbPaintUpdatedCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1636,7 +1636,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnPaintBitUpdated: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbPaintBitUpdatedCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1644,7 +1644,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnAcceleratedPaint: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbAcceleratedPaintCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1652,7 +1652,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnLoadUrlBegin: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbLoadUrlBeginCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1660,7 +1660,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnLoadUrlEnd: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbLoadUrlEndCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1668,7 +1668,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnLoadUrlFail: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbLoadUrlFailCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1676,7 +1676,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnTitleChanged: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbTitleChangedCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1684,7 +1684,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnURLChanged: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbURLChangedCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1692,7 +1692,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnLoadingFinish: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbLoadingFinishCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1700,7 +1700,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnDownload: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbDownloadCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1708,7 +1708,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnDownloadInBlinkThread: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbDownloadInBlinkThreadCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1716,7 +1716,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnAlertBox: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbAlertBoxCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1724,7 +1724,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnConfirmBox: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbConfirmBoxCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1732,7 +1732,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnPromptBox: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbPromptBoxCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1740,7 +1740,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnNetGetFavicon: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbNetGetFaviconCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1748,7 +1748,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnConsole: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbConsoleCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1756,7 +1756,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnClose: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbCloseCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1764,7 +1764,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnDestroy: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbDestroyCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1772,7 +1772,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnPrinting: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbPrintingCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1780,7 +1780,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnDidCreateScriptContext: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbDidCreateScriptContextCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1788,7 +1788,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnWillReleaseScriptContext: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbWillReleaseScriptContextCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1796,7 +1796,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnPluginList: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbGetPluginListCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -1804,38 +1804,38 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnImageBufferToDataURL: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbImageBufferToDataURLCallback,
             callbackParam: *mut ::std::os::raw::c_void,
         ),
         ::libloading::Error,
     >,
-    pub mbGoBack: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbGoForward: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbGoBack: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbGoForward: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbNavigateAtIndex: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, index: ::std::os::raw::c_int),
+        unsafe extern "system" fn(webView: mbWebView, index: ::std::os::raw::c_int),
         ::libloading::Error,
     >,
     pub mbGetNavigateIndex: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView) -> ::std::os::raw::c_int,
+        unsafe extern "system" fn(webView: mbWebView) -> ::std::os::raw::c_int,
         ::libloading::Error,
     >,
-    pub mbStopLoading: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbReload: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbStopLoading: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbReload: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbPerformCookieCommand: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, command: mbCookieCommand),
+        unsafe extern "system" fn(webView: mbWebView, command: mbCookieCommand),
         ::libloading::Error,
     >,
     pub mbEditorSelectAll:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbEditorCopy: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbEditorCut: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbEditorPaste: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbEditorDelete: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbEditorUndo: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbEditorCopy: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbEditorCut: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbEditorPaste: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbEditorDelete: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbEditorUndo: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbFireMouseEvent: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             message: ::std::os::raw::c_uint,
             x: ::std::os::raw::c_int,
@@ -1845,7 +1845,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbFireContextMenuEvent: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             x: ::std::os::raw::c_int,
             y: ::std::os::raw::c_int,
@@ -1854,7 +1854,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbFireMouseWheelEvent: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             x: ::std::os::raw::c_int,
             y: ::std::os::raw::c_int,
@@ -1864,7 +1864,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbFireKeyUpEvent: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             virtualKeyCode: ::std::os::raw::c_uint,
             flags: ::std::os::raw::c_uint,
@@ -1873,7 +1873,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbFireKeyDownEvent: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             virtualKeyCode: ::std::os::raw::c_uint,
             flags: ::std::os::raw::c_uint,
@@ -1882,7 +1882,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbFireKeyPressEvent: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             charCode: ::std::os::raw::c_uint,
             flags: ::std::os::raw::c_uint,
@@ -1891,7 +1891,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbFireWindowsMessage: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             hWnd: HWND,
             message: UINT,
@@ -1901,22 +1901,22 @@ pub struct Library {
         ) -> BOOL,
         ::libloading::Error,
     >,
-    pub mbSetFocus: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbKillFocus: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbSetFocus: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbKillFocus: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbShowWindow: Result<
-        unsafe extern "stdcall" fn(webview: mbWebView, show: ::std::os::raw::c_int),
+        unsafe extern "system" fn(webview: mbWebView, show: ::std::os::raw::c_int),
         ::libloading::Error,
     >,
     pub mbLoadURL: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, url: *const utf8),
+        unsafe extern "system" fn(webView: mbWebView, url: *const utf8),
         ::libloading::Error,
     >,
     pub mbLoadHtmlWithBaseUrl: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, html: *const utf8, baseUrl: *const utf8),
+        unsafe extern "system" fn(webView: mbWebView, html: *const utf8, baseUrl: *const utf8),
         ::libloading::Error,
     >,
     pub mbPostURL: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             url: *const utf8,
             postData: *const ::std::os::raw::c_char,
@@ -1925,39 +1925,39 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetLockedViewDC:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> HDC, ::libloading::Error>,
-    pub mbUnlockViewDC: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
-    pub mbWake: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> HDC, ::libloading::Error>,
+    pub mbUnlockViewDC: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbWake: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbJsToDouble: Result<
-        unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue) -> f64,
+        unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue) -> f64,
         ::libloading::Error,
     >,
     pub mbJsToBoolean: Result<
-        unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue) -> BOOL,
+        unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue) -> BOOL,
         ::libloading::Error,
     >,
     pub mbJsToString: Result<
-        unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue) -> *const utf8,
+        unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue) -> *const utf8,
         ::libloading::Error,
     >,
     pub mbJsToWebFrameHandle: Result<
-        unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue) -> mbWebFrameHandle,
+        unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue) -> mbWebFrameHandle,
         ::libloading::Error,
     >,
     pub mbGetParentWebFrameHandle: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, frame: mbWebFrameHandle) -> mbWebFrameHandle,
+        unsafe extern "system" fn(webView: mbWebView, frame: mbWebFrameHandle) -> mbWebFrameHandle,
         ::libloading::Error,
     >,
     pub mbGetJsValueType: Result<
-        unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue) -> mbJsType,
+        unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue) -> mbJsType,
         ::libloading::Error,
     >,
     pub mbJsValueAddRef:
-        Result<unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue), ::libloading::Error>,
+        Result<unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue), ::libloading::Error>,
     pub mbJsValueDeref:
-        Result<unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue), ::libloading::Error>,
+        Result<unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue), ::libloading::Error>,
     pub mbOnJsQuery: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbJsQueryCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1965,7 +1965,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnJsQueryEx: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbJsQueryExCallback,
             param: *mut ::std::os::raw::c_void,
@@ -1973,7 +1973,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbResponseQuery: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             queryId: i64,
             customMsg: ::std::os::raw::c_int,
@@ -1982,7 +1982,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbRunJs: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             frameId: mbWebFrameHandle,
             script: *const utf8,
@@ -1994,7 +1994,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbRunJsSync: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             frameId: mbWebFrameHandle,
             script: *const utf8,
@@ -2003,17 +2003,17 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbWebFrameGetMainFrame: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView) -> mbWebFrameHandle,
+        unsafe extern "system" fn(webView: mbWebView) -> mbWebFrameHandle,
         ::libloading::Error,
     >,
     pub mbIsMainFrame: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, frameId: mbWebFrameHandle) -> BOOL,
+        unsafe extern "system" fn(webView: mbWebView, frameId: mbWebFrameHandle) -> BOOL,
         ::libloading::Error,
     >,
     pub mbSetNodeJsEnable:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, b: BOOL), ::libloading::Error>,
     pub mbSetDeviceParameter: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             device: *const ::std::os::raw::c_char,
             paramStr: *const ::std::os::raw::c_char,
@@ -2023,7 +2023,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetContentAsMarkup: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             calback: mbGetContentAsMarkupCallback,
             param: *mut ::std::os::raw::c_void,
@@ -2032,7 +2032,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetSource: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             calback: mbGetSourceCallback,
             param: *mut ::std::os::raw::c_void,
@@ -2040,13 +2040,13 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetWindowScreenshotSync: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, format: mbImageFormat) -> *mut mbMemBuf,
+        unsafe extern "system" fn(webView: mbWebView, format: mbImageFormat) -> *mut mbMemBuf,
         ::libloading::Error,
     >,
     pub mbGetSourceSync:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView) -> mbStringPtr, ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView) -> mbStringPtr, ::libloading::Error>,
     pub mbUtilSerializeToMHTML: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             calback: mbGetSourceCallback,
             param: *mut ::std::os::raw::c_void,
@@ -2054,15 +2054,15 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbUtilCreateRequestCode: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             registerInfo: *const ::std::os::raw::c_char,
         ) -> *const ::std::os::raw::c_char,
         ::libloading::Error,
     >,
     pub mbUtilIsRegistered:
-        Result<unsafe extern "stdcall" fn(defaultPath: *const WCHAR) -> BOOL, ::libloading::Error>,
+        Result<unsafe extern "system" fn(defaultPath: *const WCHAR) -> BOOL, ::libloading::Error>,
     pub mbUtilPrint: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             frameId: mbWebFrameHandle,
             printParams: *const mbPrintSettings,
@@ -2070,26 +2070,26 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbUtilBase64Encode:
-        Result<unsafe extern "stdcall" fn(str_: *const utf8) -> *const utf8, ::libloading::Error>,
+        Result<unsafe extern "system" fn(str_: *const utf8) -> *const utf8, ::libloading::Error>,
     pub mbUtilBase64EncodeBuffer: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             str_: *const ::std::os::raw::c_void,
             len: ::std::os::raw::c_int,
         ) -> *mut mbMemBuf,
         ::libloading::Error,
     >,
     pub mbUtilBase64Decode:
-        Result<unsafe extern "stdcall" fn(str_: *const utf8) -> *const utf8, ::libloading::Error>,
+        Result<unsafe extern "system" fn(str_: *const utf8) -> *const utf8, ::libloading::Error>,
     pub mbUtilDecodeURLEscape:
-        Result<unsafe extern "stdcall" fn(url: *const utf8) -> *const utf8, ::libloading::Error>,
+        Result<unsafe extern "system" fn(url: *const utf8) -> *const utf8, ::libloading::Error>,
     pub mbUtilEncodeURLEscape:
-        Result<unsafe extern "stdcall" fn(url: *const utf8) -> *const utf8, ::libloading::Error>,
+        Result<unsafe extern "system" fn(url: *const utf8) -> *const utf8, ::libloading::Error>,
     pub mbUtilCreateV8Snapshot: Result<
-        unsafe extern "stdcall" fn(str_: *const utf8) -> *const mbMemBuf,
+        unsafe extern "system" fn(str_: *const utf8) -> *const mbMemBuf,
         ::libloading::Error,
     >,
     pub mbUtilPrintToPdf: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             frameId: mbWebFrameHandle,
             settings: *const mbPrintSettings,
@@ -2099,7 +2099,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbUtilPrintToBitmap: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             frameId: mbWebFrameHandle,
             settings: *const mbScreenshotSettings,
@@ -2109,7 +2109,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbUtilScreenshot: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             settings: *const mbScreenshotSettings,
             callback: mbOnScreenshot,
@@ -2118,14 +2118,14 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbUtilsSilentPrint: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             settings: *const ::std::os::raw::c_char,
         ) -> BOOL,
         ::libloading::Error,
     >,
     pub mbPopupDownloadMgr: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             url: *const ::std::os::raw::c_char,
             downloadJob: *mut ::std::os::raw::c_void,
@@ -2133,7 +2133,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbPopupDialogAndDownload: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             dialogOpt: *const mbDialogOptions,
             contentLength: usize,
@@ -2147,7 +2147,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbDownloadByPath: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             downloadOptions: *const mbDownloadOptions,
             path: *const WCHAR,
@@ -2162,7 +2162,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbDownloadByUtf8Path: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             downloadOptions: *const mbDownloadOptions,
             path: *const ::std::os::raw::c_char,
@@ -2177,7 +2177,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetPdfPageData: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbOnGetPdfPageDataCallback,
             param: *mut ::std::os::raw::c_void,
@@ -2185,16 +2185,16 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCreateMemBuf: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             buf: *mut ::std::os::raw::c_void,
             length: usize,
         ) -> *mut mbMemBuf,
         ::libloading::Error,
     >,
-    pub mbFreeMemBuf: Result<unsafe extern "stdcall" fn(buf: *mut mbMemBuf), ::libloading::Error>,
+    pub mbFreeMemBuf: Result<unsafe extern "system" fn(buf: *mut mbMemBuf), ::libloading::Error>,
     pub mbPluginListBuilderAddPlugin: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             builder: *mut ::std::os::raw::c_void,
             name: *const utf8,
             description: *const utf8,
@@ -2203,7 +2203,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbPluginListBuilderAddMediaTypeToLastPlugin: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             builder: *mut ::std::os::raw::c_void,
             name: *const utf8,
             description: *const utf8,
@@ -2211,17 +2211,17 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbPluginListBuilderAddFileExtensionToLastMediaType: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             builder: *mut ::std::os::raw::c_void,
             fileExtension: *const utf8,
         ),
         ::libloading::Error,
     >,
-    pub mbEnableHighDPISupport: Result<unsafe extern "stdcall" fn(), ::libloading::Error>,
-    pub mbRunMessageLoop: Result<unsafe extern "stdcall" fn(), ::libloading::Error>,
-    pub mbExitMessageLoop: Result<unsafe extern "stdcall" fn(), ::libloading::Error>,
+    pub mbEnableHighDPISupport: Result<unsafe extern "system" fn(), ::libloading::Error>,
+    pub mbRunMessageLoop: Result<unsafe extern "system" fn(), ::libloading::Error>,
+    pub mbExitMessageLoop: Result<unsafe extern "system" fn(), ::libloading::Error>,
     pub mbOnLoadUrlFinish: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbLoadUrlFinishCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -2229,7 +2229,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnLoadUrlHeadersReceived: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbLoadUrlHeadersReceivedCallback,
             callbackParam: *mut ::std::os::raw::c_void,
@@ -2237,7 +2237,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnDocumentReadyInBlinkThread: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             callback: mbDocumentReadyCallback,
             param: *mut ::std::os::raw::c_void,
@@ -2245,21 +2245,21 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbUtilSetDefaultPrinterSettings: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, setting: *const mbDefaultPrinterSettings),
+        unsafe extern "system" fn(webView: mbWebView, setting: *const mbDefaultPrinterSettings),
         ::libloading::Error,
     >,
     pub mbGetContentWidth: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView) -> ::std::os::raw::c_int,
+        unsafe extern "system" fn(webView: mbWebView) -> ::std::os::raw::c_int,
         ::libloading::Error,
     >,
     pub mbGetContentHeight: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView) -> ::std::os::raw::c_int,
+        unsafe extern "system" fn(webView: mbWebView) -> ::std::os::raw::c_int,
         ::libloading::Error,
     >,
     pub mbGetWebViewForCurrentContext:
-        Result<unsafe extern "stdcall" fn() -> mbWebView, ::libloading::Error>,
+        Result<unsafe extern "system" fn() -> mbWebView, ::libloading::Error>,
     pub mbRegisterEmbedderCustomElement: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webviewHandle: mbWebView,
             frameId: mbWebFrameHandle,
             name: *const ::std::os::raw::c_char,
@@ -2269,7 +2269,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnNodeCreateProcess: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webviewHandle: mbWebView,
             callback: mbNodeOnCreateProcessCallback,
             param: *mut ::std::os::raw::c_void,
@@ -2277,15 +2277,15 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetGlobalExecByFrame: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, frameId: mbWebFrameHandle) -> mbJsExecState,
+        unsafe extern "system" fn(webView: mbWebView, frameId: mbWebFrameHandle) -> mbJsExecState,
         ::libloading::Error,
     >,
     pub mbJsToV8Value: Result<
-        unsafe extern "stdcall" fn(es: mbJsExecState, v: mbJsValue) -> *mut ::std::os::raw::c_void,
+        unsafe extern "system" fn(es: mbJsExecState, v: mbJsValue) -> *mut ::std::os::raw::c_void,
         ::libloading::Error,
     >,
     pub mbOnThreadIdle: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             callback: mbThreadCallback,
             param1: *mut ::std::os::raw::c_void,
             param2: *mut ::std::os::raw::c_void,
@@ -2293,7 +2293,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbOnBlinkThreadInit: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             callback: mbThreadCallback,
             param1: *mut ::std::os::raw::c_void,
             param2: *mut ::std::os::raw::c_void,
@@ -2301,7 +2301,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCallBlinkThreadAsync: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             callback: mbThreadCallback,
             param1: *mut ::std::os::raw::c_void,
             param2: *mut ::std::os::raw::c_void,
@@ -2309,7 +2309,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCallBlinkThreadSync: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             callback: mbThreadCallback,
             param1: *mut ::std::os::raw::c_void,
             param2: *mut ::std::os::raw::c_void,
@@ -2317,7 +2317,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCallUiThreadSync: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             callback: mbThreadCallback,
             param1: *mut ::std::os::raw::c_void,
             param2: *mut ::std::os::raw::c_void,
@@ -2325,7 +2325,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbCallUiThreadAsync: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             callback: mbThreadCallback,
             param1: *mut ::std::os::raw::c_void,
             param2: *mut ::std::os::raw::c_void,
@@ -2333,7 +2333,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbSetUserKeyValue: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             key: *const ::std::os::raw::c_char,
             value: *mut ::std::os::raw::c_void,
@@ -2341,27 +2341,27 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbGetUserKeyValue: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             key: *const ::std::os::raw::c_char,
         ) -> *mut ::std::os::raw::c_void,
         ::libloading::Error,
     >,
     pub mbGoToOffset: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, offset: ::std::os::raw::c_int),
+        unsafe extern "system" fn(webView: mbWebView, offset: ::std::os::raw::c_int),
         ::libloading::Error,
     >,
     pub mbGoToIndex: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, index: ::std::os::raw::c_int),
+        unsafe extern "system" fn(webView: mbWebView, index: ::std::os::raw::c_int),
         ::libloading::Error,
     >,
-    pub mbEditorRedo: Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+    pub mbEditorRedo: Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbEditorUnSelect:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView), ::libloading::Error>,
     pub mbGetBlinkMainThreadIsolate:
-        Result<unsafe extern "stdcall" fn() -> v8Isolate, ::libloading::Error>,
+        Result<unsafe extern "system" fn() -> v8Isolate, ::libloading::Error>,
     pub mbInsertCSSByFrame: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             frameId: mbWebFrameHandle,
             cssText: *const utf8,
@@ -2369,7 +2369,7 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbWebFrameGetMainWorldScriptContext: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webView: mbWebView,
             frameId: mbWebFrameHandle,
             contextOut: v8ContextPtr,
@@ -2377,15 +2377,15 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbNetGetReferrer: Result<
-        unsafe extern "stdcall" fn(jobPtr: mbNetJob) -> *const ::std::os::raw::c_char,
+        unsafe extern "system" fn(jobPtr: mbNetJob) -> *const ::std::os::raw::c_char,
         ::libloading::Error,
     >,
     pub mbPostToUiThread: Result<
-        unsafe extern "stdcall" fn(callback: mbOnCallUiThread, param: *mut ::std::os::raw::c_void),
+        unsafe extern "system" fn(callback: mbOnCallUiThread, param: *mut ::std::os::raw::c_void),
         ::libloading::Error,
     >,
     pub mbPostToUiThreadDelay: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             callback: mbOnCallUiThread,
             param: *mut ::std::os::raw::c_void,
             millisecond: usize,
@@ -2393,20 +2393,20 @@ pub struct Library {
         ::libloading::Error,
     >,
     pub mbSetEditable:
-        Result<unsafe extern "stdcall" fn(webView: mbWebView, editable: bool), ::libloading::Error>,
+        Result<unsafe extern "system" fn(webView: mbWebView, editable: bool), ::libloading::Error>,
     pub mbSetLanguage: Result<
-        unsafe extern "stdcall" fn(webView: mbWebView, language: *const ::std::os::raw::c_char),
+        unsafe extern "system" fn(webView: mbWebView, language: *const ::std::os::raw::c_char),
         ::libloading::Error,
     >,
     pub mbQueryState: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             webviewHandle: mbWebView,
             type_: *const ::std::os::raw::c_char,
         ) -> ::std::os::raw::c_int,
         ::libloading::Error,
     >,
     pub mbGetProcAddr: Result<
-        unsafe extern "stdcall" fn(
+        unsafe extern "system" fn(
             name: *const ::std::os::raw::c_char,
         ) -> *mut ::std::os::raw::c_void,
         ::libloading::Error,

@@ -5,7 +5,7 @@ use std::{
 
 use crate::call_api_or_panic;
 
-unsafe extern "stdcall" fn shim_text(
+unsafe extern "system" fn shim_text(
     _: miniblink_sys::mbWebView,
     param: *mut ::std::os::raw::c_void,
     text: *const i8,
@@ -16,7 +16,7 @@ unsafe extern "stdcall" fn shim_text(
     let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&text)));
 }
 
-unsafe extern "stdcall" fn shim_text2(
+unsafe extern "system" fn shim_text2(
     _: miniblink_sys::mbWebView,
     param: *mut ::std::os::raw::c_void,
     text: *const i8,
@@ -120,7 +120,7 @@ pub trait WebViewTrait {
     where
         F: FnMut(&GetCookieParameters) + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             _: miniblink_sys::mbWebView,
             param: *mut ::std::os::raw::c_void,
             state: miniblink_sys::MbAsynRequestState,
@@ -285,7 +285,7 @@ pub trait WebViewTrait {
     where
         F: FnMut(&JsQueryParameters) -> JsQueryResult + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             webview: miniblink_sys::mbWebView,
             param: *mut ::std::os::raw::c_void,
             _es: miniblink_sys::mbJsExecState,
@@ -355,7 +355,7 @@ pub trait WebViewTrait {
     where
         F: FnMut(&UrlChangeParameters) + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             _: miniblink_sys::mbWebView,
             param: *mut ::std::os::raw::c_void,
             url: *const i8,
@@ -408,7 +408,7 @@ pub trait WebViewTrait {
     where
         F: FnMut(&NavigationParameters) -> bool + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             _: isize,
             param: *mut ::std::os::raw::c_void,
             navigation_type: i32,
@@ -441,7 +441,7 @@ pub trait WebViewTrait {
     where
         F: FnMut(&WebFrameHandle) + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             _: isize,
             param: *mut ::std::os::raw::c_void,
             frame_id: *mut ::std::os::raw::c_void,
@@ -464,7 +464,7 @@ pub trait WebViewTrait {
     where
         F: FnMut(&DownloadParameters) -> bool + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             _: isize,
             param: *mut ::std::os::raw::c_void,
             frame_id: miniblink_sys::mbWebFrameHandle,
@@ -735,7 +735,7 @@ pub trait WebViewWindowTrait {
     where
         F: FnMut() -> bool + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             _: miniblink_sys::mbWebView,
             param: *mut ::std::os::raw::c_void,
             _unuse: *mut ::std::os::raw::c_void,
@@ -763,7 +763,7 @@ pub trait WebViewWindowTrait {
     where
         F: FnMut() -> bool + 'static,
     {
-        unsafe extern "stdcall" fn shim(
+        unsafe extern "system" fn shim(
             _: miniblink_sys::mbWebView,
             param: *mut ::std::os::raw::c_void,
             _unuse: *mut ::std::os::raw::c_void,
