@@ -4,5 +4,6 @@ miniblink.so
 mb*.dll
 Cargo.lock
 cookie.dat
+cookies.dat
 /target
 /test*
