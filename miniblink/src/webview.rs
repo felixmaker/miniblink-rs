@@ -723,6 +723,64 @@ pub trait WebViewTrait {
     {
         unsafe { call_api_or_panic().mbIsMainFrame(self.as_ptr(), frame_handle.as_ptr()) != 0 }
     }
+
+    /// Set global proxy.
+    fn set_proxy(&self, proxy: &Proxy) {
+        let proxy = proxy.to_mb_proxy();
+        unsafe {
+            call_api_or_panic().mbSetProxy(self.as_ptr(), &proxy);
+        }
+    }
+}
+
+/// The proxy type.
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum ProxyType {
+    Http = 0,
+    Https = 1,
+    Socks4 = 2,
+    Socks4A = 3,
+    Socks5 = 4,
+    SocksHostname = 5,
+}
+
+/// The proxy information.
+pub struct Proxy {
+    /// The proxy type.
+    pub type_: ProxyType,
+    /// The proxy hostname. less than 100 characters.
+    pub hostname: String,
+    /// The proxy port.
+    pub port: u16,
+    /// The proxy username. less than 50 characters.
+    pub username: String,
+    /// The proxy password. less than 50 characters.
+    pub password: String,
+}
+
+impl Proxy {
+    fn to_mb_proxy(&self) -> miniblink_sys::mbProxy {
+        use std::cmp::min;
+
+        let mut mb_proxy = miniblink_sys::mbProxy {
+            type_: self.type_ as _,
+            hostname: [0; 100],
+            port: self.port,
+            username: [0; 50],
+            password: [0; 50],
+        };
+        let hostname: &[std::ffi::c_char] =
+            unsafe { std::mem::transmute(self.hostname.as_bytes()) };
+        mb_proxy.hostname[..min(hostname.len(), 100)].copy_from_slice(hostname);
+        let username: &[std::ffi::c_char] =
+            unsafe { std::mem::transmute(self.username.as_bytes()) };
+        mb_proxy.username[..min(username.len(), 50)].copy_from_slice(username);
+        let password: &[std::ffi::c_char] =
+            unsafe { std::mem::transmute(self.password.as_bytes()) };
+        mb_proxy.password[..min(password.len(), 50)].copy_from_slice(password);
+        mb_proxy
+    }
 }
 
 /// The webview window trait.
