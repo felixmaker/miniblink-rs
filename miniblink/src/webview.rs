@@ -762,7 +762,16 @@ pub struct Proxy {
 impl Proxy {
     fn to_mb_proxy(&self) -> miniblink_sys::mbProxy {
         use std::cmp::min;
-
+        use std::ffi::c_char;
+        
+        fn copy_to_char_array(src: &str, dst: &mut [c_char]) {
+            let bytes = src.as_bytes();
+            let len = min(bytes.len(), dst.len());
+            for i in 0..len {
+                dst[i] = bytes[i] as std::ffi::c_char;
+            }
+        }
+        
         let mut mb_proxy = miniblink_sys::mbProxy {
             type_: self.type_ as _,
             hostname: [0; 100],
@@ -770,15 +779,11 @@ impl Proxy {
             username: [0; 50],
             password: [0; 50],
         };
-        let hostname: &[std::ffi::c_char] =
-            unsafe { std::mem::transmute(self.hostname.as_bytes()) };
-        mb_proxy.hostname[..min(hostname.len(), 100)].copy_from_slice(hostname);
-        let username: &[std::ffi::c_char] =
-            unsafe { std::mem::transmute(self.username.as_bytes()) };
-        mb_proxy.username[..min(username.len(), 50)].copy_from_slice(username);
-        let password: &[std::ffi::c_char] =
-            unsafe { std::mem::transmute(self.password.as_bytes()) };
-        mb_proxy.password[..min(password.len(), 50)].copy_from_slice(password);
+
+        copy_to_char_array(&self.hostname, &mut mb_proxy.hostname);
+        copy_to_char_array(&self.username, &mut mb_proxy.username);
+        copy_to_char_array(&self.password, &mut mb_proxy.password);
+
         mb_proxy
     }
 }
