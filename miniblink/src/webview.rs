@@ -349,6 +349,18 @@ impl WebView {
         });
     }
 
+    /// Set prompt box callback.
+    pub fn on_prompt_box<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, &PromptParams) -> Option<String> + 'static,
+    {
+        let callback = Rc::new(RefCell::new(callback));
+        WEBVIEW_CONTENT.with_borrow_mut(|content| {
+            let content = content.get_mut(&self.as_ptr()).unwrap();
+            content.on_prompt_box = Some(callback);
+        });
+    }
+
     /// Set navigation callback.
     pub fn on_navigation<F>(&self, callback: F)
     where

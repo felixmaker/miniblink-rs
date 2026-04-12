@@ -5,9 +5,9 @@ use std::{
     rc::Rc,
 };
 
-use miniblink_sys::{mbJsExecState, mbWebFrameHandle, mbWebView, MbAsynRequestState};
+use miniblink_sys::{mbJsExecState, mbString, mbWebFrameHandle, mbWebView, MbAsynRequestState};
 
-use crate::{call_api_or_panic, params::*, types::*, webview::WebView};
+use crate::{call_api_or_panic, mbstring::MbString, params::*, types::*, webview::WebView};
 
 /// Defines the content.
 #[derive(Default)]
@@ -23,8 +23,12 @@ pub(crate) struct WebViewContent {
     pub(crate) on_get_cookie: Option<Rc<RefCell<dyn FnMut(&mut WebView, &GetCookieParameters)>>>,
     pub(crate) on_url_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &UrlChangedParameters)>>>,
     pub(crate) on_title_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str)>>>,
+
+    // Dialog callbacks.
     pub(crate) on_alert_box: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) -> bool>>>,
     pub(crate) on_confirm_box: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) -> bool>>>,
+    pub(crate) on_prompt_box:
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &PromptParams) -> Option<String>>>>,
 
     // Window callbacks.
     pub(crate) on_close: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool>>>,
@@ -407,6 +411,56 @@ fn set_confirm_box_callback(webview: &WebView) {
     }
 }
 
+fn set_prompt_box_callback(webview: &WebView) {
+    extern "system" fn on_prompt_box(
+        mut webview: mbWebView,
+        _param: *mut c_void,
+        message: *const c_char,
+        default_value: *const c_char,
+        reject: *mut i32,
+    ) -> *mut mbString {
+        let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
+        let message = unsafe { CStr::from_ptr(message).to_string_lossy().to_string() };
+        let default_value = unsafe { CStr::from_ptr(default_value).to_string_lossy().to_string() };
+        let prompt_params = PromptParams {
+            message,
+            default_value,
+        };
+
+        WEBVIEW_CONTENT
+            .with_borrow_mut(|content| {
+                content
+                    .get_mut(&webview.as_ptr())
+                    .and_then(|x| x.on_prompt_box.clone())
+                    .and_then(|f| {
+                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                            f.borrow_mut()(webview, &prompt_params)
+                        }))
+                        .ok()
+                    })
+                    .and_then(|result| match result {
+                        Some(r) => {
+                            unsafe { *reject = 1 };
+                            Some(MbString::new(r).unwrap().into_raw())
+                        }
+                        None => {
+                            unsafe { *reject = 0 };
+                            None
+                        }
+                    })
+            })
+            .unwrap_or(std::ptr::null_mut())
+    }
+
+    unsafe {
+        call_api_or_panic().mbOnPromptBox(
+            webview.as_ptr(),
+            Some(on_prompt_box),
+            std::ptr::null_mut(),
+        );
+    }
+}
+
 pub(crate) fn set_webwindow_handler(webview: &WebView) {
     set_on_close_callback(webview);
     set_on_destroy_callback(webview);
@@ -424,4 +478,5 @@ pub(crate) fn set_webview_handler(webview: &WebView) {
     set_title_changed_callback(webview);
     set_alert_box_callback(webview);
     set_confirm_box_callback(webview);
+    set_prompt_box_callback(webview);
 }
