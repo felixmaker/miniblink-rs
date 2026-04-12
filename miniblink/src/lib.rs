@@ -7,6 +7,15 @@ pub mod app;
 pub mod error;
 /// Wraps to mbWebView.
 pub mod webview;
+/// Wraps to mbWebView.
+pub mod webwindow;
+/// Defines the content.
+pub mod content;
+/// Defines the types.
+pub mod types;
+/// Defines the params.
+pub mod params;
+
 pub(crate) mod mbstring;
 
 use std::sync::OnceLock;

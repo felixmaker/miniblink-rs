@@ -1,15 +1,15 @@
-use miniblink::{app, webview::*};
+use miniblink::{app, params::JsQueryResult, webwindow::*};
 
 fn main() {
     app::init("./mb.dll").unwrap();
     let view = WebViewWindow::default();
-    view.on_query(|params| {
+    view.on_query(|_, params| {
         match params.custom_message {
             0 => JsQueryResult{ custom_message: 0, response: format!("hello, {}", params.request) },
             _ => JsQueryResult{ custom_message: -1, response: "".into() },
         }
     });
-    view.on_close(|| std::process::exit(0));
+    view.on_close(|_| std::process::exit(0));
     view.move_to_center();
     view.load_html_with_base_url(
         r#"
