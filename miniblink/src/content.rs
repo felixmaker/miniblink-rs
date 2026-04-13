@@ -59,11 +59,7 @@ fn set_on_close_callback(webview: &WebView) {
     ) -> c_int {
         let view: &mut WebView = unsafe { std::mem::transmute(&mut view) };
         WEBVIEW_CONTENT
-            .with_borrow(|content| {
-                content
-                    .get(&view.as_ptr())
-                    .and_then(|x| x.on_close.clone())
-            })
+            .with_borrow(|content| content.get(&view.as_ptr()).and_then(|x| x.on_close.clone()))
             .and_then(|f| {
                 std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f.borrow_mut()(view))).ok()
             })
@@ -84,18 +80,15 @@ fn set_on_destroy_callback(webview: &WebView) {
     ) -> c_int {
         let view: &mut WebView = unsafe { std::mem::transmute(&mut view) };
         WEBVIEW_CONTENT
-            .with_borrow_mut(|content| {
+            .with_borrow(|content| {
                 content
-                    .get_mut(&view.as_ptr())
+                    .get(&view.as_ptr())
                     .and_then(|x| x.on_destroy.clone())
-                    .and_then(|f| {
-                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                            f.borrow_mut()(view)
-                        }))
-                        .ok()
-                    })
-                    .map(|r| if r { 1 } else { 0 })
             })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f.borrow_mut()(view))).ok()
+            })
+            .map(|r| if r { 1 } else { 0 })
             .unwrap_or(1)
     }
 
@@ -121,17 +114,18 @@ fn set_get_cookie_callback(webview: &WebView) {
             state: unsafe { std::mem::transmute(state) },
             cookie: cookies.to_string_lossy().to_string(),
         };
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            content
-                .get_mut(&webview.as_ptr())
-                .and_then(|x| x.on_get_cookie.clone())
-                .and_then(|f| {
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        f.borrow_mut()(webview, &param)
-                    }))
-                    .ok()
-                })
-        });
+        WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&webview.as_ptr())
+                    .and_then(|x| x.on_get_cookie.clone())
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &param)
+                }))
+                .ok()
+            });
     }
 
     unsafe {
@@ -155,29 +149,30 @@ fn set_query_callback(webview: &WebView) {
             request,
         };
 
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            content
-                .get_mut(&webview.as_ptr())
-                .and_then(|x| x.on_query.clone())
-                .and_then(|f| {
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        f.borrow_mut()(webview, &query_message)
-                    }))
-                    .ok()
-                })
-                .and_then(|result| {
-                    let response = CString::new(result.response).unwrap();
-                    unsafe {
-                        call_api_or_panic().mbResponseQuery(
-                            webview.as_ptr(),
-                            query_id,
-                            result.custom_message,
-                            response.as_ptr(),
-                        )
-                    };
-                    Some(())
-                })
-        });
+        WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&webview.as_ptr())
+                    .and_then(|x| x.on_query.clone())
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &query_message)
+                }))
+                .ok()
+            })
+            .and_then(|result| {
+                let response = CString::new(result.response).unwrap();
+                unsafe {
+                    call_api_or_panic().mbResponseQuery(
+                        webview.as_ptr(),
+                        query_id,
+                        result.custom_message,
+                        response.as_ptr(),
+                    )
+                };
+                Some(())
+            });
     }
 
     unsafe {
@@ -200,17 +195,18 @@ fn set_url_changed_callback(webview: &WebView) {
             can_go_back: can_go_back != 0,
             can_go_forward: can_go_forward != 0,
         };
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            content
-                .get_mut(&webview.as_ptr())
-                .and_then(|x| x.on_url_changed.clone())
-                .and_then(|f| {
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        f.borrow_mut()(webview, &param)
-                    }))
-                    .ok()
-                })
-        });
+        WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&webview.as_ptr())
+                    .and_then(|x| x.on_url_changed.clone())
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &param)
+                }))
+                .ok()
+            });
     }
 
     unsafe {
@@ -236,18 +232,18 @@ fn set_navigation_callback(webview: &WebView) {
             url,
         };
         WEBVIEW_CONTENT
-            .with_borrow_mut(|content| {
+            .with_borrow(|content| {
                 content
-                    .get_mut(&webview.as_ptr())
+                    .get(&webview.as_ptr())
                     .and_then(|x| x.on_navigation.clone())
-                    .and_then(|f| {
-                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                            f.borrow_mut()(webview, &param)
-                        }))
-                        .ok()
-                    })
-                    .map(|x| if x { 1 } else { 0 })
             })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &param)
+                }))
+                .ok()
+            })
+            .map(|x| if x { 1 } else { 0 })
             .unwrap_or(1)
     }
 
@@ -268,17 +264,18 @@ fn set_document_ready_callback(webview: &WebView) {
     ) {
         let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
         let frame_id = WebFrameHandle { inner: frame_id };
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            content
-                .get_mut(&webview.as_ptr())
-                .and_then(|x| x.on_document_ready.clone())
-                .and_then(|f| {
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        f.borrow_mut()(webview, &frame_id)
-                    }))
-                    .ok()
-                })
-        });
+        WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&webview.as_ptr())
+                    .and_then(|x| x.on_document_ready.clone())
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &frame_id)
+                }))
+                .ok()
+            });
     }
 
     unsafe {
@@ -310,18 +307,18 @@ fn set_download_callback(webview: &WebView) {
             download_job,
         };
         WEBVIEW_CONTENT
-            .with_borrow_mut(|content| {
+            .with_borrow(|content| {
                 content
-                    .get_mut(&webview.as_ptr())
+                    .get(&webview.as_ptr())
                     .and_then(|x| x.on_download.clone())
-                    .and_then(|f| {
-                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                            f.borrow_mut()(webview, &download_parameters)
-                        }))
-                        .ok()
-                    })
-                    .map(|x| if x { 1 } else { 0 })
             })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &download_parameters)
+                }))
+                .ok()
+            })
+            .map(|x| if x { 1 } else { 0 })
             .unwrap_or(1)
     }
 
@@ -338,17 +335,18 @@ fn set_title_changed_callback(webview: &WebView) {
     ) {
         let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
         let title = unsafe { CStr::from_ptr(title).to_string_lossy().to_string() };
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            content
-                .get_mut(&webview.as_ptr())
-                .and_then(|x| x.on_title_changed.clone())
-                .and_then(|f| {
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        f.borrow_mut()(webview, &title)
-                    }))
-                    .ok()
-                })
-        });
+        WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&webview.as_ptr())
+                    .and_then(|x| x.on_title_changed.clone())
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &title)
+                }))
+                .ok()
+            });
     }
 
     unsafe {
@@ -368,17 +366,18 @@ fn set_alert_box_callback(webview: &WebView) {
     ) {
         let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
         let message = unsafe { CStr::from_ptr(message).to_string_lossy().to_string() };
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            content
-                .get_mut(&webview.as_ptr())
-                .and_then(|x| x.on_alert_box.clone())
-                .and_then(|f| {
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        f.borrow_mut()(webview, &message)
-                    }))
-                    .ok()
-                })
-        });
+        WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&webview.as_ptr())
+                    .and_then(|x| x.on_alert_box.clone())
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &message)
+                }))
+                .ok()
+            });
     }
 
     unsafe {
@@ -399,18 +398,18 @@ fn set_confirm_box_callback(webview: &WebView) {
         let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
         let message = unsafe { CStr::from_ptr(message).to_string_lossy().to_string() };
         WEBVIEW_CONTENT
-            .with_borrow_mut(|content| {
+            .with_borrow(|content| {
                 content
-                    .get_mut(&webview.as_ptr())
+                    .get(&webview.as_ptr())
                     .and_then(|x| x.on_confirm_box.clone())
-                    .and_then(|f| {
-                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                            f.borrow_mut()(webview, &message)
-                        }))
-                        .ok()
-                    })
-                    .map(|r| if r { 1 } else { 0 })
             })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &message)
+                }))
+                .ok()
+            })
+            .map(|r| if r { 1 } else { 0 })
             .unwrap_or(1)
     }
 
@@ -440,26 +439,26 @@ fn set_prompt_box_callback(webview: &WebView) {
         };
 
         WEBVIEW_CONTENT
-            .with_borrow_mut(|content| {
+            .with_borrow(|content| {
                 content
-                    .get_mut(&webview.as_ptr())
+                    .get(&webview.as_ptr())
                     .and_then(|x| x.on_prompt_box.clone())
-                    .and_then(|f| {
-                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                            f.borrow_mut()(webview, &prompt_params)
-                        }))
-                        .ok()
-                    })
-                    .and_then(|result| match result {
-                        Some(r) => {
-                            unsafe { *reject = 1 };
-                            Some(MbString::new(r).unwrap().into_raw())
-                        }
-                        None => {
-                            unsafe { *reject = 0 };
-                            None
-                        }
-                    })
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    f.borrow_mut()(webview, &prompt_params)
+                }))
+                .ok()
+            })
+            .and_then(|result| match result {
+                Some(r) => {
+                    unsafe { *reject = 1 };
+                    Some(MbString::new(r).unwrap().into_raw())
+                }
+                None => {
+                    unsafe { *reject = 0 };
+                    None
+                }
             })
             .unwrap_or(std::ptr::null_mut())
     }
@@ -513,7 +512,6 @@ fn set_create_view_callback(webview: &WebView) {
             })
             .and_then(|x| {
                 x.on_close(|webview| {
-                    println!("CreateView closed");
                     unsafe { webview.destroy() };
                     true
                 });
