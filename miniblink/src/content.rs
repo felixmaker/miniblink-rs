@@ -1,13 +1,19 @@
 use std::{
     cell::RefCell,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     ffi::{c_char, c_int, c_void, CStr, CString},
     rc::Rc,
 };
 
-use miniblink_sys::{mbJsExecState, mbString, mbWebFrameHandle, mbWebView, MbAsynRequestState};
+use miniblink_sys::{
+    mbJsExecState, mbNavigationType, mbString, mbWebFrameHandle, mbWebView, mbWindowFeatures,
+    MbAsynRequestState,
+};
 
-use crate::{call_api_or_panic, mbstring::MbString, params::*, types::*, webview::WebView};
+use crate::{
+    call_api_or_panic, mbstring::MbString, params::*, types::*, webview::WebView,
+    webwindow::WebViewWindow,
+};
 
 /// Defines the content.
 #[derive(Default)]
@@ -18,6 +24,9 @@ pub(crate) struct WebViewContent {
     pub(crate) on_document_ready: Option<Rc<RefCell<dyn FnMut(&mut WebView, &WebFrameHandle)>>>,
     pub(crate) on_navigation:
         Option<Rc<RefCell<dyn FnMut(&mut WebView, &NavigationParameters) -> bool>>>,
+    pub(crate) on_create_view: Option<
+        Rc<RefCell<dyn FnMut(&mut WebView, &CreateViewParameters) -> Option<WebViewWindow>>>,
+    >,
     pub(crate) on_query:
         Option<Rc<RefCell<dyn FnMut(&mut WebView, &JsQueryParameters) -> JsQueryResult>>>,
     pub(crate) on_get_cookie: Option<Rc<RefCell<dyn FnMut(&mut WebView, &GetCookieParameters)>>>,
@@ -33,6 +42,9 @@ pub(crate) struct WebViewContent {
     // Window callbacks.
     pub(crate) on_close: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool>>>,
     pub(crate) on_destroy: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool>>>,
+
+    pub(crate) parent: Option<mbWebView>,
+    pub(crate) child: HashSet<mbWebView>,
 }
 
 thread_local! {
@@ -46,17 +58,17 @@ fn set_on_close_callback(webview: &WebView) {
         _unuse: *mut c_void,
     ) -> c_int {
         let view: &mut WebView = unsafe { std::mem::transmute(&mut view) };
-        let r = WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            content
-                .get_mut(&view.as_ptr())
-                .and_then(|x| x.on_close.clone())
-                .and_then(|f| {
-                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f.borrow_mut()(view)))
-                        .ok()
-                })
-                .map(|r| if r { 1 } else { 0 })
-        });
-        r.unwrap_or(1)
+        WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&view.as_ptr())
+                    .and_then(|x| x.on_close.clone())
+            })
+            .and_then(|f| {
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f.borrow_mut()(view))).ok()
+            })
+            .map(|r| if r { 1 } else { 0 })
+            .unwrap_or(1)
     }
 
     unsafe {
@@ -461,6 +473,64 @@ fn set_prompt_box_callback(webview: &WebView) {
     }
 }
 
+fn set_create_view_callback(webview: &WebView) {
+    extern "system" fn on_create_view(
+        mut webview: mbWebView,
+        _param: *mut c_void,
+        navigation_type: mbNavigationType,
+        url: *const c_char,
+        window_features: *const mbWindowFeatures,
+    ) -> mbWebView {
+        let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
+        let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+        let navigation_type = unsafe { std::mem::transmute(navigation_type) };
+        let window_features = WindowFeatures::from_mb_window_features(&unsafe { *window_features });
+        let params = CreateViewParameters {
+            navigation_type,
+            url,
+            window_features,
+        };
+
+        let view = WEBVIEW_CONTENT
+            .with_borrow(|content| {
+                content
+                    .get(&webview.as_ptr())
+                    .and_then(|x| x.on_create_view.clone())
+            })
+            .and_then(|f| f.borrow_mut()(webview, &params));
+
+        WEBVIEW_CONTENT
+            .with_borrow_mut(|content| {
+                let content = content.get_mut(&webview.as_ptr()).unwrap();
+                match view {
+                    Some(view) => {
+                        content.parent = Some(webview.as_ptr());
+                        content.child.insert(view.as_ptr());
+                        Some(std::mem::ManuallyDrop::new(view))
+                    }
+                    None => None,
+                }
+            })
+            .and_then(|x| {
+                x.on_close(|webview| {
+                    println!("CreateView closed");
+                    unsafe { webview.destroy() };
+                    true
+                });
+                Some(x.as_ptr())
+            })
+            .unwrap_or(0)
+    }
+
+    unsafe {
+        call_api_or_panic().mbOnCreateView(
+            webview.as_ptr(),
+            Some(on_create_view),
+            std::ptr::null_mut(),
+        )
+    };
+}
+
 pub(crate) fn set_webwindow_handler(webview: &WebView) {
     set_on_close_callback(webview);
     set_on_destroy_callback(webview);
@@ -479,4 +549,5 @@ pub(crate) fn set_webview_handler(webview: &WebView) {
     set_alert_box_callback(webview);
     set_confirm_box_callback(webview);
     set_prompt_box_callback(webview);
+    set_create_view_callback(webview);
 }

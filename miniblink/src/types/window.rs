@@ -1,3 +1,5 @@
+use miniblink_sys::mbWindowFeatures;
+
 /// Window Type.
 #[repr(i32)]
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -35,6 +37,24 @@ pub struct WindowFeatures {
     pub resizable: bool,
     /// Whether the window is fullscreen.
     pub fullscreen: bool,
+}
+
+impl WindowFeatures {
+    pub(crate) fn from_mb_window_features(features: &mbWindowFeatures) -> Self {
+        Self {
+            x: features.x,
+            y: features.y,
+            width: features.width,
+            height: features.height,
+            menu_bar_visible: features.menuBarVisible != 0,
+            status_bar_visible: features.statusBarVisible != 0,
+            tool_bar_visible: features.toolBarVisible != 0,
+            location_bar_visible: features.locationBarVisible != 0,
+            scroll_bars_visible: features.scrollbarsVisible != 0,
+            resizable: features.resizable != 0,
+            fullscreen: features.fullscreen != 0,
+        }
+    }
 }
 
 /// The windows message.

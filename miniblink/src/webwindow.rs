@@ -13,6 +13,7 @@ use crate::{
 };
 
 /// The webview window.
+#[repr(transparent)]
 pub struct WebViewWindow {
     inner: WebView,
 }

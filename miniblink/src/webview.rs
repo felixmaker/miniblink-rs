@@ -6,6 +6,7 @@ use crate::call_api_or_panic;
 use crate::content::{set_webview_handler, WebViewContent, WEBVIEW_CONTENT};
 use crate::params::*;
 use crate::types::*;
+use crate::webwindow::WebViewWindow;
 use miniblink_sys::mbWebView;
 
 /// Wraps to WebView.
@@ -32,6 +33,9 @@ impl WebView {
     pub(crate) unsafe fn from_raw(ptr: mbWebView) -> Self {
         assert!(ptr != 0, "Failed to create webview");
         WEBVIEW_CONTENT.with_borrow_mut(|content| {
+            if content.contains_key(&ptr) {
+                return;
+            }
             content.insert(ptr, WebViewContent::default());
         });
         let webview = Self { inner: ptr };
@@ -362,6 +366,8 @@ impl WebView {
     }
 
     /// Set navigation callback.
+    /// 
+    /// Returns true to continue navigation, false to cancel navigation.
     pub fn on_navigation<F>(&self, callback: F)
     where
         F: FnMut(&mut WebView, &NavigationParameters) -> bool + 'static,
@@ -370,6 +376,20 @@ impl WebView {
         WEBVIEW_CONTENT.with_borrow_mut(|content| {
             let content = content.get_mut(&self.as_ptr()).unwrap();
             content.on_navigation = Some(callback);
+        });
+    }
+
+    /// Set create view callback.
+    /// 
+    /// Invoked when a new webview is created after <a> link click.
+    pub fn on_create_view<F>(&self, callback: F)
+    where
+        F: FnMut(&mut WebView, &CreateViewParameters) -> Option<WebViewWindow> + 'static,
+    {
+        let callback = Rc::new(RefCell::new(callback));
+        WEBVIEW_CONTENT.with_borrow_mut(|content| {
+            let content = content.get_mut(&self.as_ptr()).unwrap();
+            content.on_create_view = Some(callback);
         });
     }
 
@@ -629,6 +649,14 @@ impl WebView {
     /// This function will destroy the webview, and the webview should not be used after.
     pub(crate) unsafe fn destroy(&self) {
         WEBVIEW_CONTENT.with_borrow_mut(|content| {
+            let current = content.get_mut(&self.as_ptr()).unwrap();
+            for child in current.child.iter() {
+                drop(Self::from_raw(*child));
+            }
+            if let Some(parent) = current.parent {
+                let parrent = content.get_mut(&parent).unwrap();
+                parrent.child.remove(&self.as_ptr());
+            }
             content.remove(&self.as_ptr());
         });
         call_api_or_panic().mbDestroyWebView(self.as_ptr());
