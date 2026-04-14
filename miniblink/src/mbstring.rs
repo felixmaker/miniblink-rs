@@ -35,7 +35,7 @@ impl MbString {
         assert!(inner.is_null());
         Self { inner }
     }
- 
+
     pub(crate) fn as_ptr(&self) -> *mut miniblink_sys::mbString {
         self.inner
     }

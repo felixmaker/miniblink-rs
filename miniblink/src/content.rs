@@ -28,20 +28,24 @@ pub(crate) struct WebViewContent {
         Rc<RefCell<dyn FnMut(&mut WebView, &CreateViewParameters) -> Option<WebViewWindow>>>,
     >,
     pub(crate) on_query:
-        Option<Rc<RefCell<dyn FnMut(&mut WebView, &JsQueryParameters) -> JsQueryResult>>>,
-    pub(crate) on_get_cookie: Option<Rc<RefCell<dyn FnMut(&mut WebView, &GetCookieParameters)>>>,
-    pub(crate) on_url_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &UrlChangedParameters)>>>,
-    pub(crate) on_title_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str)>>>,
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &JsQueryParameters) -> JsQueryResult + 'static>>>,
+    pub(crate) on_get_cookie: Option<Rc<RefCell<dyn FnMut(&mut WebView, &GetCookieParameters)+ 'static>>>,
+    pub(crate) on_url_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &UrlChangedParameters)+ 'static>>>,
+    pub(crate) on_title_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str)+ 'static>>>,
 
     // Dialog callbacks.
-    pub(crate) on_alert_box: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) -> bool>>>,
-    pub(crate) on_confirm_box: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) -> bool>>>,
+    pub(crate) on_alert_box: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) -> bool + 'static>>>,
+    pub(crate) on_confirm_box: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) -> bool + 'static>>>,
     pub(crate) on_prompt_box:
-        Option<Rc<RefCell<dyn FnMut(&mut WebView, &PromptParams) -> Option<String>>>>,
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &PromptParams) -> Option<String> + 'static>>>,
 
     // Window callbacks.
-    pub(crate) on_close: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool>>>,
-    pub(crate) on_destroy: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool>>>,
+    pub(crate) on_close: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool+ 'static>>>,
+    pub(crate) on_destroy: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool + 'static>>>,
+
+    // Net callbacks.
+    // pub(crate) on_load_url_begin:
+    //     Option<Rc<RefCell<dyn FnMut(&mut WebView, &str, NetJob) -> bool + Send + 'static>>>,
 
     pub(crate) parent: Option<mbWebView>,
     pub(crate) child: HashSet<mbWebView>,
@@ -529,6 +533,44 @@ fn set_create_view_callback(webview: &WebView) {
     };
 }
 
+// pub(crate) fn set_on_load_url_begin_callback(webview: &WebView) {
+    // extern "system" fn on_load_url_begin(
+    //     mut webview: mbWebView,
+    //     _param: *mut c_void,
+    //     url: *const c_char,
+    //     job: *mut c_void,
+    // ) -> i32 {
+    //     let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
+    //     let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+    //     let job: NetJob = unsafe { std::mem::transmute(job) };
+
+    //     WEBVIEW_CONTENT
+    //         .with_borrow(|content| {
+    //             content
+    //                 .get(&webview.as_ptr())
+    //                 .and_then(|x| {
+    //                     x.on_load_url_begin.clone()
+    //                 })
+    //         })
+    //         .and_then(|f| {
+    //             std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+    //                 f.borrow_mut()(webview, &url, job)
+    //             }))
+    //             .ok()
+    //         })
+    //         .map(|x| if x { 1 } else { 0 })
+    //         .unwrap_or(0)
+    // }
+
+    // unsafe {
+    //     call_api_or_panic().mbOnLoadUrlBegin(
+    //         webview.as_ptr(),
+    //         Some(on_load_url_begin),
+    //         std::ptr::null_mut(),
+    //     );
+    // }
+// }
+
 pub(crate) fn set_webwindow_handler(webview: &WebView) {
     set_on_close_callback(webview);
     set_on_destroy_callback(webview);
@@ -548,4 +590,5 @@ pub(crate) fn set_webview_handler(webview: &WebView) {
     set_confirm_box_callback(webview);
     set_prompt_box_callback(webview);
     set_create_view_callback(webview);
+    // set_on_load_url_begin_callback(webview);
 }

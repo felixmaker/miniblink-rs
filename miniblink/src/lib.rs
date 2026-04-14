@@ -3,18 +3,20 @@
 
 /// Wraps to global functions.
 pub mod app;
+/// Defines the content.
+pub mod content;
 /// Defines the miniblink error types.
 pub mod error;
+/// Defines the net.
+pub mod net_job;
+/// Defines the params.
+pub mod params;
+/// Defines the types.
+pub mod types;
 /// Wraps to mbWebView.
 pub mod webview;
 /// Wraps to mbWebView.
 pub mod webwindow;
-/// Defines the content.
-pub mod content;
-/// Defines the types.
-pub mod types;
-/// Defines the params.
-pub mod params;
 
 pub(crate) mod mbstring;
 
