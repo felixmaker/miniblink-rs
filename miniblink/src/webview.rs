@@ -1,9 +1,10 @@
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use crate::call_api_or_panic;
-use crate::content::{set_webview_handler, WebViewContent, WEBVIEW_CONTENT};
+use crate::content::{WEBVIEW_CONTENT, WEBVIEW_CONTENT2, WebViewContent, WebWindowContentAsync, set_webview_handler};
 use crate::net_job::NetJob;
 use crate::params::*;
 use crate::types::*;
@@ -39,6 +40,10 @@ impl WebView {
             }
             content.insert(ptr, WebViewContent::default());
         });
+        let mut content = WEBVIEW_CONTENT2.write().unwrap();
+        if !content.contains_key(&ptr) {
+            content.insert(ptr, WebWindowContentAsync::default());
+        }
         let webview = Self { inner: ptr };
         set_webview_handler(&webview);
         webview
@@ -424,38 +429,12 @@ impl WebView {
     /// Returns true to cancel loading, false to continue loading.
     pub fn on_load_url_begin<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &str, &NetJob) -> bool + Send + 'static,
+        F: FnMut(&str, &NetJob) -> bool + Send + 'static,
     {
-        extern "system" fn on_load_url_begin(
-            mut webview: mbWebView,
-            param: *mut std::ffi::c_void,
-            url: *const std::ffi::c_char,
-            job: *mut std::ffi::c_void,
-        ) -> i32 {
-            let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
-            let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
-            let job: NetJob = NetJob {inner: job};
-
-            let callback =
-                unsafe { &mut *(param as *mut Box<dyn FnMut(&mut WebView, &str, &NetJob) -> bool>) };
-            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                callback(webview, &url, &job)
-            }))
-            .ok()
-            .map(|x| if x { 1 } else { 0 })
-            .unwrap_or(0)
-        }
-
-        let callback: *mut Box<dyn FnMut(&mut WebView, &str, &NetJob) -> bool> =
-            Box::into_raw(Box::new(Box::new(callback)));
-
-        unsafe {
-            call_api_or_panic().mbOnLoadUrlBegin(
-                self.as_ptr(),
-                Some(on_load_url_begin),
-                callback as *mut std::ffi::c_void,
-            );
-        }
+        let callback = Arc::new(Mutex::new(callback));
+        let mut content = WEBVIEW_CONTENT2.write().unwrap();
+        let content = content.get_mut(&self.inner).unwrap();
+        content.on_load_url_begin = Some(callback);
     }
 
     /// Set debug config: show dev tools.

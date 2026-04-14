@@ -3,6 +3,7 @@ use std::{
     collections::{HashMap, HashSet},
     ffi::{c_char, c_int, c_void, CStr, CString},
     rc::Rc,
+    sync::{Arc, LazyLock, Mutex, RwLock},
 };
 
 use miniblink_sys::{
@@ -11,7 +12,7 @@ use miniblink_sys::{
 };
 
 use crate::{
-    call_api_or_panic, mbstring::MbString, params::*, types::*, webview::WebView,
+    call_api_or_panic, mbstring::MbString, net_job::NetJob, params::*, types::*, webview::WebView,
     webwindow::WebViewWindow,
 };
 
@@ -20,18 +21,25 @@ use crate::{
 pub(crate) struct WebViewContent {
     // WebView callbacks.
     pub(crate) on_download:
-        Option<Rc<RefCell<dyn FnMut(&mut WebView, &DownloadParameters) -> bool>>>,
-    pub(crate) on_document_ready: Option<Rc<RefCell<dyn FnMut(&mut WebView, &WebFrameHandle)>>>,
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &DownloadParameters) -> bool + 'static>>>,
+    pub(crate) on_document_ready:
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &WebFrameHandle) + 'static>>>,
     pub(crate) on_navigation:
-        Option<Rc<RefCell<dyn FnMut(&mut WebView, &NavigationParameters) -> bool>>>,
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &NavigationParameters) -> bool + 'static>>>,
     pub(crate) on_create_view: Option<
-        Rc<RefCell<dyn FnMut(&mut WebView, &CreateViewParameters) -> Option<WebViewWindow>>>,
+        Rc<
+            RefCell<
+                dyn FnMut(&mut WebView, &CreateViewParameters) -> Option<WebViewWindow> + 'static,
+            >,
+        >,
     >,
     pub(crate) on_query:
         Option<Rc<RefCell<dyn FnMut(&mut WebView, &JsQueryParameters) -> JsQueryResult + 'static>>>,
-    pub(crate) on_get_cookie: Option<Rc<RefCell<dyn FnMut(&mut WebView, &GetCookieParameters)+ 'static>>>,
-    pub(crate) on_url_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &UrlChangedParameters)+ 'static>>>,
-    pub(crate) on_title_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str)+ 'static>>>,
+    pub(crate) on_get_cookie:
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &GetCookieParameters) + 'static>>>,
+    pub(crate) on_url_changed:
+        Option<Rc<RefCell<dyn FnMut(&mut WebView, &UrlChangedParameters) + 'static>>>,
+    pub(crate) on_title_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) + 'static>>>,
 
     // Dialog callbacks.
     pub(crate) on_alert_box: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) -> bool + 'static>>>,
@@ -40,20 +48,26 @@ pub(crate) struct WebViewContent {
         Option<Rc<RefCell<dyn FnMut(&mut WebView, &PromptParams) -> Option<String> + 'static>>>,
 
     // Window callbacks.
-    pub(crate) on_close: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool+ 'static>>>,
+    pub(crate) on_close: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool + 'static>>>,
     pub(crate) on_destroy: Option<Rc<RefCell<dyn FnMut(&mut WebView) -> bool + 'static>>>,
-
-    // Net callbacks.
-    // pub(crate) on_load_url_begin:
-    //     Option<Rc<RefCell<dyn FnMut(&mut WebView, &str, NetJob) -> bool + Send + 'static>>>,
 
     pub(crate) parent: Option<mbWebView>,
     pub(crate) child: HashSet<mbWebView>,
 }
 
+#[derive(Default)]
+pub(crate) struct WebWindowContentAsync {
+    // Net callbacks.
+    pub(crate) on_load_url_begin:
+        Option<Arc<Mutex<dyn FnMut(&str, &NetJob) -> bool + Send + 'static>>>,
+}
+
 thread_local! {
     pub(crate) static WEBVIEW_CONTENT: RefCell<HashMap<mbWebView, WebViewContent>> = RefCell::new(HashMap::new());
 }
+
+pub(crate) static WEBVIEW_CONTENT2: LazyLock<RwLock<HashMap<mbWebView, WebWindowContentAsync>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 fn set_on_close_callback(webview: &WebView) {
     extern "system" fn on_close(
@@ -310,6 +324,7 @@ fn set_download_callback(webview: &WebView) {
             url,
             download_job,
         };
+        println!("Download callback: {:?}", download_parameters.url);
         WEBVIEW_CONTENT
             .with_borrow(|content| {
                 content
@@ -533,43 +548,47 @@ fn set_create_view_callback(webview: &WebView) {
     };
 }
 
-// pub(crate) fn set_on_load_url_begin_callback(webview: &WebView) {
-    // extern "system" fn on_load_url_begin(
-    //     mut webview: mbWebView,
-    //     _param: *mut c_void,
-    //     url: *const c_char,
-    //     job: *mut c_void,
-    // ) -> i32 {
-    //     let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
-    //     let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
-    //     let job: NetJob = unsafe { std::mem::transmute(job) };
+pub(crate) fn set_on_load_url_begin_callback(webview: &WebView) {
+    extern "system" fn on_load_url_begin(
+        webview: mbWebView,
+        _param: *mut c_void,
+        url: *const c_char,
+        job: *mut c_void,
+    ) -> i32 {
+        let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+        let job: NetJob = NetJob { inner: job };
 
-    //     WEBVIEW_CONTENT
-    //         .with_borrow(|content| {
-    //             content
-    //                 .get(&webview.as_ptr())
-    //                 .and_then(|x| {
-    //                     x.on_load_url_begin.clone()
-    //                 })
-    //         })
-    //         .and_then(|f| {
-    //             std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-    //                 f.borrow_mut()(webview, &url, job)
-    //             }))
-    //             .ok()
-    //         })
-    //         .map(|x| if x { 1 } else { 0 })
-    //         .unwrap_or(0)
-    // }
+        let callback = {
+            let content = WEBVIEW_CONTENT2.read().unwrap();
+            let content = content.get(&webview).unwrap();
+            content.on_load_url_begin.clone()
+        };
 
-    // unsafe {
-    //     call_api_or_panic().mbOnLoadUrlBegin(
-    //         webview.as_ptr(),
-    //         Some(on_load_url_begin),
-    //         std::ptr::null_mut(),
-    //     );
-    // }
-// }
+        callback
+            .and_then(|f| {
+                let mut f = f.lock().unwrap();
+                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&url, &job))).ok()
+            })
+            .map(|x| if x { 1 } else { 0 })
+            .unwrap_or(0)
+    }
+
+    unsafe {
+        call_api_or_panic().mbOnLoadUrlBegin(
+            webview.as_ptr(),
+            Some(on_load_url_begin),
+            std::ptr::null_mut(),
+        );
+    }
+
+    unsafe {
+        call_api_or_panic().mbOnLoadUrlBegin(
+            webview.as_ptr(),
+            Some(on_load_url_begin),
+            std::ptr::null_mut(),
+        );
+    }
+}
 
 pub(crate) fn set_webwindow_handler(webview: &WebView) {
     set_on_close_callback(webview);
@@ -590,5 +609,5 @@ pub(crate) fn set_webview_handler(webview: &WebView) {
     set_confirm_box_callback(webview);
     set_prompt_box_callback(webview);
     set_create_view_callback(webview);
-    // set_on_load_url_begin_callback(webview);
+    set_on_load_url_begin_callback(webview);
 }
