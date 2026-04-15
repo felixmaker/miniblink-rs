@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
 use crate::call_api_or_panic;
-use crate::content::{WEBVIEW_CONTENT, WEBVIEW_CONTENT2, WebViewContent, WebWindowContentAsync, set_webview_handler};
+use crate::content::{WEBVIEW_CONTENT, WEBVIEW_CONTENT_ASYNC, WebViewContent, WebWindowContentAsync, set_webview_handler};
 use crate::net_job::NetJob;
 use crate::params::*;
 use crate::types::*;
@@ -40,7 +40,7 @@ impl WebView {
             }
             content.insert(ptr, WebViewContent::default());
         });
-        let mut content = WEBVIEW_CONTENT2.write().unwrap();
+        let mut content = WEBVIEW_CONTENT_ASYNC.write().unwrap();
         if !content.contains_key(&ptr) {
             content.insert(ptr, WebWindowContentAsync::default());
         }
@@ -432,9 +432,20 @@ impl WebView {
         F: FnMut(&str, &NetJob) -> bool + Send + 'static,
     {
         let callback = Arc::new(Mutex::new(callback));
-        let mut content = WEBVIEW_CONTENT2.write().unwrap();
+        let mut content = WEBVIEW_CONTENT_ASYNC.write().unwrap();
         let content = content.get_mut(&self.inner).unwrap();
         content.on_load_url_begin = Some(callback);
+    }
+
+    /// Set load URL end callback.
+    pub fn on_load_url_end<F>(&self, callback: F)
+    where
+        F: FnMut(&str, &NetJob, &[u8]) + Send + 'static,
+    {
+        let callback = Arc::new(Mutex::new(callback));
+        let mut content = WEBVIEW_CONTENT_ASYNC.write().unwrap();
+        let content = content.get_mut(&self.inner).unwrap();
+        content.on_load_url_end = Some(callback);
     }
 
     /// Set debug config: show dev tools.
@@ -679,6 +690,7 @@ impl WebView {
             }
             content.remove(&self.as_ptr());
         });
+        WEBVIEW_CONTENT_ASYNC.write().unwrap().remove(&self.as_ptr());
         call_api_or_panic().mbDestroyWebView(self.as_ptr());
     }
 }

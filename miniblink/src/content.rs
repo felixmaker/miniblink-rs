@@ -1,3 +1,4 @@
+use core::slice;
 use std::{
     cell::RefCell,
     collections::{HashMap, HashSet},
@@ -60,14 +61,17 @@ pub(crate) struct WebWindowContentAsync {
     // Net callbacks.
     pub(crate) on_load_url_begin:
         Option<Arc<Mutex<dyn FnMut(&str, &NetJob) -> bool + Send + 'static>>>,
+    pub(crate) on_load_url_end:
+        Option<Arc<Mutex<dyn FnMut(&str, &NetJob, &[u8]) + Send + 'static>>>,
 }
 
 thread_local! {
     pub(crate) static WEBVIEW_CONTENT: RefCell<HashMap<mbWebView, WebViewContent>> = RefCell::new(HashMap::new());
 }
 
-pub(crate) static WEBVIEW_CONTENT2: LazyLock<RwLock<HashMap<mbWebView, WebWindowContentAsync>>> =
-    LazyLock::new(|| RwLock::new(HashMap::new()));
+pub(crate) static WEBVIEW_CONTENT_ASYNC: LazyLock<
+    RwLock<HashMap<mbWebView, WebWindowContentAsync>>,
+> = LazyLock::new(|| RwLock::new(HashMap::new()));
 
 fn set_on_close_callback(webview: &WebView) {
     extern "system" fn on_close(
@@ -559,7 +563,7 @@ pub(crate) fn set_on_load_url_begin_callback(webview: &WebView) {
         let job: NetJob = NetJob { inner: job };
 
         let callback = {
-            let content = WEBVIEW_CONTENT2.read().unwrap();
+            let content = WEBVIEW_CONTENT_ASYNC.read().unwrap();
             let content = content.get(&webview).unwrap();
             content.on_load_url_begin.clone()
         };
@@ -580,11 +584,41 @@ pub(crate) fn set_on_load_url_begin_callback(webview: &WebView) {
             std::ptr::null_mut(),
         );
     }
+}
+
+fn set_on_load_url_end_callback(webview: &WebView) {
+    extern "system" fn on_load_url_end(
+        webview: mbWebView,
+        _param: *mut c_void,
+        url: *const c_char,
+        job: *mut c_void,
+        buf: *mut c_void,
+        len: c_int,
+    ) {
+        let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+        let job: NetJob = NetJob { inner: job };
+        let buf = unsafe { slice::from_raw_parts_mut(buf as *mut u8, len as usize) };
+
+        let callback = {
+            let content = WEBVIEW_CONTENT_ASYNC.read().unwrap();
+            let content = content.get(&webview).unwrap();
+            content.on_load_url_end.clone()
+        };
+
+        callback.and_then(|f| {
+            let mut f = f.lock().unwrap();
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&url, &job, buf))).ok()
+        });
+
+        unsafe {
+            std::ptr::drop_in_place(buf);
+        }
+    }
 
     unsafe {
-        call_api_or_panic().mbOnLoadUrlBegin(
+        call_api_or_panic().mbOnLoadUrlEnd(
             webview.as_ptr(),
-            Some(on_load_url_begin),
+            Some(on_load_url_end),
             std::ptr::null_mut(),
         );
     }
@@ -610,4 +644,5 @@ pub(crate) fn set_webview_handler(webview: &WebView) {
     set_prompt_box_callback(webview);
     set_create_view_callback(webview);
     set_on_load_url_begin_callback(webview);
+    set_on_load_url_end_callback(webview);
 }
