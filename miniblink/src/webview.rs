@@ -4,7 +4,11 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
 use crate::call_api_or_panic;
-use crate::content::{WEBVIEW_CONTENT, WEBVIEW_CONTENT_ASYNC, WebViewContent, WebWindowContentAsync, set_webview_handler};
+use crate::command::invoke_command_sync;
+use crate::content::{
+    set_webview_handler, WebViewContent, WebWindowContentAsync, WEBVIEW_CONTENT,
+    WEBVIEW_CONTENT_ASYNC,
+};
 use crate::net_job::NetJob;
 use crate::params::*;
 use crate::types::*;
@@ -135,12 +139,40 @@ impl WebView {
     /// Cookie information will be returned in the callback function.
     pub fn get_cookie_async<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &GetCookieParameters) + 'static,
+        F: FnOnce(&Option<String>) + Send + 'static,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_get_cookie = Some(callback);
+        use std::ffi::{c_int, c_void};
+        type ParamCallback = Box<dyn FnOnce(&Option<String>) + Send + 'static>;
+
+        extern "system" fn shim(_: mbWebView, param: *mut c_void, state: c_int, cookie: *const i8) {
+            let callback = unsafe { Box::from_raw(param as *mut ParamCallback) };
+            let cookie = (state == 0)
+                .then_some(unsafe { CStr::from_ptr(cookie).to_string_lossy().to_string() });
+
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| callback(&cookie)));
+        }
+
+        let param: *mut ParamCallback = Box::into_raw(Box::new(Box::new(callback))); // Must assign in order to keep the fat pointer.
+
+        unsafe {
+            call_api_or_panic().mbGetCookie(
+                self.as_ptr(),
+                Some(shim),
+                param as *mut std::ffi::c_void,
+            )
+        };
+    }
+
+    /// Get the page cookies.
+    pub fn get_cookie(&self) -> Option<String> {
+        let ptr = self.as_ptr();
+        invoke_command_sync(move || {
+            let cookie = unsafe { call_api_or_panic().mbGetCookieOnBlinkThread(ptr) };
+            if cookie.is_null() {
+                None
+            } else {
+                Some(unsafe { CStr::from_ptr(cookie).to_string_lossy().to_string() })
+            }
         })
     }
 
@@ -690,7 +722,10 @@ impl WebView {
             }
             content.remove(&self.as_ptr());
         });
-        WEBVIEW_CONTENT_ASYNC.write().unwrap().remove(&self.as_ptr());
+        WEBVIEW_CONTENT_ASYNC
+            .write()
+            .unwrap()
+            .remove(&self.as_ptr());
         call_api_or_panic().mbDestroyWebView(self.as_ptr());
     }
 }

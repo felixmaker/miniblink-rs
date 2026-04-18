@@ -17,6 +17,10 @@ pub mod types;
 pub mod webview;
 /// Wraps to mbWebView.
 pub mod webwindow;
+/// Defines the command.
+pub mod command;
+
+
 
 pub(crate) mod mbstring;
 

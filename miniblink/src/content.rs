@@ -9,7 +9,6 @@ use std::{
 
 use miniblink_sys::{
     mbJsExecState, mbNavigationType, mbString, mbWebFrameHandle, mbWebView, mbWindowFeatures,
-    MbAsynRequestState,
 };
 
 use crate::{
@@ -36,8 +35,6 @@ pub(crate) struct WebViewContent {
     >,
     pub(crate) on_query:
         Option<Rc<RefCell<dyn FnMut(&mut WebView, &JsQueryParameters) -> JsQueryResult + 'static>>>,
-    pub(crate) on_get_cookie:
-        Option<Rc<RefCell<dyn FnMut(&mut WebView, &GetCookieParameters) + 'static>>>,
     pub(crate) on_url_changed:
         Option<Rc<RefCell<dyn FnMut(&mut WebView, &UrlChangedParameters) + 'static>>>,
     pub(crate) on_title_changed: Option<Rc<RefCell<dyn FnMut(&mut WebView, &str) + 'static>>>,
@@ -120,38 +117,6 @@ fn set_on_destroy_callback(webview: &WebView) {
             Some(on_destroy),
             std::ptr::null_mut() as _,
         );
-    }
-}
-
-fn set_get_cookie_callback(webview: &WebView) {
-    extern "system" fn get_cookie(
-        mut webview: mbWebView,
-        _param: *mut c_void,
-        state: MbAsynRequestState,
-        cookie: *const i8,
-    ) {
-        let webview: &mut WebView = unsafe { std::mem::transmute(&mut webview) };
-        let cookies = unsafe { std::ffi::CStr::from_ptr(cookie) };
-        let param = GetCookieParameters {
-            state: unsafe { std::mem::transmute(state) },
-            cookie: cookies.to_string_lossy().to_string(),
-        };
-        WEBVIEW_CONTENT
-            .with_borrow(|content| {
-                content
-                    .get(&webview.as_ptr())
-                    .and_then(|x| x.on_get_cookie.clone())
-            })
-            .and_then(|f| {
-                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    f.borrow_mut()(webview, &param)
-                }))
-                .ok()
-            });
-    }
-
-    unsafe {
-        call_api_or_panic().mbGetCookie(webview.as_ptr(), Some(get_cookie), std::ptr::null_mut())
     }
 }
 
@@ -632,7 +597,6 @@ pub(crate) fn set_webwindow_handler(webview: &WebView) {
 pub(crate) fn set_webview_handler(webview: &WebView) {
     set_on_close_callback(webview);
     set_on_destroy_callback(webview);
-    set_get_cookie_callback(webview);
     set_query_callback(webview);
     set_url_changed_callback(webview);
     set_navigation_callback(webview);
