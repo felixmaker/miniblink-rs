@@ -1,32 +1,58 @@
-use std::cell::RefCell;
-use std::ffi::{CStr, CString};
-use std::rc::Rc;
-use std::sync::{Arc, Mutex};
+use std::any::Any;
+use std::collections::HashSet;
+use std::ffi::*;
+use std::hash::Hash;
+use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::sync::{Arc, Mutex, Weak};
 
 use crate::call_api_or_panic;
 use crate::command::invoke_command_sync;
-use crate::content::{
-    set_webview_handler, WebViewContent, WebWindowContentAsync, WEBVIEW_CONTENT,
-    WEBVIEW_CONTENT_ASYNC,
-};
+use crate::callback::*;
+use crate::mbstring::MbString;
 use crate::net_job::NetJob;
 use crate::params::*;
 use crate::types::*;
-use crate::webwindow::WebViewWindow;
-use miniblink_sys::mbWebView;
 
-/// Wraps to WebView.
+/// Webview ID.
+pub type WebViewID = miniblink_sys::mbWebView;
+
+/// Wraps to WebView
 #[repr(transparent)]
 pub struct WebView {
-    pub(crate) inner: mbWebView,
+    inner: Arc<WebViewInner>,
+}
+
+/// Wraps to WebView.
+pub(crate) struct WebViewInner {
+    pub(crate) id: WebViewID,
+    pub(crate) callbacks: Mutex<Vec<Box<dyn Any>>>,
+    pub(crate) parent: Mutex<Option<Weak<WebViewInner>>>,
+    pub(crate) childset: Mutex<HashSet<WebView>>,
+}
+
+pub(crate) struct CallBackContext<T> {
+    webview: Weak<WebViewInner>,
+    content: T,
+}
+
+impl<T> CallBackContext<T>
+where
+    T: Send + 'static,
+{
+    pub(crate) fn new(webview: &WebView, content: T) -> Box<Self> {
+        Box::new(CallBackContext {
+            webview: Arc::downgrade(&webview.inner),
+            content: content,
+        })
+    }
 }
 
 impl WebView {
-    /// Create a new webview.
+    /// Create a new offscreen webview.
     ///
     /// # Remarks
     /// This is for advanced users. It is recommended to use `WebViewWindow` to create a webview.
-    pub fn new() -> Self {
+    pub fn new_offscreen() -> Self {
         let inner = unsafe { call_api_or_panic().mbCreateWebView() };
         unsafe { Self::from_raw(inner) }
     }
@@ -36,26 +62,33 @@ impl WebView {
     /// # Remarks
     /// Only accept ptr from `mbCreateWebView` or `mbCreateWebWindow`, and make sure the pointer is valid,
     /// otherwise it will cause undefined behavior.
-    pub(crate) unsafe fn from_raw(ptr: mbWebView) -> Self {
+    pub(crate) unsafe fn from_raw(ptr: WebViewID) -> Self {
         assert!(ptr != 0, "Failed to create webview");
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            if content.contains_key(&ptr) {
-                return;
-            }
-            content.insert(ptr, WebViewContent::default());
-        });
-        let mut content = WEBVIEW_CONTENT_ASYNC.write().unwrap();
-        if !content.contains_key(&ptr) {
-            content.insert(ptr, WebWindowContentAsync::default());
-        }
-        let webview = Self { inner: ptr };
-        set_webview_handler(&webview);
+        // WEBVIEW_CONTENT.with_borrow_mut(|content| {
+        //     if content.contains_key(&ptr) {
+        //         return;
+        //     }
+        //     content.insert(ptr, WebViewContent::default());
+        // });
+        // let mut content = WEBVIEW_CONTENT_ASYNC.write().unwrap();
+        // if !content.contains_key(&ptr) {
+        //     content.insert(ptr, WebWindowContentAsync::default());
+        // }
+        let webview = WebViewInner {
+            id: ptr,
+            callbacks: Mutex::new(Vec::new()),
+            parent: Mutex::new(None),
+            childset: Mutex::new(HashSet::new()),
+        };
+        let webview = WebView {
+            inner: Arc::new(webview),
+        };
         webview
     }
 
     /// Get the inner pointer.
-    pub fn as_ptr(&self) -> mbWebView {
-        self.inner
+    pub fn as_ptr(&self) -> WebViewID {
+        self.inner.id
     }
 
     /// Stop loading the page.
@@ -139,25 +172,38 @@ impl WebView {
     /// Cookie information will be returned in the callback function.
     pub fn get_cookie_async<F>(&self, callback: F)
     where
-        F: FnOnce(&Option<String>) + Send + 'static,
+        F: FnOnce(&WebView, &Option<String>) + Send + 'static,
     {
         use std::ffi::{c_int, c_void};
-        type ParamCallback = Box<dyn FnOnce(&Option<String>) + Send + 'static>;
 
-        extern "system" fn shim(_: mbWebView, param: *mut c_void, state: c_int, cookie: *const i8) {
-            let callback = unsafe { Box::from_raw(param as *mut ParamCallback) };
-            let cookie = (state == 0)
-                .then_some(unsafe { CStr::from_ptr(cookie).to_string_lossy().to_string() });
+        let context = CallBackContext::new(self, callback);
 
-            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| callback(&cookie)));
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            param: *mut c_void,
+            state: c_int,
+            cookie: *const i8,
+        ) where
+            F: FnOnce(&WebView, &Option<String>) + Send + 'static,
+        {
+            let callback = unsafe { Box::from_raw(param as *mut Box<CallBackContext<F>>) };
+
+            if let Some(webview) = callback.webview.upgrade() {
+                let webview = WebView { inner: webview };
+                let cookie = (state == 0)
+                    .then_some(unsafe { CStr::from_ptr(cookie).to_string_lossy().to_string() });
+
+                let callback = callback.content;
+                let _ = catch_unwind(AssertUnwindSafe(|| callback(&webview, &cookie)));
+            }
         }
 
-        let param: *mut ParamCallback = Box::into_raw(Box::new(Box::new(callback))); // Must assign in order to keep the fat pointer.
+        let param = Box::into_raw(Box::new(context));
 
         unsafe {
             call_api_or_panic().mbGetCookie(
                 self.as_ptr(),
-                Some(shim),
+                Some(shim::<F>),
                 param as *mut std::ffi::c_void,
             )
         };
@@ -322,13 +368,50 @@ impl WebView {
     /// Eval a script on the frame.
     pub fn on_query<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &JsQueryParameters) -> JsQueryResult + 'static,
+        F: OnQuery,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_query = Some(callback);
-        });
+        use miniblink_sys::{mbJsExecState, mbWebView};
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn on_query<F>(
+            _: mbWebView,
+            context: *mut c_void,
+            _es: mbJsExecState,
+            query_id: i64,
+            custom_msg: c_int,
+            request: *const i8,
+        ) where
+            F: OnQuery,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+
+            let Some(inner) = context.webview.upgrade() else {
+                return;
+            };
+            let webview = WebView { inner };
+
+            let request = unsafe { CStr::from_ptr(request).to_string_lossy().to_string() };
+            let query_params = JsQueryParameters {
+                custom_message: custom_msg,
+                request,
+            };
+
+            if let Ok(result) = catch_unwind(AssertUnwindSafe(|| {
+                (context.content)(&webview, &query_params)
+            })) {
+                let response = CString::new(result.response).unwrap();
+                unsafe {
+                    call_api_or_panic().mbResponseQuery(
+                        webview.as_ptr(),
+                        query_id,
+                        result.custom_message,
+                        response.as_ptr(),
+                    )
+                };
+            }
+        }
+
+        unsafe { call_api_or_panic().mbOnJsQuery(self.as_ptr(), Some(on_query::<F>), context as _) }
     }
 
     /// Set zoom factor.
@@ -346,61 +429,172 @@ impl WebView {
     /// Set title changed callback.
     pub fn on_title_changed<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &str) + 'static,
+        F: OnTitleChanged,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_title_changed = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(_: WebViewID, context: *mut c_void, title: *const c_char)
+        where
+            F: OnTitleChanged,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return;
+            };
+
+            let webview = WebView { inner };
+            let title = unsafe { CStr::from_ptr(title).to_string_lossy().to_string() };
+            let _ = catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &title)));
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnTitleChanged(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set URL changed callback.
     pub fn on_url_changed<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &UrlChangedParameters) + 'static,
+        F: OnUrlChanged,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_url_changed = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            url: *const c_char,
+            can_go_back: c_int,
+            can_go_forward: c_int,
+        ) where
+            F: OnUrlChanged,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return;
+            };
+
+            let webview = WebView { inner };
+            let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+            let param = UrlChangedParameters {
+                url,
+                can_go_back: can_go_back != 0,
+                can_go_forward: can_go_forward != 0,
+            };
+            let _ = catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &param)));
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnURLChanged(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set alert box callback.
     pub fn on_alert_box<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &str) -> bool + 'static,
+        F: OnAlertBox,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_alert_box = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(_: WebViewID, context: *mut c_void, message: *const c_char)
+        where
+            F: OnAlertBox,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return;
+            };
+
+            let webview = WebView { inner };
+            let message = unsafe { CStr::from_ptr(message).to_string_lossy().to_string() };
+            let _ = catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &message)));
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnAlertBox(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set confirm box callback.
     pub fn on_confirm_box<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &str) -> bool + 'static,
+        F: OnConfirmBox,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_confirm_box = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            message: *const c_char,
+        ) -> c_int
+        where
+            F: OnConfirmBox,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return 0;
+            };
+
+            let webview = WebView { inner };
+            let message = unsafe { CStr::from_ptr(message).to_string_lossy().to_string() };
+            match catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &message))) {
+                Ok(true) => 1,
+                _ => 0,
+            }
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnConfirmBox(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set prompt box callback.
     pub fn on_prompt_box<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &PromptParams) -> Option<String> + 'static,
+        F: OnPromptBox,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_prompt_box = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            message: *const c_char,
+            default_value: *const c_char,
+            reject: *mut c_int,
+        ) -> *mut miniblink_sys::mbString
+        where
+            F: OnPromptBox,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                unsafe { *reject = 0 }
+                return std::ptr::null_mut();
+            };
+
+            let webview = WebView { inner };
+            let message = unsafe { CStr::from_ptr(message).to_string_lossy().to_string() };
+            let default_value =
+                unsafe { CStr::from_ptr(default_value).to_string_lossy().to_string() };
+            let prompt_params = PromptParams {
+                message,
+                default_value,
+            };
+            match catch_unwind(AssertUnwindSafe(|| {
+                (context.content)(&webview, &prompt_params)
+            })) {
+                Ok(Some(result)) => {
+                    unsafe { *reject = 1 };
+                    MbString::new(result).unwrap().into_raw()
+                }
+                _ => {
+                    unsafe { *reject = 0 };
+                    std::ptr::null_mut()
+                }
+            }
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnPromptBox(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set navigation callback.
@@ -408,13 +602,43 @@ impl WebView {
     /// Returns true to continue navigation, false to cancel navigation.
     pub fn on_navigation<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &NavigationParameters) -> bool + 'static,
+        F: OnNavigation,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_navigation = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            navigation_type: c_int,
+            url: *const c_char,
+        ) -> c_int
+        where
+            F: OnNavigation,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return 1;
+            };
+
+            let webview = WebView { inner };
+            let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+            let param = NavigationParameters {
+                navigation_type: unsafe { std::mem::transmute(navigation_type) },
+                url,
+            };
+
+            if let Ok(result) =
+                catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &param)))
+            {
+                result as c_int
+            } else {
+                1
+            }
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnNavigation(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set create view callback.
@@ -422,37 +646,117 @@ impl WebView {
     /// Invoked when a new webview is created after <a> link click.
     pub fn on_create_view<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &CreateViewParameters) -> Option<WebViewWindow> + 'static,
+        F: OnCreateView,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_create_view = Some(callback);
-        });
+        use miniblink_sys::mbWindowFeatures;
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            navigation_type: c_int,
+            url: *const c_char,
+            window_features: *const mbWindowFeatures,
+        ) -> WebViewID
+        where
+            F: OnCreateView,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return 1;
+            };
+
+            let webview = WebView { inner };
+            let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+            let navigation_type = unsafe { std::mem::transmute(navigation_type) };
+            let window_features =
+                WindowFeatures::from_mb_window_features(&unsafe { *window_features });
+            let params = CreateViewParameters {
+                navigation_type,
+                url,
+                window_features,
+            };
+            match catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &params))) {
+                Ok(Some(child)) => webview.push_child(child),
+                _ => 0,
+            }
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnCreateView(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set a callback when the page DOM emits a ready event. It is possible to determine whether it is the main frame or not.
     pub fn on_document_ready<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &WebFrameHandle) + 'static,
+        F: OnDocumentReady,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_document_ready = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(_: WebViewID, context: *mut c_void, frame_id: *mut c_void)
+        where
+            F: OnDocumentReady,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return;
+            };
+
+            let webview = WebView { inner };
+            let frame_id = WebFrameHandle { inner: frame_id };
+
+            let _ = catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &frame_id)));
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnDocumentReady(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set a callback when the page emits download event. Some links are called when they trigger a download.
     pub fn on_download<F>(&self, callback: F)
     where
-        F: FnMut(&mut WebView, &DownloadParameters) -> bool + 'static,
+        F: OnDownload,
     {
-        let callback = Rc::new(RefCell::new(callback));
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let content = content.get_mut(&self.as_ptr()).unwrap();
-            content.on_download = Some(callback);
-        });
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            frame_id: miniblink_sys::mbWebFrameHandle,
+            url: *const c_char,
+            download_job: *mut c_void,
+        ) -> c_int
+        where
+            F: OnDownload,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return 1;
+            };
+
+            let webview = WebView { inner };
+            let frame_id = WebFrameHandle { inner: frame_id };
+            let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+            let download_job = DownloadJob {
+                inner: download_job,
+            };
+            let params = DownloadParameters {
+                frame_id,
+                url,
+                download_job,
+            };
+
+            match catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &params))) {
+                Ok(true) => 1,
+                _ => 0,
+            }
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnDownload(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set load URL begin callback.
@@ -461,23 +765,78 @@ impl WebView {
     /// Returns true to cancel loading, false to continue loading.
     pub fn on_load_url_begin<F>(&self, callback: F)
     where
-        F: FnMut(&str, &NetJob) -> bool + Send + 'static,
+        F: OnLoadUrlBegin,
     {
-        let callback = Arc::new(Mutex::new(callback));
-        let mut content = WEBVIEW_CONTENT_ASYNC.write().unwrap();
-        let content = content.get_mut(&self.inner).unwrap();
-        content.on_load_url_begin = Some(callback);
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            url: *const c_char,
+            job: *mut c_void,
+        ) -> c_int
+        where
+            F: OnLoadUrlBegin,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return 0;
+            };
+
+            let webview = WebView { inner };
+            let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+            let job: NetJob = NetJob { inner: job };
+
+            match catch_unwind(AssertUnwindSafe(|| (context.content)(&webview, &url, &job))) {
+                Ok(false) => 0,
+                _ => 1,
+            }
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnLoadUrlBegin(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set load URL end callback.
     pub fn on_load_url_end<F>(&self, callback: F)
     where
-        F: FnMut(&str, &NetJob, &[u8]) + Send + 'static,
+        F: OnLoadUrlEnd,
     {
-        let callback = Arc::new(Mutex::new(callback));
-        let mut content = WEBVIEW_CONTENT_ASYNC.write().unwrap();
-        let content = content.get_mut(&self.inner).unwrap();
-        content.on_load_url_end = Some(callback);
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(
+            _: WebViewID,
+            context: *mut c_void,
+            url: *const c_char,
+            job: *mut c_void,
+            buf: *mut c_void,
+            len: c_int,
+        ) where
+            F: OnLoadUrlEnd,
+        {
+            let context = unsafe { &*(context as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return;
+            };
+
+            let webview = WebView { inner };
+            let url = unsafe { CStr::from_ptr(url).to_string_lossy().to_string() };
+            let job: NetJob = NetJob { inner: job };
+            let buf = unsafe { std::slice::from_raw_parts_mut(buf as *mut u8, len as usize) };
+
+            let _ = catch_unwind(AssertUnwindSafe(|| {
+                (context.content)(&webview, &url, &job, buf)
+            }));
+
+            unsafe {
+                std::ptr::drop_in_place(buf);
+            }
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnLoadUrlEnd(self.as_ptr(), Some(shim::<F>), context as _);
+        }
     }
 
     /// Set debug config: show dev tools.
@@ -706,32 +1065,173 @@ impl WebView {
         }
     }
 
-    /// Destroy the webview.
-    ///
-    /// # Safety
-    /// This function will destroy the webview, and the webview should not be used after.
-    pub(crate) unsafe fn destroy(&self) {
-        WEBVIEW_CONTENT.with_borrow_mut(|content| {
-            let current = content.get_mut(&self.as_ptr()).unwrap();
-            for child in current.child.iter() {
-                drop(Self::from_raw(*child));
+    /// Create a new webview window.
+    pub fn new(typ: WindowType, x: i32, y: i32, width: i32, height: i32) -> Self {
+        let id = unsafe {
+            call_api_or_panic().mbCreateWebWindow(
+                typ as _,
+                std::ptr::null_mut(),
+                x,
+                y,
+                width,
+                height,
+            )
+        };
+        let webview = unsafe { Self::from_raw(id) };
+        // set_webwindow_handler(&webview);
+        webview
+    }
+
+    /// Set close callback.
+    pub fn on_close<F>(&self, callback: F)
+    where
+        F: OnClose,
+    {
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(_: WebViewID, param: *mut c_void, _: *mut c_void) -> c_int
+        where
+            F: OnClose,
+        {
+            let context = unsafe { &*(param as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return 1;
+            };
+            let webview = WebView { inner };
+
+            if let Ok(result) = catch_unwind(AssertUnwindSafe(|| (context.content)(&webview))) {
+                result as c_int
+            } else {
+                1
             }
-            if let Some(parent) = current.parent {
-                let parrent = content.get_mut(&parent).unwrap();
-                parrent.child.remove(&self.as_ptr());
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnClose(self.as_ptr(), Some(shim::<F>), context as _);
+        }
+    }
+
+    /// Set destroy callback.
+    pub fn on_destroy<F>(&self, callback: F)
+    where
+        F: OnDestroy,
+    {
+        let context = self.store_callback_context(callback);
+
+        extern "system" fn shim<F>(_: WebViewID, param: *mut c_void, _: *mut c_void) -> c_int
+        where
+            F: OnDestroy,
+        {
+            let context = unsafe { &*(param as *const CallBackContext<F>) };
+            let Some(inner) = context.webview.upgrade() else {
+                return 1;
+            };
+            let webview = WebView { inner };
+
+            if let Ok(result) = catch_unwind(AssertUnwindSafe(|| (context.content)(&webview))) {
+                result as c_int
+            } else {
+                1
             }
-            content.remove(&self.as_ptr());
-        });
-        WEBVIEW_CONTENT_ASYNC
-            .write()
+        }
+
+        unsafe {
+            call_api_or_panic().mbOnDestroy(self.as_ptr(), Some(shim::<F>), context as _);
+        }
+    }
+
+    /// Show the window.
+    pub fn show(&self) {
+        unsafe {
+            call_api_or_panic().mbShowWindow(self.as_ptr(), 1);
+        }
+    }
+
+    /// Hide the window.
+    pub fn hide(&self) {
+        unsafe {
+            call_api_or_panic().mbShowWindow(self.as_ptr(), 0);
+        }
+    }
+
+    // /// Resize the window.
+    // pub fn resize(&self, width: i32, height: i32) {
+    //     unsafe { call_api_or_panic().mbResize(self.as_ptr(), width, height) }
+    // }
+
+    /// Move the window.
+    pub fn move_window(&self, x: i32, y: i32, width: i32, height: i32) {
+        unsafe {
+            call_api_or_panic().mbMoveWindow(self.as_ptr(), x, y, width, height);
+        }
+    }
+
+    /// Move the window to center.
+    pub fn move_to_center(&self) {
+        unsafe {
+            call_api_or_panic().mbMoveToCenter(self.as_ptr());
+        }
+    }
+
+    /// Set the window title.
+    pub fn set_window_title(&self, title: &str) {
+        let title = CString::new(title).unwrap();
+        unsafe { call_api_or_panic().mbSetWindowTitle(self.as_ptr(), title.as_ptr()) }
+    }
+
+    fn store_callback_context<T>(&self, callback: T) -> *const CallBackContext<T>
+    where
+        T: Send + 'static,
+    {
+        let context = CallBackContext::new(self, callback);
+        let param = &*context as *const _;
+        self.inner.callbacks.lock().unwrap().push(context);
+        param
+    }
+
+    fn push_child(&self, child: WebView) -> WebViewID {
+        let id = child.as_ptr();
+        *child.inner.parent.lock().unwrap() = Some(Arc::downgrade(&self.inner));
+        self.inner.childset.lock().unwrap().insert(child);
+        id
+    }
+
+    /// Get the parent window handle.
+    pub fn parent(&self) -> Option<WebView> {
+        self.inner
+            .parent
+            .lock()
             .unwrap()
-            .remove(&self.as_ptr());
-        call_api_or_panic().mbDestroyWebView(self.as_ptr());
+            .as_ref()
+            .and_then(|x| x.upgrade())
+            .map(|inner| WebView { inner })
     }
 }
 
-impl Drop for WebView {
+impl PartialEq for WebView {
+    fn eq(&self, other: &Self) -> bool {
+        self.inner.id == other.inner.id
+    }
+}
+
+impl Eq for WebView {}
+
+impl Hash for WebView {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.inner.id.hash(state);
+    }
+}
+
+impl Default for WebView {
+    fn default() -> Self {
+        let window = Self::new(WindowType::Popup, 0, 0, 800, 600);
+        window.move_to_center();
+        window
+    }
+}
+
+impl Drop for WebViewInner {
     fn drop(&mut self) {
-        unsafe { self.destroy() }
+        unsafe { call_api_or_panic().mbDestroyWebView(self.id) };
     }
 }
