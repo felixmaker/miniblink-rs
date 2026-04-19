@@ -6,16 +6,16 @@ It's now under development, not ready for production.
 
 The api in this crate may change in the future.
 
-```
-use miniblink::prelude::*;
+```rust
 use miniblink::{app, webview::*};
 
 fn main() {
-    app::init("mb.dll").unwrap();
+    app::init("./mb.dll").unwrap();
     let view = WebView::default();
-    view.load_url("https://example.com");
     view.on_close(|_| std::process::exit(0));
+    view.load_url("https://miniblink.net/");
     view.show();
+
     app::run_message_loop();
 }
 ```
