@@ -6,8 +6,8 @@ use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::{Arc, Mutex, Weak};
 
 use crate::call_api_or_panic;
-use crate::command::invoke_command_sync;
 use crate::callback::*;
+use crate::command::invoke_command_sync;
 use crate::mbstring::MbString;
 use crate::net_job::NetJob;
 use crate::params::*;
@@ -86,29 +86,29 @@ impl WebView {
         webview
     }
 
-    /// Get the inner pointer.
-    pub fn as_ptr(&self) -> WebViewID {
+    /// Get the inner id.
+    pub fn as_id(&self) -> WebViewID {
         self.inner.id
     }
 
     /// Stop loading the page.
     pub fn stop_loading(&self) {
-        unsafe { call_api_or_panic().mbStopLoading(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbStopLoading(self.as_id()) }
     }
 
     /// Reload page.
     pub fn reload(&self) {
-        unsafe { call_api_or_panic().mbReload(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbReload(self.as_id()) }
     }
 
     /// Go back.
     pub fn go_back(&self) {
-        unsafe { call_api_or_panic().mbGoBack(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbGoBack(self.as_id()) }
     }
 
     /// Go forward.
     pub fn go_forward(&self) {
-        unsafe { call_api_or_panic().mbGoForward(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbGoForward(self.as_id()) }
     }
 
     /// Resize the page.
@@ -117,53 +117,56 @@ impl WebView {
     ///
     /// This api will resize the window at the same time if using the internal api to create window.
     pub fn resize(&self, w: i32, h: i32) {
-        unsafe { call_api_or_panic().mbResize(self.as_ptr(), w, h) }
+        unsafe { call_api_or_panic().mbResize(self.as_id(), w, h) }
     }
 
     /// Get the window handle.
     pub fn get_window_handle(&self) -> WindowHandle {
-        let hwnd = unsafe { call_api_or_panic().mbGetHostHWND(self.as_ptr()) };
-        WindowHandle { inner: hwnd }
+        let id = self.as_id();
+        invoke_command_sync(move || unsafe {
+            let inner = call_api_or_panic().mbGetPlatformWindowHandle(id);
+            WindowHandle { inner }
+        })
     }
 
     /// Send select command to editor.
     pub fn editor_select_all(&self) {
-        unsafe { call_api_or_panic().mbEditorSelectAll(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorSelectAll(self.as_id()) }
     }
 
     /// Send unselect command to editor.
     pub fn editor_unselect(&self) {
-        unsafe { call_api_or_panic().mbEditorUnSelect(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorUnSelect(self.as_id()) }
     }
 
     /// Send copy command to editor.
     pub fn editor_copy(&self) {
-        unsafe { call_api_or_panic().mbEditorCopy(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorCopy(self.as_id()) }
     }
 
     /// Send cut command to editor.
     pub fn editor_cut(&self) {
-        unsafe { call_api_or_panic().mbEditorCut(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorCut(self.as_id()) }
     }
 
     /// Send delete command to editor.
     pub fn editor_delete(&self) {
-        unsafe { call_api_or_panic().mbEditorDelete(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorDelete(self.as_id()) }
     }
 
     /// Send undo command to editor.
     pub fn editor_undo(&self) {
-        unsafe { call_api_or_panic().mbEditorUndo(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorUndo(self.as_id()) }
     }
 
     /// Send redo command to editor.
     pub fn editor_redo(&self) {
-        unsafe { call_api_or_panic().mbEditorRedo(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorRedo(self.as_id()) }
     }
 
     /// Send paste command to editor.
     pub fn editor_paste(&self) {
-        unsafe { call_api_or_panic().mbEditorPaste(self.as_ptr()) }
+        unsafe { call_api_or_panic().mbEditorPaste(self.as_id()) }
     }
 
     /// Get the page cookies asynchronously.
@@ -202,7 +205,7 @@ impl WebView {
 
         unsafe {
             call_api_or_panic().mbGetCookie(
-                self.as_ptr(),
+                self.as_id(),
                 Some(shim::<F>),
                 param as *mut std::ffi::c_void,
             )
@@ -211,7 +214,7 @@ impl WebView {
 
     /// Get the page cookies.
     pub fn get_cookie(&self) -> Option<String> {
-        let ptr = self.as_ptr();
+        let ptr = self.as_id();
         invoke_command_sync(move || {
             let cookie = unsafe { call_api_or_panic().mbGetCookieOnBlinkThread(ptr) };
             if cookie.is_null() {
@@ -230,7 +233,7 @@ impl WebView {
     pub fn set_cookie(&self, url: &str, cookie: &str) {
         let url = CString::new(url).unwrap();
         let cookie = CString::new(cookie).unwrap();
-        unsafe { call_api_or_panic().mbSetCookie(self.as_ptr(), url.as_ptr(), cookie.as_ptr()) }
+        unsafe { call_api_or_panic().mbSetCookie(self.as_id(), url.as_ptr(), cookie.as_ptr()) }
     }
 
     /// Perform cookie command.
@@ -239,25 +242,25 @@ impl WebView {
     /// This api only affects the curl settings, does not change the javascript content.
     pub fn perform_cookie_command<F>(&self, command: CookieCommand) {
         unsafe {
-            call_api_or_panic().mbPerformCookieCommand(self.as_ptr(), command as _);
+            call_api_or_panic().mbPerformCookieCommand(self.as_id(), command as _);
         }
     }
 
     /// Clear all cookies.
     pub fn clear_cookie(&self) {
-        unsafe { call_api_or_panic().mbClearCookie(self.as_ptr()) };
+        unsafe { call_api_or_panic().mbClearCookie(self.as_id()) };
     }
 
     /// Set cookie jar path.
     pub fn set_cookie_jar_path(&self, path: &str) {
         let path = widestring::WideCString::from_str(path).unwrap();
-        unsafe { call_api_or_panic().mbSetCookieJarPath(self.as_ptr(), path.as_ptr()) };
+        unsafe { call_api_or_panic().mbSetCookieJarPath(self.as_id(), path.as_ptr()) };
     }
 
     /// Set cookie jar full path.
     pub fn set_cookie_jar_full_path(&self, path: &str) {
         let path = widestring::WideCString::from_str(path).unwrap();
-        unsafe { call_api_or_panic().mbSetCookieJarFullPath(self.as_ptr(), path.as_ptr()) };
+        unsafe { call_api_or_panic().mbSetCookieJarFullPath(self.as_id(), path.as_ptr()) };
     }
 
     /// Set local storage full path.
@@ -267,13 +270,13 @@ impl WebView {
     /// Only directory paths can be set, file paths cannot be set.
     pub fn set_local_storage_full_path(&self, path: &str) {
         let path = widestring::WideCString::from_str(path).unwrap();
-        unsafe { call_api_or_panic().mbSetLocalStorageFullPath(self.as_ptr(), path.as_ptr()) };
+        unsafe { call_api_or_panic().mbSetLocalStorageFullPath(self.as_id(), path.as_ptr()) };
     }
 
     /// Fire mouse event.
     pub fn fire_mouse_event(&self, message: WindowMessage, x: i32, y: i32, flags: MouseFlags) {
         unsafe {
-            call_api_or_panic().mbFireMouseEvent(self.as_ptr(), message as _, x, y, flags.into())
+            call_api_or_panic().mbFireMouseEvent(self.as_id(), message as _, x, y, flags.into())
         };
     }
 
@@ -287,7 +290,7 @@ impl WebView {
     ) {
         unsafe {
             call_api_or_panic().mbFireMouseWheelEvent(
-                self.as_ptr(),
+                self.as_id(),
                 message as _,
                 x,
                 y,
@@ -300,7 +303,7 @@ impl WebView {
     pub fn fire_key_up_event(&self, key: VirtualKeyCode, flags: KeyboardFlags, system_key: bool) {
         unsafe {
             call_api_or_panic().mbFireKeyUpEvent(
-                self.as_ptr(),
+                self.as_id(),
                 key as _,
                 flags as _,
                 system_key as _,
@@ -312,7 +315,7 @@ impl WebView {
     pub fn fire_key_down_event(&self, key: VirtualKeyCode, flags: KeyboardFlags, system_key: bool) {
         unsafe {
             call_api_or_panic().mbFireKeyDownEvent(
-                self.as_ptr(),
+                self.as_id(),
                 key as _,
                 flags as _,
                 system_key as _,
@@ -324,7 +327,7 @@ impl WebView {
     pub fn fire_key_press_event(&self, char_code: u32, flags: KeyboardFlags, system_key: bool) {
         unsafe {
             call_api_or_panic().mbFireKeyPressEvent(
-                self.as_ptr(),
+                self.as_id(),
                 char_code,
                 flags as _,
                 system_key as _,
@@ -335,14 +338,14 @@ impl WebView {
     /// Set focus.
     pub fn set_focus(&self) {
         unsafe {
-            call_api_or_panic().mbSetFocus(self.as_ptr());
+            call_api_or_panic().mbSetFocus(self.as_id());
         }
     }
 
     /// Kill focus.
     pub fn kill_focus(&self) {
         unsafe {
-            call_api_or_panic().mbKillFocus(self.as_ptr());
+            call_api_or_panic().mbKillFocus(self.as_id());
         }
     }
 
@@ -352,14 +355,14 @@ impl WebView {
         let is_in_closure = if is_in_closure { 1 } else { 0 };
         unsafe {
             let result = call_api_or_panic().mbRunJsSync(
-                self.as_ptr(),
+                self.as_id(),
                 frame_handle.as_ptr(),
                 script.as_ptr(),
                 is_in_closure,
             );
 
             let es =
-                call_api_or_panic().mbGetGlobalExecByFrame(self.as_ptr(), frame_handle.as_ptr());
+                call_api_or_panic().mbGetGlobalExecByFrame(self.as_id(), frame_handle.as_ptr());
             let result = call_api_or_panic().mbJsToString(es, result);
             CStr::from_ptr(result).to_string_lossy().to_string()
         }
@@ -402,7 +405,7 @@ impl WebView {
                 let response = CString::new(result.response).unwrap();
                 unsafe {
                     call_api_or_panic().mbResponseQuery(
-                        webview.as_ptr(),
+                        webview.as_id(),
                         query_id,
                         result.custom_message,
                         response.as_ptr(),
@@ -411,19 +414,20 @@ impl WebView {
             }
         }
 
-        unsafe { call_api_or_panic().mbOnJsQuery(self.as_ptr(), Some(on_query::<F>), context as _) }
+        unsafe { call_api_or_panic().mbOnJsQuery(self.as_id(), Some(on_query::<F>), context as _) }
     }
 
     /// Set zoom factor.
     pub fn set_zoom_factor(&self, factor: f32) {
         unsafe {
-            call_api_or_panic().mbSetZoomFactor(self.as_ptr(), factor);
+            call_api_or_panic().mbSetZoomFactor(self.as_id(), factor);
         }
     }
 
     /// Get zoom factor.
     pub fn get_zoom_factor(&self) -> f32 {
-        unsafe { call_api_or_panic().mbGetZoomFactor(self.as_ptr()) }
+        let id = self.as_id();
+        invoke_command_sync(move || unsafe { call_api_or_panic().mbGetZoomFactor(id) })
     }
 
     /// Set title changed callback.
@@ -448,7 +452,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnTitleChanged(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnTitleChanged(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -484,7 +488,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnURLChanged(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnURLChanged(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -510,7 +514,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnAlertBox(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnAlertBox(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -543,7 +547,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnConfirmBox(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnConfirmBox(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -593,7 +597,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnPromptBox(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnPromptBox(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -637,7 +641,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnNavigation(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnNavigation(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -683,7 +687,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnCreateView(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnCreateView(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -710,7 +714,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnDocumentReady(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnDocumentReady(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -755,7 +759,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnDownload(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnDownload(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -794,7 +798,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnLoadUrlBegin(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnLoadUrlBegin(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -835,103 +839,19 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnLoadUrlEnd(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnLoadUrlEnd(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
-    /// Set debug config: show dev tools.
-    pub fn set_debug_show_dev_tools(&self, show_dev_tools: &str) {
-        let show_dev_tools = CString::new(show_dev_tools).unwrap();
+    /// Set debug config
+    pub fn set_debug_config<T>(&self, key: &str, value: T)
+    where
+        T: Into<String>,
+    {
+        let key = CString::new(key).unwrap();
+        let value = CString::new(value.into()).unwrap();
         unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"showDevTools".as_ptr(),
-                show_dev_tools.as_ptr(),
-            );
-        }
-    }
-
-    /// Set debug config: wake min interval (the higher the value, the lower the frame rate).
-    pub fn set_debug_wake_min_interval(&self, interval: u32) {
-        let interval = CString::new(interval.to_string()).unwrap();
-        unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"wakeMinInterval".as_ptr(),
-                interval.as_ptr(),
-            );
-        }
-    }
-
-    /// Set debug config: draw min interval (the higher the value, the lower the frame rate).
-    pub fn set_debug_draw_min_interval(&self, interval: u32) {
-        let interval = CString::new(interval.to_string()).unwrap();
-        unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"drawMinInterval".as_ptr(),
-                interval.as_ptr(),
-            );
-        }
-    }
-
-    /// Set debug config: anti-aliasing rendering.
-    pub fn set_debug_draw_max_interval(&self, interval: u32) {
-        let interval = CString::new(interval.to_string()).unwrap();
-        unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"antiAlias".as_ptr(),
-                interval.as_ptr(),
-            );
-        }
-    }
-
-    /// Set debug config: minimum font size.
-    pub fn set_debug_minimal_font_size(&self, size: u32) {
-        let size = CString::new(size.to_string()).unwrap();
-        unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"minimumFontSize".as_ptr(),
-                size.as_ptr(),
-            );
-        }
-    }
-
-    /// Set debug config: minimum logical font size.
-    pub fn set_debug_minimum_logical_font_size(&self, size: u32) {
-        let size = CString::new(size.to_string()).unwrap();
-        unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"minimumLogicalFontSize".as_ptr(),
-                size.as_ptr(),
-            );
-        }
-    }
-
-    /// Set debug config: default font size.
-    pub fn set_debug_default_font_size(&self, size: u32) {
-        let size = CString::new(size.to_string()).unwrap();
-        unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"defaultFontSize".as_ptr(),
-                size.as_ptr(),
-            );
-        }
-    }
-
-    /// Set debug config: default fixed font size.
-    pub fn set_debug_default_fixed_font_size(&self, size: u32) {
-        let size = CString::new(size.to_string()).unwrap();
-        unsafe {
-            call_api_or_panic().mbSetDebugConfig(
-                self.as_ptr(),
-                c"defaultFixedFontSize".as_ptr(),
-                size.as_ptr(),
-            );
+            call_api_or_panic().mbSetDebugConfig(self.as_id(), key.as_ptr(), value.as_ptr());
         }
     }
 
@@ -941,7 +861,7 @@ impl WebView {
     ///
     /// This function should only used in off screen render mode.
     pub fn set_handle(&self, handle: WindowHandle) {
-        unsafe { call_api_or_panic().mbSetHandle(self.as_ptr(), handle.inner) };
+        unsafe { call_api_or_panic().mbSetHandle(self.as_id(), handle.inner as _) };
     }
 
     /// Set handle offset.
@@ -950,14 +870,14 @@ impl WebView {
     ///
     /// This function should only used in off screen render mode.
     pub fn set_handle_offset(&self, x: i32, y: i32) {
-        unsafe { call_api_or_panic().mbSetHandleOffset(self.as_ptr(), x, y) };
+        unsafe { call_api_or_panic().mbSetHandleOffset(self.as_id(), x, y) };
     }
 
     /// Set user agent.
     pub fn set_user_agent(&self, user_agent: &str) {
         let user_agent = CString::new(user_agent).unwrap();
         unsafe {
-            call_api_or_panic().mbSetUserAgent(self.as_ptr(), user_agent.as_ptr());
+            call_api_or_panic().mbSetUserAgent(self.as_id(), user_agent.as_ptr());
         }
     }
 
@@ -965,7 +885,7 @@ impl WebView {
     pub fn load_url(&self, url: &str) {
         let url = CString::new(url).unwrap();
         unsafe {
-            call_api_or_panic().mbLoadURL(self.as_ptr(), url.as_ptr());
+            call_api_or_panic().mbLoadURL(self.as_id(), url.as_ptr());
         }
     }
 
@@ -975,7 +895,7 @@ impl WebView {
         let base_url = CString::new(base_url).unwrap();
         unsafe {
             call_api_or_panic().mbLoadHtmlWithBaseUrl(
-                self.as_ptr(),
+                self.as_id(),
                 html.as_ptr(),
                 base_url.as_ptr(),
             )
@@ -984,88 +904,103 @@ impl WebView {
 
     /// Enable context menu.
     pub fn enable_context_menu(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetContextMenuEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetContextMenuEnabled(self.as_id(), enabled as _) }
     }
 
     /// Enable cookie.
     pub fn enable_cookie(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetCookieEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetCookieEnabled(self.as_id(), enabled as _) }
     }
 
     /// Enable CSP check.
     pub fn enable_csp_check(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetCspCheckEnable(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetCspCheckEnable(self.as_id(), enabled as _) }
     }
 
     /// Enable disk cache.
     pub fn enable_disk_cache(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetDiskCacheEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetDiskCacheEnabled(self.as_id(), enabled as _) }
     }
 
     /// Enable drag and drop.
     pub fn enable_drag_drop(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetDragDropEnable(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetDragDropEnable(self.as_id(), enabled as _) }
     }
 
     /// Enable drag.
     pub fn enable_drag(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetDragEnable(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetDragEnable(self.as_id(), enabled as _) }
     }
 
     /// Enable headless mode.
     pub fn enable_headless_mode(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetHeadlessEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetHeadlessEnabled(self.as_id(), enabled as _) }
     }
 
     /// Enable memory cache.
     pub fn enable_memory_cache(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetMemoryCacheEnable(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetMemoryCacheEnable(self.as_id(), enabled as _) }
     }
 
     /// Enable mouse.
     pub fn enable_mouse(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetMouseEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetMouseEnabled(self.as_id(), enabled as _) }
     }
 
     /// Enable navigation to new window.
     pub fn enable_navigation_to_new_window(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetNavigationToNewWindowEnable(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetNavigationToNewWindowEnable(self.as_id(), enabled as _) }
     }
 
     /// Enable nodejs.
     pub fn enable_nodejs(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetNodeJsEnable(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetNodeJsEnable(self.as_id(), enabled as _) }
     }
 
     /// Enable npapi plugins.
     pub fn enable_npapi_plugins(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetNpapiPluginsEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetNpapiPluginsEnabled(self.as_id(), enabled as _) }
     }
 
     /// Enable system touch.
     pub fn enable_system_touch(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetSystemTouchEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetSystemTouchEnabled(self.as_id(), enabled as _) }
     }
 
     /// Enable touch.
     pub fn enable_touch(&self, enabled: bool) {
-        unsafe { call_api_or_panic().mbSetTouchEnabled(self.as_ptr(), enabled as _) }
+        unsafe { call_api_or_panic().mbSetTouchEnabled(self.as_id(), enabled as _) }
     }
 
     /// Check if is the mainframe.
     pub fn is_mainframe(&self, frame_handle: WebFrameHandle) -> bool {
-        unsafe { call_api_or_panic().mbIsMainFrame(self.as_ptr(), frame_handle.as_ptr()) != 0 }
+        let id = self.as_id();
+        invoke_command_sync(move || unsafe {
+            call_api_or_panic().mbIsMainFrame(id, frame_handle.as_ptr()) != 0
+        })
+    }
+
+    /// Get the main_frame.
+    pub fn get_mainframe(&self) -> WebFrameHandle {
+        let id = self.as_id();
+        invoke_command_sync(move || {
+            let handle = unsafe { call_api_or_panic().mbWebFrameGetMainFrame(id) };
+            WebFrameHandle { inner: handle }
+        })
     }
 
     /// Set global proxy.
     pub fn set_proxy(&self, proxy: &Proxy) {
         let proxy = proxy.to_mb_proxy();
         unsafe {
-            call_api_or_panic().mbSetProxy(self.as_ptr(), &proxy);
+            call_api_or_panic().mbSetProxy(self.as_id(), &proxy);
         }
     }
 
     /// Create a new webview window.
+    ///
+    /// # Remarks
+    /// In Linux, transparent window is not supported, instead popup window is created.
     pub fn new(typ: WindowType, x: i32, y: i32, width: i32, height: i32) -> Self {
         let id = unsafe {
             call_api_or_panic().mbCreateWebWindow(
@@ -1107,7 +1042,7 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnClose(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnClose(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
@@ -1136,21 +1071,21 @@ impl WebView {
         }
 
         unsafe {
-            call_api_or_panic().mbOnDestroy(self.as_ptr(), Some(shim::<F>), context as _);
+            call_api_or_panic().mbOnDestroy(self.as_id(), Some(shim::<F>), context as _);
         }
     }
 
     /// Show the window.
     pub fn show(&self) {
         unsafe {
-            call_api_or_panic().mbShowWindow(self.as_ptr(), 1);
+            call_api_or_panic().mbShowWindow(self.as_id(), 1);
         }
     }
 
     /// Hide the window.
     pub fn hide(&self) {
         unsafe {
-            call_api_or_panic().mbShowWindow(self.as_ptr(), 0);
+            call_api_or_panic().mbShowWindow(self.as_id(), 0);
         }
     }
 
@@ -1162,21 +1097,21 @@ impl WebView {
     /// Move the window.
     pub fn move_window(&self, x: i32, y: i32, width: i32, height: i32) {
         unsafe {
-            call_api_or_panic().mbMoveWindow(self.as_ptr(), x, y, width, height);
+            call_api_or_panic().mbMoveWindow(self.as_id(), x, y, width, height);
         }
     }
 
     /// Move the window to center.
     pub fn move_to_center(&self) {
         unsafe {
-            call_api_or_panic().mbMoveToCenter(self.as_ptr());
+            call_api_or_panic().mbMoveToCenter(self.as_id());
         }
     }
 
     /// Set the window title.
     pub fn set_window_title(&self, title: &str) {
         let title = CString::new(title).unwrap();
-        unsafe { call_api_or_panic().mbSetWindowTitle(self.as_ptr(), title.as_ptr()) }
+        unsafe { call_api_or_panic().mbSetWindowTitle(self.as_id(), title.as_ptr()) }
     }
 
     fn store_callback_context<T>(&self, callback: T) -> *const CallBackContext<T>
@@ -1190,7 +1125,7 @@ impl WebView {
     }
 
     fn push_child(&self, child: WebView) -> WebViewID {
-        let id = child.as_ptr();
+        let id = child.as_id();
         *child.inner.parent.lock().unwrap() = Some(Arc::downgrade(&self.inner));
         self.inner.childset.lock().unwrap().insert(child);
         id
