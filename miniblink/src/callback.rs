@@ -31,10 +31,12 @@ define_callback!(
 define_callback!(
     /// Triggered by window.mbQuery in JavaScript, for example:
     /// 
+    /// ```js
     /// function onNative(customMsg, response) {
     ///     console.log("on~~mbQuery:" + response);
     /// }
     /// window.mbQuery(0x123456, "test run", onNative);
+    /// ```
     OnQuery: (&WebView, &JsQueryParameters) -> JsQueryResult;
     /// Triggered when the URL changes.
     OnUrlChanged: (&WebView, &UrlChangedParameters);
