@@ -6,7 +6,7 @@ It's now under development, not ready for production.
 
 The api in this crate may change in the future.
 
-```rust
+```rust,no_run
 use miniblink::{app, webview::*};
 
 fn main() {
