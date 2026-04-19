@@ -5,9 +5,9 @@ use std::hash::Hash;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::{Arc, Mutex, Weak};
 
+use crate::app::invoke_command_sync;
 use crate::call_api_or_panic;
 use crate::callback::*;
-use crate::command::invoke_command_sync;
 use crate::mbstring::MbString;
 use crate::net_job::NetJob;
 use crate::params::*;
@@ -647,7 +647,7 @@ impl WebView {
 
     /// Set create view callback.
     ///
-    /// Invoked when a new webview is created after <a> link click.
+    /// Invoked when a new webview is created after \<a\> link click.
     pub fn on_create_view<F>(&self, callback: F)
     where
         F: OnCreateView,

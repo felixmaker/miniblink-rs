@@ -3,8 +3,6 @@
 
 /// Wraps to global functions.
 pub mod app;
-/// Defines the command.
-pub mod command;
 /// Defines the content.
 pub mod callback;
 /// Defines the miniblink error types.
